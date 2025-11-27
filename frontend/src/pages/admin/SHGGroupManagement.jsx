@@ -136,7 +136,7 @@ export default function SHGGroupManagement() {
                     <h1 className="h2 fw-bold mb-1">SHG Group Management</h1>
                     <p className="text-muted mb-0">Create and manage Self-Help Groups</p>
                 </div>
-                <Button variant="primary" onClick={() => handleOpenModal()}>
+                <Button variant="warning" onClick={() => handleOpenModal()}>
                     ➕ Create SHG Group
                 </Button>
             </div>
@@ -379,11 +379,11 @@ export default function SHGGroupManagement() {
                             Cancel
                         </Button>
                         <Button
-                            variant="primary"
+                            variant="success"
                             type="submit"
                             disabled={shgMembers.length === 0}
                         >
-                            {editingGroup ? 'Update Group' : 'Create Group'}
+                            {editingGroup ? 'Save' : 'Save'}
                         </Button>
                     </Modal.Footer>
                 </Form>

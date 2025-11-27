@@ -342,11 +342,11 @@ export default function UserManagement() {
                     <p className="text-muted small">Manage system users and SHG members</p>
                 </div>
                 <Button
-                    variant="primary"
+                    variant="warning"
                     onClick={() => handleOpenModal(null, 'member')}
                     disabled={availableGroups.length === 0}
                 >
-                    ➕ Register Member
+                    ➕ New Register Member
                 </Button>
             </div>
 
@@ -935,10 +935,10 @@ export default function UserManagement() {
                         <Button variant="secondary" onClick={() => setShowModal(false)}>
                             Cancel
                         </Button>
-                        <Button variant="primary" type="submit">
+                        <Button variant="success" type="submit">
                             {editingUser
-                                ? (userType === 'member' ? 'Update Member' : 'Update User')
-                                : (userType === 'member' ? 'Register Member' : 'Create User')
+                                ? (userType === 'member' ? ' MemberUpdate' : 'Save')
+                                : (userType === 'member' ? 'Save' : 'Create User')
                             }
                         </Button>
                     </Modal.Footer>

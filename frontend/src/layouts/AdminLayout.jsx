@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Container, Navbar, Nav, Dropdown } from "react-bootstrap";
 import { useApp } from "../context/AppContext";
+import LogoutIcon from "../components/Icons/LogoutIcon";
 
 export default function AdminLayout() {
     const navigate = useNavigate();
@@ -135,24 +136,13 @@ export default function AdminLayout() {
                         </Dropdown.Toggle>
 
                         <Dropdown.Menu>
-                            <Dropdown.Item disabled>
-                                <div className="small">
-                                    <div className="fw-semibold">
-                                        {currentUser?.name}
-                                    </div>
-                                    <div className="text-muted">
-                                        {currentUser?.email}
-                                    </div>
-                                </div>
-                            </Dropdown.Item>
-
-                            <Dropdown.Divider />
-
+                        
                             <Dropdown.Item
                                 onClick={handleLogout}
-                                className="text-danger"
+                                className="d-flex align-items-center gap-2"
                             >
-                                🚪 Logout
+                                <LogoutIcon size={18} />
+                                <span>Logout</span>
                             </Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>

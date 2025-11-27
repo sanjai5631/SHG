@@ -196,8 +196,8 @@ export default function LoanManagement() {
                     </p>
                 </div>
 
-                <Button variant="primary" onClick={() => setShowModal(true)}>
-                    ➕ New Loan Request
+                <Button variant="warning" onClick={() => setShowModal(true)}>
+                    ➕ Add Loan Request
                 </Button>
             </div>
 
@@ -587,7 +587,7 @@ export default function LoanManagement() {
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" variant="primary">
+                        <Button type="submit" variant="success">
                             Submit Request
                         </Button>
                     </Modal.Footer>
