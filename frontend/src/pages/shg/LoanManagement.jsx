@@ -5,11 +5,13 @@ import {
     Button,
     Modal,
     Form,
-    Badge,
     Alert,
     Row,
     Col,
 } from "react-bootstrap";
+import {
+      FaSave
+}from "react-icons/fa";
 import { useApp } from "../../context/AppContext";
 
 export default function LoanManagement() {
@@ -23,7 +25,7 @@ export default function LoanManagement() {
 
     const [showModal, setShowModal] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState("");
-    const [repaymentGroup, setRepaymentGroup] = useState(""); // Group filter for repayment section
+    const [repaymentGroup, setRepaymentGroup] = useState("");
     const [entries, setEntries] = useState({});
     const [formData, setFormData] = useState({
         memberId: "",
@@ -33,9 +35,9 @@ export default function LoanManagement() {
         purpose: "",
     });
 
-    // ============================================================
-    //                 LOAN REQUEST SECTION
-    // ============================================================
+    // ===========================
+    // LOAN REQUEST
+    // ===========================
 
     const myGroups = data.shgGroups.filter(
         (g) => g.assignedTo === currentUser.id && g.status === "active"
@@ -44,15 +46,10 @@ export default function LoanManagement() {
 
     const groupMembers = selectedGroup
         ? data.members.filter(
-            (m) =>
-                m.groupId === parseInt(selectedGroup) && m.status === "active"
-        )
+              (m) =>
+                  m.groupId === parseInt(selectedGroup) && m.status === "active"
+          )
         : [];
-
-    const myLoans = data.loans.filter((l) => {
-        const member = data.members.find((m) => m.id === l.memberId);
-        return member && myGroupIds.includes(member.groupId);
-    });
 
     const loanProducts = data.loanProducts.filter((p) => p.status === "active");
 
@@ -72,14 +69,16 @@ export default function LoanManagement() {
         );
 
         const tenor = Number(formData.tenor);
-        const monthlyInterest = (loanAmount * product.interestRate) / (100 * 12);
+        const monthlyInterest =
+            (loanAmount * product.interestRate) / (100 * 12);
+
         const emi = Math.round(loanAmount / tenor + monthlyInterest);
 
         addItem("loans", {
             memberId: Number(formData.memberId),
             productId: Number(formData.productId),
             amount: loanAmount,
-            interestRate: product.intermentRoute,
+            interestRate: product.interestRate,
             tenor,
             purpose: formData.purpose,
             status: "pending",
@@ -91,22 +90,16 @@ export default function LoanManagement() {
         alert("Loan request created successfully!");
     };
 
-    const getMemberName = (id) =>
-        data.members.find((m) => m.id === id)?.name || "Unknown";
+    // ===========================
+    // REPAYMENT SECTION
+    // ===========================
 
-    const getProductName = (id) =>
-        data.loanProducts.find((p) => p.id === id)?.name || "Unknown";
-
-    // ============================================================
-    //                 LOAN REPAYMENT SECTION
-    // ============================================================
-
-    // Filter members with loans by selected group
     const membersWithLoans = data.members.filter((member) => {
         const hasLoan = data.loans.some(
             (l) => l.memberId === member.id && l.status === "approved"
         );
-        const matchesGroup = !repaymentGroup || member.groupId === parseInt(repaymentGroup);
+        const matchesGroup =
+            !repaymentGroup || member.groupId === parseInt(repaymentGroup);
         return hasLoan && matchesGroup;
     });
 
@@ -115,17 +108,14 @@ export default function LoanManagement() {
             (l) => l.memberId === memberId && l.status === "approved"
         );
 
-    // Calculate total repaid
     const getAmountRepaid = (memberId) => {
         const repayments =
             data.transactions?.filter(
                 (t) => t.memberId === memberId && t.type === "repayment"
             ) || [];
-
         return repayments.reduce((sum, t) => sum + (t.amount || 0), 0);
     };
 
-    // Calculate loan balance
     const getLoanBalance = (memberId) => {
         const loan = getActiveLoan(memberId);
         if (!loan) return 0;
@@ -135,20 +125,29 @@ export default function LoanManagement() {
     };
 
     const handleInputChange = (memberId, field, value) => {
-        setEntries((prev) => ({
-            ...prev,
-            [memberId]: {
-                ...prev[memberId],
-                [field]: value,
-            },
-        }));
+        setEntries((prev) => {
+            const currentEntry = prev[memberId] || {};
+            const updates = { [field]: value };
+
+            if (field === "collectionAmount") {
+                updates.interestAmount = Math.round(Number(value) * 0.01);
+            }
+
+            return {
+                ...prev,
+                [memberId]: {
+                    ...currentEntry,
+                    ...updates,
+                },
+            };
+        });
     };
 
     const handleSave = (memberId) => {
         const entry = entries[memberId] || {};
 
         const principal = Number(entry.collectionAmount || 0);
-        const interest = Math.round(principal * 0.01);
+        const interest = Number(entry.interestAmount || 0);
         const total = principal + interest;
 
         const loan = getActiveLoan(memberId);
@@ -181,13 +180,35 @@ export default function LoanManagement() {
         });
     };
 
-    // ============================================================
-    //                      COMPONENT UI
-    // ============================================================
+    // ===========================
+    // TOTAL FOOTER
+    // ===========================
+
+    const totalDemandPrincipal = membersWithLoans.reduce((sum, m) => {
+        const loan = getActiveLoan(m.id);
+        if (!loan) return sum;
+        return sum + Math.round(loan.amount / 5);
+    }, 0);
+
+    const totalDemandInterest = Math.round(totalDemandPrincipal * 0.01);
+
+    const totalCollectionPrincipal = membersWithLoans.reduce((sum, m) => {
+        const entry = entries[m.id] || {};
+        return sum + Number(entry.collectionAmount || 0);
+    }, 0);
+
+    const totalCollectionInterest = membersWithLoans.reduce((sum, m) => {
+        const entry = entries[m.id] || {};
+        return sum + Number(entry.interestAmount || 0);
+    }, 0);
+
+    // ===========================
+    // UI
+    // ===========================
 
     return (
         <div className="fade-in">
-            {/* TITLE */}
+            {/* Header */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 className="h2 fw-bold">Loan Management</h1>
@@ -201,19 +222,20 @@ export default function LoanManagement() {
                 </Button>
             </div>
 
-            {/* REPAYMENT TABLE */}
+            {/* Table */}
             <Card className="border-0 shadow-sm mb-4">
                 <Card.Header className="bg-white">
                     <Row className="align-items-center">
-                        <Col md={6}>
+                        <Col md={8}>
                             <h5 className="fw-semibold mb-0">Loan Repayment Collection</h5>
                         </Col>
-                        <Col md={6}>
-                            <Form.Group className="mb-0">
+                        <Col md={4} className="text-end">
+                            <Form.Group className="mb-0" style={{ display: 'inline-block', width: 'auto', minWidth: '180px' }}>
                                 <Form.Select
                                     size="sm"
                                     value={repaymentGroup}
                                     onChange={(e) => setRepaymentGroup(e.target.value)}
+                                    style={{ fontSize: '0.875rem' }}
                                 >
                                     <option value="">All Groups</option>
                                     {myGroups.map(g => (
@@ -224,24 +246,23 @@ export default function LoanManagement() {
                         </Col>
                     </Row>
                 </Card.Header>
-
-                <Card.Body className="p-0">
-                    <div className="table-responsive">
-                        <Table hover className="mb-0 align-middle" style={{ minWidth: '1200px' }}>
-                            <thead className="bg-light">
+             <Card.Body className="p-0">
+                    <div style={{ maxHeight: '65vh', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
+                        <Table className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0 }}>
+                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f5f5f5', zIndex: 10 }}>
                                 <tr>
-                                    <th style={{ minWidth: '90px' }}>EMP CODE</th>
-                                    <th style={{ minWidth: '140px' }}>NAME</th>
-                                    <th style={{ minWidth: '110px' }}>OUTSTANDING</th>
-                                    <th style={{ minWidth: '100px' }}>PRINCIPAL</th>
-                                    <th style={{ minWidth: '80px' }}>1% INT.</th>
-                                    <th style={{ minWidth: '120px' }}>TOTAL DEMAND</th>
-                                    <th style={{ minWidth: '110px' }}>COLLECTION</th>
-                                    <th style={{ minWidth: '70px' }}>INT.</th>
-                                    <th style={{ minWidth: '100px' }}>TYPE</th>
-                                    <th style={{ minWidth: '150px' }}>PERSON</th>
-                                    <th style={{ minWidth: '100px' }}>TOTAL</th>
-                                    <th style={{ minWidth: '80px' }}>ACTION</th>
+                                    <th style={{ width: '7%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>EMP<br />CODE</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>NAME</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>OUTSTANDING</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PRINCIPAL</th>
+                                    <th style={{ width: '7%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>1% INT.</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL<br />DEMAND</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>COLLECTION</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>INT.</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TYPE</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PERSON</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL</th>
+                                    <th style={{ width: '6%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>ACTION</th>
                                 </tr>
                             </thead>
 
@@ -251,28 +272,42 @@ export default function LoanManagement() {
                                     const repaid = getAmountRepaid(m.id);
                                     const balance = getLoanBalance(m.id);
 
-                                    const demandP = Math.round(loan.amount / 5);
-                                    const demandI = Math.round(demandP * 0.01);
-
                                     const entry = entries[m.id] || {};
+                                    const demandP = Math.round(loan.amount / 5);
+                                    const demandI = entry.demandInterest !== undefined ? Number(entry.demandInterest) : Math.round(demandP * 0.01);
+
                                     const principal = Number(entry.collectionAmount || 0);
-                                    const intr = Math.round(principal * 0.01);
+                                    const intr = entry.interestAmount !== undefined ? Number(entry.interestAmount) : 0;
                                     const total = principal + intr;
 
                                     return (
-                                        <tr key={m.id}>
-                                            <td className="text-muted small">{m.employeeCode || '-'}</td>
-                                            <td className="fw-medium">{m.name}</td>
-                                            <td className="text-danger fw-bold">
+                                        <tr key={m.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                                            <td style={{ fontSize: '0.875rem', color: '#6c757d', padding: '16px 8px' }}>{m.employeeCode || '-'}</td>
+                                            <td style={{ fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px' }}>{m.name}</td>
+                                            <td style={{ fontSize: '0.875rem', color: '#dc3545', fontWeight: '600', padding: '16px 8px' }}>
                                                 ₹{balance.toLocaleString()}
                                             </td>
-                                            <td>₹{demandP.toLocaleString()}</td>
-                                            <td>₹{demandI.toLocaleString()}</td>
-                                            <td className="fw-bold">
+                                            <td style={{ fontSize: '0.875rem', padding: '16px 8px' }}>₹{demandP.toLocaleString()}</td>
+                                           <td style={{ padding: '12px 8px' }}>
+                                                <Form.Control
+                                                    type="number"
+                                                    size="sm"
+                                                    value={entry.demandInterest !== undefined ? entry.demandInterest : Math.round(demandP * 0.01)}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            m.id,
+                                                            "demandInterest",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
+                                                />
+                                            </td>
+                                            <td style={{ fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px' }}>
                                                 ₹{(demandP + demandI).toLocaleString()}
                                             </td>
 
-                                            <td>
+                                            <td style={{ padding: '12px 8px' }}>
                                                 <Form.Control
                                                     type="number"
                                                     size="sm"
@@ -284,13 +319,27 @@ export default function LoanManagement() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    style={{ minWidth: '90px' }}
+                                                    style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
                                                 />
                                             </td>
 
-                                            <td>{principal > 0 ? `₹${intr}` : "-"}</td>
+                                            <td style={{ padding: '12px 8px' }}>
+                                                <Form.Control
+                                                    type="number"
+                                                    size="sm"
+                                                    value={entry.interestAmount !== undefined ? entry.interestAmount : ""}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            m.id,
+                                                            "interestAmount",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
+                                                />
+                                            </td>
 
-                                            <td>
+                                            <td style={{ padding: '12px 8px' }}>
                                                 <Form.Select
                                                     size="sm"
                                                     value={entry.paymentType || "cash"}
@@ -301,14 +350,14 @@ export default function LoanManagement() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    style={{ minWidth: '90px' }}
+                                                    style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
                                                 >
                                                     <option value="cash">Cash</option>
                                                     <option value="online">Online</option>
                                                 </Form.Select>
                                             </td>
 
-                                            <td>
+                                            <td style={{ padding: '12px 8px' }}>
                                                 {entry.paymentType === "online" ? (
                                                     <Form.Select
                                                         size="sm"
@@ -320,7 +369,7 @@ export default function LoanManagement() {
                                                                 e.target.value
                                                             )
                                                         }
-                                                        style={{ minWidth: '130px' }}
+                                                        style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
                                                     >
                                                         <option value="">Select</option>
                                                         {data.members
@@ -335,106 +384,53 @@ export default function LoanManagement() {
                                                             ))}
                                                     </Form.Select>
                                                 ) : (
-                                                    <span className="text-muted small">-</span>
+                                                    <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>-</span>
                                                 )}
                                             </td>
 
-                                            <td className="text-success fw-bold">
+                                            <td style={{ fontSize: '0.875rem', color: '#28a745', fontWeight: '600', padding: '16px 8px' }}>
                                                 {principal > 0 ? `₹${total.toLocaleString()}` : "-"}
                                             </td>
 
-                                            <td>
+                                            <td style={{ padding: '12px 8px', textAlign: 'center' }}>
                                                 <Button
                                                     size="sm"
                                                     variant="primary"
                                                     disabled={!principal}
                                                     onClick={() => handleSave(m.id)}
+                                                    style={{ fontSize: '0.75rem', padding: '4px 12px', borderRadius: '4px' }}
                                                 >
-                                                    Save
+                                                  <FaSave/>
                                                 </Button>
                                             </td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
-                        </Table>
-                    </div>
-                </Card.Body>
-            </Card>
-
-            {/* LOAN REQUEST TABLE */}
-            <Card className="border-0 shadow-sm">
-                <Card.Header className="bg-white">
-                    <h5 className="fw-semibold mb-0">All Loan Requests</h5>
-                </Card.Header>
-
-                <Card.Body className="p-0">
-                    <div className="table-responsive">
-                        <Table hover className="mb-0 align-middle text-nowrap">
-                            <thead className="bg-light">
+                            <tfoot style={{ position: 'sticky', bottom: 0, backgroundColor: '#f8f9fa', zIndex: 10, borderTop: '2px solid #dee2e6' }}>
                                 <tr>
-                                    <th>Member</th>
-                                    <th>Product</th>
-                                    <th>Amount</th>
-                                    <th>Interest</th>
-                                    <th>Tenor</th>
-                                    <th>EMI</th>
-                                    <th>Purpose</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
+                                    <td colSpan={3} style={{ fontSize: '0.875rem', fontWeight: '700', textAlign: 'right', padding: '16px 8px' }}>Grand Total:</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px' }}>₹{totalDemandPrincipal.toLocaleString()}</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px' }}>₹{totalDemandInterest.toLocaleString()}</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px' }}>₹{(totalDemandPrincipal + totalDemandInterest).toLocaleString()}</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0d6efd', padding: '16px 8px' }}>₹{totalCollectionPrincipal.toLocaleString()}</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px' }}>₹{totalCollectionInterest.toLocaleString()}</td>
+                                    <td style={{ fontSize: '0.875rem', padding: '16px 8px' }}>-</td>
+                                    <td style={{ fontSize: '0.875rem', padding: '16px 8px' }}>-</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', color: '#28a745', padding: '16px 8px' }}>₹{(totalCollectionPrincipal + totalCollectionInterest).toLocaleString()}</td>
+                                    <td style={{ padding: '16px 8px' }}></td>
                                 </tr>
-                            </thead>
-
-                            <tbody>
-                                {myLoans.length ? (
-                                    myLoans.map((loan) => (
-                                        <tr key={loan.id}>
-                                            <td className="fw-medium">{getMemberName(loan.memberId)}</td>
-                                            <td>{getProductName(loan.productId)}</td>
-                                            <td className="fw-bold">₹{loan.amount.toLocaleString()}</td>
-                                            <td>{loan.interestRate}%</td>
-                                            <td>{loan.tenor} months</td>
-                                            <td>₹{loan.emi.toLocaleString()}</td>
-                                            <td style={{ minWidth: '200px', whiteSpace: 'normal' }}>
-                                                {loan.purpose}
-                                            </td>
-                                            <td className="text-muted">
-                                                {new Date(loan.appliedDate).toLocaleDateString()}
-                                            </td>
-                                            <td>
-                                                <Badge
-                                                    bg={
-                                                        loan.status === "approved"
-                                                            ? "success"
-                                                            : loan.status === "pending"
-                                                                ? "warning"
-                                                                : "danger"
-                                                    }
-                                                >
-                                                    {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
-                                                </Badge>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="9" className="text-center py-4 text-muted">
-                                            No loan requests found
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
+                            </tfoot>
                         </Table>
                     </div>
                 </Card.Body>
             </Card>
-
-            {/* LOAN REQUEST MODAL */}
+            {/* Loan Request Modal */}
             <Modal
                 show={showModal}
                 onHide={() => setShowModal(false)}
-                size="lg"
                 centered
+                size="lg"
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Create Loan Request</Modal.Title>
@@ -443,33 +439,24 @@ export default function LoanManagement() {
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
                         <Row>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Select SHG Group *</Form.Label>
-                                    <Form.Select
-                                        value={selectedGroup}
-                                        onChange={(e) => {
-                                            setSelectedGroup(e.target.value);
-                                            setFormData({
-                                                ...formData,
-                                                memberId: "",
-                                            });
-                                        }}
-                                        required
-                                    >
-                                        <option value="">Choose group</option>
-                                        {myGroups.map((g) => (
-                                            <option value={g.id} key={g.id}>
-                                                {g.name} ({g.code})
-                                            </option>
-                                        ))}
-                                    </Form.Select>
-                                </Form.Group>
-                            </Col>
-
+ <Col md={4} className="text-end">
+                            <Form.Group className="mb-0" style={{ display: 'inline-block', width: 'auto', minWidth: '180px' }}>
+                                <Form.Select
+                                    size="sm"
+                                    value={repaymentGroup}
+                                    onChange={(e) => setRepaymentGroup(e.target.value)}
+                                    style={{ fontSize: '0.875rem' }}
+                                >
+                                    <option value="">All Groups</option>
+                                    {myGroups.map(g => (
+                                        <option key={g.id} value={g.id}>{g.name}</option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
                             <Col md={6}>
                                 {selectedGroup && (
-                                    <Form.Group className="mb-3">
+                                    <Form.Group>
                                         <Form.Label>Member *</Form.Label>
                                         <Form.Select
                                             value={formData.memberId}
@@ -481,12 +468,16 @@ export default function LoanManagement() {
                                             }
                                             required
                                         >
-                                            <option value="">Choose member...</option>
-
+                                            <option value="">
+                                                Choose member...
+                                            </option>
                                             {groupMembers.map((m) => (
                                                 <option key={m.id} value={m.id}>
                                                     {m.name} (Balance: ₹
-                                                    {getMemberSavingsBalance(m.id)})
+                                                    {getMemberSavingsBalance(
+                                                        m.id
+                                                    )}
+                                                    )
                                                 </option>
                                             ))}
                                         </Form.Select>
@@ -497,7 +488,7 @@ export default function LoanManagement() {
 
                         {formData.memberId && (
                             <>
-                                <Form.Group className="mb-3">
+                                <Form.Group>
                                     <Form.Label>Loan Product *</Form.Label>
                                     <Form.Select
                                         value={formData.productId}
@@ -509,12 +500,13 @@ export default function LoanManagement() {
                                         }
                                         required
                                     >
-                                        <option value="">Choose product</option>
-
+                                        <option value="">
+                                            Choose product
+                                        </option>
                                         {loanProducts.map((p) => (
                                             <option key={p.id} value={p.id}>
-                                                {p.name} ({p.interestRate}% - Max: ₹
-                                                {p.maxAmount})
+                                                {p.name} ({p.interestRate}% - Max:
+                                                ₹{p.maxAmount})
                                             </option>
                                         ))}
                                     </Form.Select>
@@ -522,8 +514,10 @@ export default function LoanManagement() {
 
                                 <Row>
                                     <Col md={6}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Loan Amount *</Form.Label>
+                                        <Form.Group>
+                                            <Form.Label>
+                                                Loan Amount *
+                                            </Form.Label>
                                             <Form.Control
                                                 type="number"
                                                 value={formData.amount}
@@ -539,7 +533,7 @@ export default function LoanManagement() {
                                     </Col>
 
                                     <Col md={6}>
-                                        <Form.Group className="mb-3">
+                                        <Form.Group>
                                             <Form.Label>Tenor *</Form.Label>
                                             <Form.Control
                                                 type="number"
@@ -556,7 +550,7 @@ export default function LoanManagement() {
                                     </Col>
                                 </Row>
 
-                                <Form.Group className="mb-3">
+                                <Form.Group>
                                     <Form.Label>Purpose *</Form.Label>
                                     <Form.Control
                                         as="textarea"
@@ -572,9 +566,9 @@ export default function LoanManagement() {
                                     />
                                 </Form.Group>
 
-                                <Alert variant="info">
-                                    Member must have minimum 10% of loan amount in
-                                    savings balance.
+                                <Alert variant="info" className="mt-3">
+                                    Member must have minimum 10% of loan amount
+                                    in savings balance.
                                 </Alert>
                             </>
                         )}
