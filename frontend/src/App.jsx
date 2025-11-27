@@ -1,0 +1,106 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AppProvider, useApp } from './context/AppContext';
+
+// Layouts
+import AdminLayout from './layouts/AdminLayout';
+import SHGLayout from './layouts/SHGLayout';
+
+// Auth Pages
+import Login from './pages/Login';
+
+// Admin Pages
+import AdminDashboard from './pages/admin/Dashboard';
+import UserManagement from './pages/admin/UserManagement';
+import SupportData from './pages/admin/SupportData';
+import SHGGroupManagement from './pages/admin/SHGGroupManagement';
+import Reports from './pages/admin/Reports';
+
+// SHG Team Member Pages
+import SHGDashboard from './pages/shg/Dashboard';
+import SavingsManagement from './pages/shg/SavingsManagement';
+import LoanManagement from './pages/shg/LoanManagement';
+import CollectionPayment from './pages/shg/CollectionPayment';
+import MeetingSummary from './pages/shg/MeetingSummary';
+
+// Protected Route Component
+const ProtectedRoute = ({ children, allowedRoles }) => {
+    const { currentUser } = useApp();
+
+    if (!currentUser) {
+        return <Navigate to="/login" replace />;
+    }
+
+    if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
+        return <Navigate to="/" replace />;
+    }
+
+    return children;
+};
+
+// Route Configuration
+const AppRoutes = () => {
+    const { currentUser } = useApp();
+
+    return (
+        <Routes>
+            <Route path="/login" element={
+                currentUser ? <Navigate to="/" replace /> : <Login />
+            } />
+
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                    <AdminLayout />
+                </ProtectedRoute>
+            }>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="support-data" element={<SupportData />} />
+                <Route path="shg-groups" element={<SHGGroupManagement />} />
+                <Route path="reports" element={<Reports />} />
+            </Route>
+
+            {/* SHG Team Member Routes */}
+            <Route path="/shg" element={
+                <ProtectedRoute allowedRoles={['shg_member']}>
+                    <SHGLayout />
+                </ProtectedRoute>
+            }>
+                <Route index element={<SHGDashboard />} />
+                <Route path="savings" element={<SavingsManagement />} />
+                <Route path="loans" element={<LoanManagement />} />
+                <Route path="collections" element={<CollectionPayment />} />
+                <Route path="meetings" element={<MeetingSummary />} />
+            </Route>
+
+            {/* Default redirect based on role */}
+            <Route path="/" element={
+                currentUser ? (
+                    currentUser.role === 'admin' ? (
+                        <Navigate to="/admin" replace />
+                    ) : (
+                        <Navigate to="/shg" replace />
+                    )
+                ) : (
+                    <Navigate to="/login" replace />
+                )
+            } />
+
+            {/* 404 */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+    );
+};
+
+function App() {
+    return (
+        <AppProvider>
+            <Router>
+                <AppRoutes />
+            </Router>
+        </AppProvider>
+    );
+}
+
+export default App;
