@@ -937,7 +937,7 @@ export default function UserManagement() {
                         </Button>
                         <Button variant="success" type="submit">
                             {editingUser
-                                ? (userType === 'member' ? ' MemberUpdate' : 'Save')
+                                ? (userType === 'member' ? ' Member Update' : 'Save')
                                 : (userType === 'member' ? 'Save' : 'Create User')
                             }
                         </Button>
