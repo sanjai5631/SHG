@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Card, Form, Row, Col, Table, Button, Badge } from 'react-bootstrap';
 import { useApp } from '../../context/AppContext';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 
 export default function Reports() {
     const { data } = useApp();
     const [searchParams] = useSearchParams();
+    const location = useLocation();
     const [reportType, setReportType] = useState('memberwise');
     const [selectedGroup, setSelectedGroup] = useState('');
     const [selectedMonth, setSelectedMonth] = useState('');
@@ -15,13 +16,26 @@ export default function Reports() {
         endDate: ''
     });
 
-    // Read report type from URL query parameter
+    // Read report type from URL query parameter or path
     useEffect(() => {
         const type = searchParams.get('type');
+        let newReportType = reportType;
+        
         if (type && ['memberwise', 'daywise', 'monthly', 'annual'].includes(type)) {
-            setReportType(type);
+            newReportType = type;
+        } else {
+            // Check path
+            if (location.pathname.includes('memberwise-report')) newReportType = 'memberwise';
+            else if (location.pathname.includes('daywise-report')) newReportType = 'daywise';
+            else if (location.pathname.includes('monthly-report')) newReportType = 'monthly';
+            else if (location.pathname.includes('annual-report')) newReportType = 'annual';
         }
-    }, [searchParams]);
+        
+        // Only update state if the value has actually changed
+        if (newReportType !== reportType) {
+            setReportType(newReportType);
+        }
+    }, [searchParams, location.pathname, reportType]);
 
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const years = ['2023', '2024', '2025', '2026'];
@@ -757,41 +771,8 @@ export default function Reports() {
     return (
         <div className="fade-in">
             <div className="mb-4">
-                <h1 className="h2 fw-bold mb-1">Reports</h1>
-                <p className="text-muted mb-0">Generate and view various reports</p>
+                <h1 className="h4 fw-bold mb-1">Reports</h1>
             </div>
-
-            <Card className="border-0 shadow-sm mb-3">
-                <Card.Body className="p-3">
-                    <Row className="align-items-center">
-                        <Col md={4}>
-                            <Form.Group>
-                                <Form.Label className="fw-medium small">Report Type</Form.Label>
-                                <Form.Select
-                                    value={reportType}
-                                    onChange={(e) => setReportType(e.target.value)}
-                                    className="fw-medium"
-                                >
-                                    {reportTypes.map(type => (
-                                        <option key={type.value} value={type.value}>
-                                            {type.icon} {type.label}
-                                        </option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col md={8} className="text-end">
-                            <Button variant="primary" size="sm">
-                                📥 Export to Excel
-                            </Button>
-                            <Button variant="outline-primary" size="sm" className="ms-2">
-                                🖨️ Print Report
-                            </Button>
-                        </Col>
-                    </Row>
-                </Card.Body>
-            </Card>
-
             <Card className="border-0 shadow-sm">
                 <Card.Header className="bg-white border-bottom">
                     <h5 className="mb-0 fw-semibold">

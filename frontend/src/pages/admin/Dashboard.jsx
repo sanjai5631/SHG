@@ -96,22 +96,22 @@ export default function Dashboard() {
     const dateRangeLoanOutstanding = filteredData.loans.filter(l => l.status === 'approved').reduce((sum, l) => sum + (l.balance || l.amount - (l.amountPaid || 0)), 0);
     const dateRangeWithdrawalAmount = filteredData.withdrawals.filter(w => w.status === 'approved').reduce((sum, w) => sum + w.amount, 0);
 
-    // AS ON DATE Dashboard Cards
-    const asOnDateStats = [
+    // First Row - 5 cards
+    const statsRow1 = [
         {
-            title: "Total Savings",
+            title: 'Total Savings',
             value: `₹${totalSavings.toLocaleString()}`,
-            icon: "🏆",
-            bg: "#d4f5d4"
+            icon: '🏆',
+            bg: '#d4f5d4'
         },
         {
-            title: "Total Savings Accounts",
+            title: 'Total Savings Accounts',
             value: totalSavingsAccounts,
-            icon: "📋",
-            bg: "#fdeccb"
+            icon: '📋',
+            bg: '#fdeccb'
         },
         {
-            title: "Total Shareholders",
+            title: 'Total Shareholders',
             value: totalShareholders,
             subStats: [
                 { label: "Active", value: activeMembers },
@@ -119,68 +119,54 @@ export default function Dashboard() {
                 { label: "Closed", value: closedMembers },
                 { label: "Others", value: otherMembers }
             ],
-            icon: "👥",
-            bg: "#fde8cf"
-        }
-    ];
-
-    const asOnDateStats2 = [
+            icon: '👥',
+            bg: '#fde8cf'
+        },
         {
-            title: "Total Groups",
+            title: 'Total Groups',
             value: totalGroups,
-            icon: "👥",
-            bg: "#e8d4f5"
+            icon: '👥',
+            bg: '#e8d4f5'
         },
         {
-            title: "Day Transactions",
+            title: 'Day Transactions',
             value: todayTransactions.length,
-            icon: "📊",
-            bg: "#fde8cf"
-        },
-        {
-            title: "Day Collection",
-            value: `₹${todayCollection.toLocaleString()}`,
-            icon: "💰",
-            bg: "#ffd4e5"
+            icon: '📊',
+            bg: '#fde8cf'
         }
     ];
 
-    const asOnDateStats3 = [
+    // Second Row - 5 cards
+    const statsRow2 = [
         {
-            title: "No of Loans Approved",
+            title: 'Day Collection',
+            value: `₹${todayCollection.toLocaleString()}`,
+            icon: '💰',
+            bg: '#ffd4e5'
+        },
+        {
+            title: 'No of Loans Approved',
             value: approvedLoans.length,
-            icon: "✅",
-            bg: "#fde8cf"
+            icon: '✅',
+            bg: '#fde8cf'
         },
         {
-            title: "No of Withdraw Approved",
-            value: withdrawalApproved.length,
-            icon: "💸",
-            bg: "#e8d4f5"
-        },
-        {
-            title: "Loan Disbursement",
+            title: 'Loan Disbursement',
             value: `₹${totalLoanDisbursement.toLocaleString()}`,
-            icon: "💳",
-            bg: "#d4e8f5"
+            icon: '💳',
+            bg: '#d4e8f5'
         },
         {
-            title: "Loan Recovery Amount",
-            value: `₹${totalLoanRecovery.toLocaleString()}`,
-            icon: "💵",
-            bg: "#fff4d4"
-        },
-        {
-            title: "Loan Outstanding",
+            title: 'Loan Outstanding',
             value: `₹${totalLoanOutstanding.toLocaleString()}`,
-            icon: "📉",
-            bg: "#ffd4e5"
+            icon: '📉',
+            bg: '#ffd4e5'
         },
         {
-            title: "Amount Withdrawal",
+            title: 'Amount Withdrawal',
             value: `₹${totalWithdrawalAmount.toLocaleString()}`,
-            icon: "🏦",
-            bg: "#d4f5f5"
+            icon: '🏦',
+            bg: '#d4f5f5'
         }
     ];
 
@@ -190,18 +176,17 @@ export default function Dashboard() {
         <div className="fade-in">
             {/* Header */}
             <div className="mb-3">
-                <h1 className="h3 fw-bold mb-0">Dashboard</h1>
+                <h1 className="h4 fw-bold mb-0">Dashboard</h1>
             </div>
 
-            {/* AS ON DATE Section */}
+            {/* Dashboard Cards */}
             <Card className="border-0 shadow-sm mb-4">
                 <Card.Body>
-                    <h6 className="fw-semibold mb-3 text-uppercase" style={{ fontSize: '0.875rem' }}>AS ON DATE</h6>
-
-                    {/* First Row */}
+                    {/* First Row - 5 Cards */}
                     <Row className="g-3 mb-3">
-                        {asOnDateStats.map((item, index) => (
-                            <Col key={index} xs={12} sm={6} lg={4}>
+                        {statsRow1.map((item, index) => (
+                            <Col key={index} xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
+
                                 <Card
                                     className="border-0 h-100"
                                     style={{ background: item.bg }}
@@ -209,10 +194,10 @@ export default function Dashboard() {
                                     <Card.Body className="p-3">
                                         <div className="d-flex justify-content-between align-items-start">
                                             <div className="flex-grow-1">
-                                                <p className="text-muted small mb-1" style={{ fontSize: '0.813rem' }}>{item.title}</p>
-                                                <h4 className="fw-bold mb-0">{item.value}</h4>
+                                                <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>{item.title}</p>
+                                                <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>{item.value}</h5>
                                                 {item.subStats && (
-                                                    <div className="mt-2 d-flex justify-content-between" style={{ fontSize: '0.75rem' }}>
+                                                    <div className="mt-2 d-flex justify-content-between" style={{ fontSize: '0.65rem' }}>
                                                         {item.subStats.map((stat, idx) => (
                                                             <div key={idx} className="text-center">
                                                                 <div className="fw-semibold">{stat.label}</div>
@@ -224,9 +209,9 @@ export default function Dashboard() {
                                             </div>
                                             <div
                                                 className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
-                                                style={{ width: "40px", height: "40px" }}
+                                                style={{ width: "32px", height: "32px" }}
                                             >
-                                                <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
+                                                <span style={{ fontSize: '0.9rem' }}>{item.icon}</span>
                                             </div>
                                         </div>
                                     </Card.Body>
@@ -235,37 +220,11 @@ export default function Dashboard() {
                         ))}
                     </Row>
 
-                    {/* Second Row */}
-                    <Row className="g-3 mb-3">
-                        {asOnDateStats2.map((item, index) => (
-                            <Col key={index} xs={12} sm={6} lg={4}>
-                                <Card
-                                    className="border-0 h-100"
-                                    style={{ background: item.bg }}
-                                >
-                                    <Card.Body className="p-3">
-                                        <div className="d-flex justify-content-between align-items-start">
-                                            <div className="flex-grow-1">
-                                                <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>{item.title}</p>
-                                                <h5 className="fw-bold mb-0">{item.value}</h5>
-                                            </div>
-                                            <div
-                                                className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
-                                                style={{ width: "36px", height: "36px" }}
-                                            >
-                                                <span style={{ fontSize: '1rem' }}>{item.icon}</span>
-                                            </div>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                        ))}
-                    </Row>
-
-                    {/* Third Row */}
+                    {/* Second Row - 5 Cards */}
                     <Row className="g-3">
-                        {asOnDateStats3.map((item, index) => (
-                            <Col key={index} xs={6} sm={4} lg={2}>
+                        {statsRow2.map((item, index) => (
+                            <Col key={index} xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
+
                                 <Card
                                     className="border-0 h-100"
                                     style={{ background: item.bg }}
@@ -278,9 +237,9 @@ export default function Dashboard() {
                                             </div>
                                             <div
                                                 className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
-                                                style={{ width: "36px", height: "36px" }}
+                                                style={{ width: "32px", height: "32px" }}
                                             >
-                                                <span style={{ fontSize: '1rem' }}>{item.icon}</span>
+                                                <span style={{ fontSize: '0.9rem' }}>{item.icon}</span>
                                             </div>
                                         </div>
                                     </Card.Body>
@@ -292,36 +251,45 @@ export default function Dashboard() {
             </Card>
 
             {/* DATE RANGE Section */}
-            <Card className="border-0 shadow-sm mb-4">
+            <Card className="border-0 shadow-sm mb-0">
                 <Card.Body>
                     <h6 className="fw-semibold mb-3 text-uppercase" style={{ fontSize: '0.875rem' }}>DATE RANGE</h6>
 
                     {/* Date Range Inputs */}
-                    <Row className="g-3 mb-3">
-                        <Col xs={12} sm={4} md={3}>
-                            <label className="form-label small mb-1">Date Range:</label>
+                      <Row className="g-3 mb-3">
+                        <Col xs={12} sm={4} md={3} lg={2}>
                             <input
                                 type="date"
-                                className="form-control form-control-sm"
+                                className="form-control"
+                                style={{ height: '38px' }}
                                 value={fromDate}
-                                onChange={(e) => setFromDate(e.target.value)}
+                                max={getDefaultToDate()}
+                                onChange={(e) => {
+                                    setFromDate(e.target.value);
+                                    // If toDate is less than new fromDate, update toDate
+                                    if (toDate && e.target.value > toDate) {
+                                        setToDate(e.target.value);
+                                    }
+                                }}
                             />
                         </Col>
-                        <Col xs={12} sm={4} md={3}>
-                            <label className="form-label small mb-1 opacity-0">to</label>
+                        <Col xs={12} sm={4} md={3} lg={2}>
                             <input
                                 type="date"
-                                className="form-control form-control-sm"
+                                className="form-control"
+                                style={{ height: '38px' }}
                                 value={toDate}
+                                min={fromDate}
+                                max={getDefaultToDate()}
                                 onChange={(e) => setToDate(e.target.value)}
                             />
                         </Col>
-                        <Col xs={12} sm={4} md={2}>
-                            <label className="form-label small mb-1 opacity-0">Show</label>
+                        
+                        <Col xs={12} sm={4} md={2} lg={1}>
                             <Button
                                 variant="primary"
-                                size="sm"
                                 className="w-100"
+                                style={{ height: '38px' }}
                                 disabled={!fromDate || !toDate}
                             >
                                 Show

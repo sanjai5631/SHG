@@ -21,7 +21,9 @@ import SHGDashboard from './pages/shg/Dashboard';
 import SavingsManagement from './pages/shg/SavingsManagement';
 import LoanManagement from './pages/shg/LoanManagement';
 import CollectionPayment from './pages/shg/CollectionPayment';
-import MeetingSummary from './pages/shg/MeetingSummary';
+import EasyEntry from './pages/shg/EasyEntry';
+import AssignCollector from './pages/shg/AssignCollector';
+import LoanIssue from './pages/shg/LoanIssue';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -68,10 +70,27 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             }>
                 <Route index element={<SHGDashboard />} />
+
+                {/* Collection Dropdown Routes */}
                 <Route path="savings" element={<SavingsManagement />} />
-                <Route path="loans" element={<LoanManagement />} />
+                <Route path="collection-loan" element={<CollectionPayment />} />
+                <Route path="collection-memberwise" element={<EasyEntry />} />
+                <Route path="assign-collector" element={<AssignCollector />} />
+
+                {/* Loan Dropdown Routes */}
+                <Route path="repayment-schedule" element={<LoanManagement />} />
+                <Route path="loan-request" element={<LoanManagement />} />
+                <Route path="loan-issue" element={<LoanIssue />} />
+
+                {/* Report Dropdown Routes */}
+                <Route path="memberwise-report" element={<Reports />} />
+                <Route path="daywise-report" element={<Reports />} />
+                <Route path="monthly-report" element={<Reports />} />
+                <Route path="annual-report" element={<Reports />} />
+
+                {/* Other Routes */}
                 <Route path="collections" element={<CollectionPayment />} />
-                <Route path="meetings" element={<MeetingSummary />} />
+                <Route path="easy-entry" element={<EasyEntry />} />
             </Route>
 
             {/* Default redirect based on role */}
