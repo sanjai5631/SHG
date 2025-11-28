@@ -99,7 +99,8 @@ export default function Dashboard() {
     const dateRangeLoanCollection = filteredData.loans.reduce((sum, l) => sum + (l.amountPaid || 0), 0);
     const dateRangeLoanOutstanding = filteredData.loans.filter(l => l.status === 'approved').reduce((sum, l) => sum + (l.balance || l.amount - (l.amountPaid || 0)), 0);
 
-    const stats = [
+    // First Row - 5 cards
+    const statsRow1 = [
         {
             title: 'Total Savings',
             value: `₹${totalSavings.toLocaleString()}`,
@@ -123,10 +124,7 @@ export default function Dashboard() {
             ],
             icon: '👥',
             bg: '#fde8cf'
-        }
-    ];
-
-    const stats2 = [
+        },
         {
             title: 'Active Loans',
             value: approvedLoans.length,
@@ -138,16 +136,17 @@ export default function Dashboard() {
             value: todayTransactions.length,
             icon: '📊',
             bg: '#fde8cf'
-        },
+        }
+    ];
+
+    // Second Row - 5 cards
+    const statsRow2 = [
         {
             title: 'Day Collection',
             value: `₹${todayCollection.toLocaleString()}`,
             icon: '💰',
             bg: '#ffd4e5'
-        }
-    ];
-
-    const stats3 = [
+        },
         {
             title: 'Meetings Held',
             value: myMeetings.length,
@@ -177,17 +176,16 @@ export default function Dashboard() {
     return (
         <div className="fade-in">
             <div className="mb-3">
-                <h1 className="h3 fw-bold mb-0">SHG Dashboard</h1>
-                <p className="text-muted small">Welcome back, {currentUser?.name}! Here's an overview of your groups.</p>
+                <h1 className="h4 fw-bold mb-0">Dashboard</h1>
             </div>
-
             {/* Dashboard Cards */}
             <Card className="border-0 shadow-sm mb-4">
                 <Card.Body>
-                    {/* First Row */}
+                    {/* First Row - 5 Cards */}
                     <Row className="g-3 mb-3">
-                        {stats.map((item, index) => (
-                            <Col key={index} xs={12} sm={6} lg={4}>
+                        {statsRow1.map((item, index) => (
+                            <Col key={index} xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
+
                                 <Card
                                     className="border-0 h-100"
                                     style={{ background: item.bg }}
@@ -195,10 +193,10 @@ export default function Dashboard() {
                                     <Card.Body className="p-3">
                                         <div className="d-flex justify-content-between align-items-start">
                                             <div className="flex-grow-1">
-                                                <p className="text-muted small mb-1" style={{ fontSize: '0.813rem' }}>{item.title}</p>
-                                                <h4 className="fw-bold mb-0">{item.value}</h4>
+                                                <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>{item.title}</p>
+                                                <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>{item.value}</h5>
                                                 {item.subStats && (
-                                                    <div className="mt-2 d-flex justify-content-between" style={{ fontSize: '0.75rem' }}>
+                                                    <div className="mt-2 d-flex justify-content-between" style={{ fontSize: '0.65rem' }}>
                                                         {item.subStats.map((stat, idx) => (
                                                             <div key={idx} className="text-center">
                                                                 <div className="fw-semibold">{stat.label}</div>
@@ -210,9 +208,9 @@ export default function Dashboard() {
                                             </div>
                                             <div
                                                 className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
-                                                style={{ width: "40px", height: "40px" }}
+                                                style={{ width: "32px", height: "32px" }}
                                             >
-                                                <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
+                                                <span style={{ fontSize: '0.9rem' }}>{item.icon}</span>
                                             </div>
                                         </div>
                                     </Card.Body>
@@ -221,37 +219,11 @@ export default function Dashboard() {
                         ))}
                     </Row>
 
-                    {/* Second Row */}
-                    <Row className="g-3 mb-3">
-                        {stats2.map((item, index) => (
-                            <Col key={index} xs={12} sm={6} lg={4}>
-                                <Card
-                                    className="border-0 h-100"
-                                    style={{ background: item.bg }}
-                                >
-                                    <Card.Body className="p-3">
-                                        <div className="d-flex justify-content-between align-items-start">
-                                            <div className="flex-grow-1">
-                                                <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>{item.title}</p>
-                                                <h5 className="fw-bold mb-0">{item.value}</h5>
-                                            </div>
-                                            <div
-                                                className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
-                                                style={{ width: "36px", height: "36px" }}
-                                            >
-                                                <span style={{ fontSize: '1rem' }}>{item.icon}</span>
-                                            </div>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                        ))}
-                    </Row>
-
-                    {/* Third Row */}
+                    {/* Second Row - 5 Cards */}
                     <Row className="g-3">
-                        {stats3.map((item, index) => (
-                            <Col key={index} xs={6} sm={6} lg={3}>
+                        {statsRow2.map((item, index) => (
+                            <Col key={index} xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
+
                                 <Card
                                     className="border-0 h-100"
                                     style={{ background: item.bg }}
@@ -264,9 +236,9 @@ export default function Dashboard() {
                                             </div>
                                             <div
                                                 className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
-                                                style={{ width: "36px", height: "36px" }}
+                                                style={{ width: "32px", height: "32px" }}
                                             >
-                                                <span style={{ fontSize: '1rem' }}>{item.icon}</span>
+                                                <span style={{ fontSize: '0.9rem' }}>{item.icon}</span>
                                             </div>
                                         </div>
                                     </Card.Body>
@@ -278,36 +250,45 @@ export default function Dashboard() {
             </Card>
 
             {/* DATE RANGE Section */}
-            <Card className="border-0 shadow-sm mb-4">
+            <Card className="border-0 shadow-sm mb-0">
                 <Card.Body>
                     <h6 className="fw-semibold mb-3 text-uppercase" style={{ fontSize: '0.875rem' }}>DATE RANGE</h6>
 
                     {/* Date Range Inputs */}
                     <Row className="g-3 mb-3">
-                        <Col xs={12} sm={4} md={3}>
-                            <label className="form-label small mb-1">Date Range:</label>
+                        <Col xs={12} sm={4} md={3} lg={2}>
                             <input
                                 type="date"
-                                className="form-control form-control-sm"
+                                className="form-control"
+                                style={{ height: '38px' }}
                                 value={fromDate}
-                                onChange={(e) => setFromDate(e.target.value)}
+                                max={getDefaultToDate()}
+                                onChange={(e) => {
+                                    setFromDate(e.target.value);
+                                    // If toDate is less than new fromDate, update toDate
+                                    if (toDate && e.target.value > toDate) {
+                                        setToDate(e.target.value);
+                                    }
+                                }}
                             />
                         </Col>
-                        <Col xs={12} sm={4} md={3}>
-                            <label className="form-label small mb-1 opacity-0">to</label>
+                        <Col xs={12} sm={4} md={3} lg={2}>
                             <input
                                 type="date"
-                                className="form-control form-control-sm"
+                                className="form-control"
+                                style={{ height: '38px' }}
                                 value={toDate}
+                                min={fromDate}
+                                max={getDefaultToDate()}
                                 onChange={(e) => setToDate(e.target.value)}
                             />
                         </Col>
-                        <Col xs={12} sm={4} md={2}>
-                            <label className="form-label small mb-1 opacity-0">Show</label>
+                        
+                        <Col xs={12} sm={4} md={2} lg={1}>
                             <Button
                                 variant="primary"
-                                size="sm"
                                 className="w-100"
+                                style={{ height: '38px' }}
                                 disabled={!fromDate || !toDate}
                             >
                                 Show
@@ -315,46 +296,46 @@ export default function Dashboard() {
                         </Col>
                     </Row>
 
-                    {/* Date Range Stats - First Row */}
-                    <Row className="g-3 mb-3">
-                        <Col xs={12} sm={6} lg={4}>
+                    {/* Date Range Stats - First Row (5 cards) */}
+                    < Row className="g-3 mb-3" >
+                        <Col xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
                             <Card className="border-0 h-100" style={{ background: "#d4f5d4" }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start">
                                         <div>
-                                            <p className="text-muted small mb-1" style={{ fontSize: '0.813rem' }}>Total Savings</p>
-                                            <h4 className="fw-bold mb-0">₹{dateRangeSavings.toLocaleString()}</h4>
+                                            <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Total Savings</p>
+                                            <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>₹{dateRangeSavings.toLocaleString()}</h5>
                                         </div>
-                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "40px", height: "40px" }}>
-                                            <span style={{ fontSize: '1.25rem' }}>🏆</span>
+                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
+                                            <span style={{ fontSize: '0.9rem' }}>🏆</span>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col xs={12} sm={6} lg={4}>
+                        <Col xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
                             <Card className="border-0 h-100" style={{ background: "#fdeccb" }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start">
                                         <div>
-                                            <p className="text-muted small mb-1" style={{ fontSize: '0.813rem' }}>My Groups</p>
-                                            <h4 className="fw-bold mb-0">{myGroups.length}</h4>
+                                            <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>My Groups</p>
+                                            <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>{myGroups.length}</h5>
                                         </div>
-                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "40px", height: "40px" }}>
-                                            <span style={{ fontSize: '1.25rem' }}>🏘️</span>
+                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
+                                            <span style={{ fontSize: '0.9rem' }}>🏘️</span>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col xs={12} sm={6} lg={4}>
+                        <Col xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
                             <Card className="border-0 h-100" style={{ background: "#fde8cf" }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start">
                                         <div className="flex-grow-1">
-                                            <p className="text-muted small mb-1" style={{ fontSize: '0.813rem' }}>Total Members</p>
-                                            <h4 className="fw-bold mb-0">{myMembers.length}</h4>
-                                            <div className="mt-2 d-flex justify-content-between" style={{ fontSize: '0.75rem' }}>
+                                            <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Total Members</p>
+                                            <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>{myMembers.length}</h5>
+                                            <div className="mt-2 d-flex justify-content-between" style={{ fontSize: '0.65rem' }}>
                                                 <div className="text-center">
                                                     <div className="fw-semibold">Active</div>
                                                     <div className="fw-bold">{activeMembers}</div>
@@ -373,67 +354,63 @@ export default function Dashboard() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: "40px", height: "40px" }}>
-                                            <span style={{ fontSize: '1.25rem' }}>👥</span>
+                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: "32px", height: "32px" }}>
+                                            <span style={{ fontSize: '0.9rem' }}>👥</span>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                    </Row>
-
-                    {/* Date Range Stats - Second Row */}
-                    <Row className="g-3 mb-3">
-                        <Col xs={12} sm={6} lg={4}>
+                        <Col xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
                             <Card className="border-0 h-100" style={{ background: "#e8d4f5" }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start">
                                         <div>
                                             <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Active Loans</p>
-                                            <h5 className="fw-bold mb-0">{filteredData.loans.filter(l => l.status === 'approved').length}</h5>
+                                            <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>{filteredData.loans.filter(l => l.status === 'approved').length}</h5>
                                         </div>
-                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "36px", height: "36px" }}>
-                                            <span style={{ fontSize: '1rem' }}>💳</span>
+                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
+                                            <span style={{ fontSize: '0.9rem' }}>💳</span>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col xs={12} sm={6} lg={4}>
+                        <Col xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
                             <Card className="border-0 h-100" style={{ background: "#fde8cf" }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start">
                                         <div>
                                             <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Total Transactions</p>
-                                            <h5 className="fw-bold mb-0">{dateRangeTotalTransactions}</h5>
+                                            <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>{dateRangeTotalTransactions}</h5>
                                         </div>
-                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "36px", height: "36px" }}>
-                                            <span style={{ fontSize: '1rem' }}>📊</span>
+                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
+                                            <span style={{ fontSize: '0.9rem' }}>📊</span>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col xs={12} sm={6} lg={4}>
+                    </Row >
+
+                    {/* Date Range Stats - Second Row (5 cards) */}
+                    < Row className="g-3" >
+                        <Col xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
                             <Card className="border-0 h-100" style={{ background: "#ffd4e5" }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start">
                                         <div>
                                             <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Savings Collection</p>
-                                            <h5 className="fw-bold mb-0">₹{dateRangeSavings.toLocaleString()}</h5>
+                                            <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>₹{dateRangeSavings.toLocaleString()}</h5>
                                         </div>
-                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "36px", height: "36px" }}>
-                                            <span style={{ fontSize: '1rem' }}>💰</span>
+                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
+                                            <span style={{ fontSize: '0.9rem' }}>💰</span>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                    </Row>
-
-                    {/* Date Range Stats - Third Row */}
-                    <Row className="g-3">
-                        <Col xs={6} sm={6} lg={3}>
+                        <Col xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
                             <Card className="border-0 h-100" style={{ background: "#fde8cf" }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start">
@@ -441,14 +418,14 @@ export default function Dashboard() {
                                             <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Meetings Held</p>
                                             <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>{myMeetings.length}</h5>
                                         </div>
-                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "36px", height: "36px" }}>
-                                            <span style={{ fontSize: '1rem' }}>📝</span>
+                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
+                                            <span style={{ fontSize: '0.9rem' }}>📝</span>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col xs={6} sm={6} lg={3}>
+                        <Col xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
                             <Card className="border-0 h-100" style={{ background: "#d4e8f5" }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start">
@@ -456,14 +433,14 @@ export default function Dashboard() {
                                             <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Loan Disbursement</p>
                                             <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>₹{dateRangeLoanDisbursement.toLocaleString()}</h5>
                                         </div>
-                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "36px", height: "36px" }}>
-                                            <span style={{ fontSize: '1rem' }}>💳</span>
+                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
+                                            <span style={{ fontSize: '0.9rem' }}>💳</span>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col xs={6} sm={6} lg={3}>
+                        <Col xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
                             <Card className="border-0 h-100" style={{ background: "#e8d4f5" }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start">
@@ -471,14 +448,14 @@ export default function Dashboard() {
                                             <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Loan Collection</p>
                                             <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>₹{dateRangeLoanCollection.toLocaleString()}</h5>
                                         </div>
-                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "36px", height: "36px" }}>
-                                            <span style={{ fontSize: '1rem' }}>💵</span>
+                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
+                                            <span style={{ fontSize: '0.9rem' }}>💵</span>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                        <Col xs={6} sm={6} lg={3}>
+                        <Col xs={12} sm={6} md={4} style={{ flex: '1 1 0' }}>
                             <Card className="border-0 h-100" style={{ background: "#ffd4e5" }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start">
@@ -486,17 +463,17 @@ export default function Dashboard() {
                                             <p className="text-muted small mb-1" style={{ fontSize: '0.75rem' }}>Loan Outstanding</p>
                                             <h5 className="fw-bold mb-0" style={{ fontSize: '1rem' }}>₹{dateRangeLoanOutstanding.toLocaleString()}</h5>
                                         </div>
-                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "36px", height: "36px" }}>
-                                            <span style={{ fontSize: '1rem' }}>📉</span>
+                                        <div className="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style={{ width: "32px", height: "32px" }}>
+                                            <span style={{ fontSize: '0.9rem' }}>📉</span>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
                         </Col>
-                    </Row>
-                </Card.Body>
-            </Card>
+                    </Row >
+                </Card.Body >
+            </Card >
 
-        </div>
+        </div >
     );
 }

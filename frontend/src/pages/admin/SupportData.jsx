@@ -80,8 +80,7 @@ export default function SupportData() {
         <div className="fade-in">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h1 className="h2 fw-bold mb-1">Support Data Management</h1>
-                    <p className="text-muted mb-0">Configure master data used throughout the system</p>
+                    <h1 className="h4 fw-bold mb-1">Support Data Management</h1>
                 </div>
                 <Button variant="primary" onClick={() => handleOpenModal()}>
                     ➕ Add New
@@ -89,7 +88,7 @@ export default function SupportData() {
             </div>
 
             <Card className="border-0 shadow-sm">
-                <Card.Header className="bg-white border-bottom-0 pt-4 px-4">
+                <Card.Header className="bg-white border-bottom-0 pt-2 px-2">
                     <Tabs
                         activeKey={activeTab}
                         onSelect={(k) => setActiveTab(k)}

@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Card, Tabs, Tab, Form, Button, Table, Badge, Row, Col, Alert, InputGroup } from 'react-bootstrap';
 import { useApp } from '../../context/AppContext';
+import { useLocation } from 'react-router-dom';
 
 export default function CollectionPayment() {
     const { data, currentUser, addItem, getMemberSavingsBalance, getLoanOutstanding, getMemberLoans } = useApp();
-    const [activeTab, setActiveTab] = useState('savings');
+    const location = useLocation();
+
+    // Determine initial tab based on path
+    const getInitialTab = () => {
+        if (location.pathname.includes('collection-loan')) return 'loan';
+        if (location.pathname.includes('collection-memberwise')) return 'summary';
+        return 'savings';
+    };
+
+    const [activeTab, setActiveTab] = useState(getInitialTab());
     const [selectedGroup, setSelectedGroup] = useState('');
 
     // Date Selection State

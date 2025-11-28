@@ -25,24 +25,13 @@ export default function UserManagement() {
         groupId: '',
         gender: '',
         dateOfBirth: '',
-        address: '',
-        occupation: '',
-        monthlyIncome: '',
-        aadharNumber: '',
-        panNumber: '',
-        bankAccountNumber: '',
-        bankName: '',
-        ifscCode: '',
-        nomineeName: '',
-        nomineeRelation: '',
-        nomineePhone: '',
-        joinDate: new Date().toISOString().split('T')[0],
+        joinYear: new Date().getFullYear(),
         memberType: 'primary'
     });
 
     const roles = [
         { value: 'admin', label: 'Admin', color: 'danger' },
-        { value: 'collector', label: 'Collector', color: 'info' },
+        { value: 'shg_team', label: 'SHG Team', color: 'info' },
         { value: 'member', label: 'SHG Member', color: 'success' }
     ];
 
@@ -71,17 +60,9 @@ export default function UserManagement() {
                     email: user.email || '',
                     dateOfBirth: user.dateOfBirth || '',
                     gender: user.gender || '',
-                    address: user.address || '',
-                    monthlyIncome: user.monthlyIncome || '',
-                    aadharNumber: user.aadharNumber || '',
-                    panNumber: user.panNumber || '',
-                    bankAccountNumber: user.bankAccountNumber || '',
-                    bankName: user.bankName || '',
-                    ifscCode: user.ifscCode || '',
-                    nomineeName: user.nomineeName || '',
-                    nomineeRelation: user.nomineeRelation || '',
-                    nomineePhone: user.nomineePhone || '',
                     memberType: user.memberType || 'primary',
+                    roleType: user.roleType || 'member',
+                    joinYear: user.joinYear || new Date().getFullYear(),
                     role: 'member'
                 });
             } else {
@@ -105,18 +86,7 @@ export default function UserManagement() {
                     email: '',
                     dateOfBirth: '',
                     gender: '',
-                    address: '',
-                    occupation: '',
-                    monthlyIncome: '',
-                    aadharNumber: '',
-                    panNumber: '',
-                    bankAccountNumber: '',
-                    bankName: '',
-                    ifscCode: '',
-                    nomineeName: '',
-                    nomineeRelation: '',
-                    nomineePhone: '',
-                    joinDate: new Date().toISOString().split('T')[0],
+                    joinYear: new Date().getFullYear(),
                     memberType: 'primary',
                     role: 'member',
                     status: 'active'
@@ -201,7 +171,7 @@ export default function UserManagement() {
         const dataToSave = {
             ...formData,
             groupId: formData.groupId ? parseInt(formData.groupId) : undefined,
-            monthlyIncome: formData.monthlyIncome ? parseFloat(formData.monthlyIncome) : 0
+            joinYear: parseInt(formData.joinYear)
         };
 
         if (userType === 'member') {
@@ -338,8 +308,7 @@ export default function UserManagement() {
         <div className="fade-in">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h1 className="h3 fw-bold mb-0">User Management</h1>
-                    <p className="text-muted small">Manage system users and SHG members</p>
+                    <h1 className="h4 fw-bold mb-0">User Management</h1>
                 </div>
                 <Button
                     variant="primary"
@@ -356,10 +325,11 @@ export default function UserManagement() {
                 </Alert>
             )}
 
-            {/* Filters */}
-            <Card className="mb-4 border-0 shadow-sm">
-                <Card.Body>
-                    <Row className="g-3">
+            {/* Users Table */}
+            <Card className="border-0 shadow-sm">
+                <Card.Body className="p-4">
+                    {/* Filters */}
+                    <Row className="g-3 mb-4">
                         <Col md={4}>
                             <InputGroup>
                                 <InputGroup.Text className="bg-white">🔍</InputGroup.Text>
@@ -398,24 +368,18 @@ export default function UserManagement() {
                             </Form.Select>
                         </Col>
                     </Row>
-                </Card.Body>
-            </Card>
-
-            {/* Users Table */}
-            <Card className="border-0 shadow-sm">
-                <Card.Body className="p-0">
                     <div className="table-responsive">
                         <Table className="mb-0" hover>
                             <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Code/Email</th>
-                                    <th>Phone</th>
-                                    <th>Type</th>
-                                    <th>Group/Assigned</th>
-                                    <th>Savings</th>
-                                    <th>Status</th>
-                                    <th className="text-end">Actions</th>
+                                <tr className="text-muted text-uppercase small" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                                    <th className="fw-semibold border-0 bg-light py-3 ps-4">Name</th>
+                                    <th className="fw-semibold border-0 bg-light py-3">Code/Email</th>
+                                    <th className="fw-semibold border-0 bg-light py-3">Phone</th>
+                                    <th className="fw-semibold border-0 bg-light py-3">Type</th>
+                                    <th className="fw-semibold border-0 bg-light py-3">Group/Assigned</th>
+                                    <th className="fw-semibold border-0 bg-light py-3">Savings</th>
+                                    <th className="fw-semibold border-0 bg-light py-3">Status</th>
+                                    <th className="fw-semibold border-0 bg-light py-3 text-end pe-4">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -424,8 +388,8 @@ export default function UserManagement() {
                                         const roleInfo = getRoleInfo(user.role);
                                         const isMember = user.role === 'member';
                                         return (
-                                            <tr key={user.id}>
-                                                <td className="fw-medium">{user.name}</td>
+                                            <tr key={user.id} className="align-middle">
+                                                <td className="fw-medium ps-4">{user.name}</td>
                                                 <td className="text-muted small">
                                                     {isMember ? (
                                                         <Badge bg="light" text="dark" className="fw-normal border">
@@ -478,30 +442,39 @@ export default function UserManagement() {
                                                     </Badge>
                                                 </td>
                                                 <td>
-                                                    <div className="d-flex gap-2 justify-content-end">
+                                                    <div className="d-flex gap-2 justify-content-end align-items-center pe-3">
                                                         <Button
-                                                            variant="outline-primary"
+                                                            variant="light"
                                                             size="sm"
+                                                            className="text-primary border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
+                                                            style={{ width: '32px', height: '32px', backgroundColor: '#f0f4ff' }}
                                                             onClick={() => handleOpenModal(user)}
                                                             title="Edit"
                                                         >
-                                                            ✏️
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+                                                            </svg>
                                                         </Button>
-                                                        <Button
-                                                            variant={user.status === 'active' ? 'outline-warning' : 'outline-success'}
-                                                            size="sm"
-                                                            onClick={() => handleToggleStatus(user)}
+                                                        <Form.Check
+                                                            type="switch"
+                                                            id={`custom-switch-${user.id}`}
+                                                            checked={user.status === 'active'}
+                                                            onChange={() => handleToggleStatus(user)}
+                                                            className="d-inline-block pt-1"
                                                             title={user.status === 'active' ? 'Deactivate' : 'Activate'}
-                                                        >
-                                                            {user.status === 'active' ? '🔒' : '🔓'}
-                                                        </Button>
+                                                        />
                                                         <Button
-                                                            variant="outline-danger"
+                                                            variant="light"
                                                             size="sm"
+                                                            className="text-danger border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
+                                                            style={{ width: '32px', height: '32px', backgroundColor: '#fff0f0' }}
                                                             onClick={() => handleDelete(user.id)}
                                                             title="Delete"
                                                         >
-                                                            🗑️
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                                                <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                                                            </svg>
                                                         </Button>
                                                     </div>
                                                 </td>
@@ -527,7 +500,7 @@ export default function UserManagement() {
                     <Modal.Title>
                         {editingUser
                             ? (userType === 'member' ? 'Edit Member' : 'Edit System User')
-                            : (userType === 'member' ? 'Register New Member' : 'Create New System User')
+                            : (userType === 'member' ? 'Register Member' : 'Create New System User')
                         }
                     </Modal.Title>
                 </Modal.Header>
@@ -570,20 +543,6 @@ export default function UserManagement() {
                                     </Col>
                                 </Row>
 
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Email Address *</Form.Label>
-                                    <Form.Control
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        required
-                                        placeholder="Enter email address"
-                                    />
-                                    <Form.Text className="text-muted">
-                                        Used for login and notifications
-                                    </Form.Text>
-                                </Form.Group>
-
                                 <Row>
                                     <Col md={6}>
                                         <Form.Group className="mb-3">
@@ -602,7 +561,7 @@ export default function UserManagement() {
                                             <Form.Text className="text-muted">
                                                 {formData.role === 'admin' && 'Full system access'}
                                                 {formData.role === 'shg_member' && 'Manage assigned SHG groups'}
-                                                {formData.role === 'collector' && 'Collect savings and loan repayments'}
+                                                {formData.role === 'shg_team' && 'Collect savings and loan repayments'}
                                             </Form.Text>
                                         </Form.Group>
                                     </Col>
@@ -685,22 +644,6 @@ export default function UserManagement() {
                                     </Col>
                                     <Col md={4}>
                                         <Form.Group className="mb-3">
-                                            <Form.Label>Member Code *</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                value={formData.memberCode}
-                                                onChange={(e) => setFormData({ ...formData, memberCode: e.target.value.toUpperCase() })}
-                                                placeholder="Auto-generated"
-                                                required
-                                                readOnly={!editingUser}
-                                            />
-                                            <Form.Text className="text-muted">
-                                                {!editingUser && 'Auto-generated based on group'}
-                                            </Form.Text>
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={4}>
-                                        <Form.Group className="mb-3">
                                             <Form.Label>Member Type *</Form.Label>
                                             <Form.Select
                                                 value={formData.memberType}
@@ -713,10 +656,24 @@ export default function UserManagement() {
                                             </Form.Select>
                                         </Form.Group>
                                     </Col>
+                                    <Col md={4}>
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>Role Type *</Form.Label>
+                                            <Form.Select
+                                                value={formData.roleType}
+                                                onChange={(e) => setFormData({ ...formData, roleType: e.target.value })}
+                                                required
+                                            >
+                                                <option value="admin">Admin</option>
+                                                <option value="shgteam">SHG Team</option>
+                                                <option value="shgmember">SHG Member</option>
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
                                 </Row>
 
                                 <Row>
-                                    <Col md={6}>
+                                    <Col md={12}>
                                         <Form.Group className="mb-3">
                                             <Form.Label>Phone Number *</Form.Label>
                                             <Form.Control
@@ -729,186 +686,20 @@ export default function UserManagement() {
                                             />
                                         </Form.Group>
                                     </Col>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Email</Form.Label>
-                                            <Form.Control
-                                                type="email"
-                                                value={formData.email}
-                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                placeholder="Optional"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Address</Form.Label>
-                                    <Form.Control
-                                        as="textarea"
-                                        rows={2}
-                                        value={formData.address}
-                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                        placeholder="Enter complete address"
-                                    />
-                                </Form.Group>
-
-                                <h6 className="fw-semibold mb-3 text-primary mt-4">Occupation & Income</h6>
-                                <Row>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Occupation *</Form.Label>
-                                            <Form.Select
-                                                value={formData.occupation}
-                                                onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                                                required
-                                            >
-                                                <option value="">Select Occupation</option>
-                                                {data.occupations.map(occ => (
-                                                    <option key={occ.id} value={occ.name}>{occ.name}</option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Monthly Income (₹)</Form.Label>
-                                            <Form.Control
-                                                type="number"
-                                                value={formData.monthlyIncome}
-                                                onChange={(e) => setFormData({ ...formData, monthlyIncome: e.target.value })}
-                                                placeholder="Approximate monthly income"
-                                                min="0"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-
-                                <h6 className="fw-semibold mb-3 text-primary mt-4">Identity Documents</h6>
-                                <Row>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Aadhar Number</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                value={formData.aadharNumber}
-                                                onChange={(e) => setFormData({ ...formData, aadharNumber: e.target.value })}
-                                                placeholder="12-digit Aadhar number"
-                                                pattern="[0-9]{12}"
-                                                maxLength="12"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>PAN Number</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                value={formData.panNumber}
-                                                onChange={(e) => setFormData({ ...formData, panNumber: e.target.value.toUpperCase() })}
-                                                placeholder="10-character PAN"
-                                                pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                                                maxLength="10"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-
-                                <h6 className="fw-semibold mb-3 text-primary mt-4">Bank Details</h6>
-                                <Row>
-                                    <Col md={4}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Bank Name</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                value={formData.bankName}
-                                                onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                                                placeholder="e.g., SBI, HDFC"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={4}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Account Number</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                value={formData.bankAccountNumber}
-                                                onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
-                                                placeholder="Bank account number"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={4}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>IFSC Code</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                value={formData.ifscCode}
-                                                onChange={(e) => setFormData({ ...formData, ifscCode: e.target.value.toUpperCase() })}
-                                                placeholder="11-character IFSC"
-                                                pattern="[A-Z]{4}0[A-Z0-9]{6}"
-                                                maxLength="11"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-
-                                <h6 className="fw-semibold mb-3 text-primary mt-4">Nominee Details</h6>
-                                <Row>
-                                    <Col md={4}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Nominee Name</Form.Label>
-                                            <Form.Control
-                                                type="text"
-                                                value={formData.nomineeName}
-                                                onChange={(e) => setFormData({ ...formData, nomineeName: e.target.value })}
-                                                placeholder="Full name of nominee"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={4}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Relation</Form.Label>
-                                            <Form.Select
-                                                value={formData.nomineeRelation}
-                                                onChange={(e) => setFormData({ ...formData, nomineeRelation: e.target.value })}
-                                            >
-                                                <option value="">Select Relation</option>
-                                                <option value="spouse">Spouse</option>
-                                                <option value="son">Son</option>
-                                                <option value="daughter">Daughter</option>
-                                                <option value="father">Father</option>
-                                                <option value="mother">Mother</option>
-                                                <option value="brother">Brother</option>
-                                                <option value="sister">Sister</option>
-                                                <option value="other">Other</option>
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={4}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Nominee Phone</Form.Label>
-                                            <Form.Control
-                                                type="tel"
-                                                value={formData.nomineePhone}
-                                                onChange={(e) => setFormData({ ...formData, nomineePhone: e.target.value })}
-                                                placeholder="10-digit number"
-                                                pattern="[0-9]{10}"
-                                            />
-                                        </Form.Group>
-                                    </Col>
                                 </Row>
 
                                 <h6 className="fw-semibold mb-3 text-primary mt-4">Membership Details</h6>
                                 <Row>
                                     <Col md={6}>
                                         <Form.Group className="mb-3">
-                                            <Form.Label>Join Date *</Form.Label>
+                                            <Form.Label>Join Year *</Form.Label>
                                             <Form.Control
-                                                type="date"
-                                                value={formData.joinDate}
-                                                onChange={(e) => setFormData({ ...formData, joinDate: e.target.value })}
+                                                type="number"
+                                                value={formData.joinYear}
+                                                onChange={(e) => setFormData({ ...formData, joinYear: e.target.value })}
                                                 required
+                                                min="1900"
+                                                max="2099"
                                             />
                                         </Form.Group>
                                     </Col>
@@ -935,10 +726,10 @@ export default function UserManagement() {
                         <Button variant="secondary" onClick={() => setShowModal(false)}>
                             Cancel
                         </Button>
-                        <Button variant="primary" type="submit">
+                        <Button variant="success" type="submit">
                             {editingUser
-                                ? (userType === 'member' ? 'Update Member' : 'Update User')
-                                : (userType === 'member' ? 'Register Member' : 'Create User')
+                                ? (userType === 'member' ? 'Update' : 'Update User')
+                                : (userType === 'member' ? 'Save' : 'Create User')
                             }
                         </Button>
                     </Modal.Footer>
