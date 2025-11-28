@@ -8,10 +8,11 @@ import {
     Alert,
     Row,
     Col,
+    Pagination,
 } from "react-bootstrap";
 import {
-      FaSave
-}from "react-icons/fa";
+    FaSave
+} from "react-icons/fa";
 import { useApp } from "../../context/AppContext";
 
 export default function LoanManagement() {
@@ -26,6 +27,8 @@ export default function LoanManagement() {
     const [showModal, setShowModal] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState("");
     const [repaymentGroup, setRepaymentGroup] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     const [entries, setEntries] = useState({});
     const [formData, setFormData] = useState({
         memberId: "",
@@ -46,9 +49,9 @@ export default function LoanManagement() {
 
     const groupMembers = selectedGroup
         ? data.members.filter(
-              (m) =>
-                  m.groupId === parseInt(selectedGroup) && m.status === "active"
-          )
+            (m) =>
+                m.groupId === parseInt(selectedGroup) && m.status === "active"
+        )
         : [];
 
     const loanProducts = data.loanProducts.filter((p) => p.status === "active");
@@ -103,16 +106,35 @@ export default function LoanManagement() {
         return hasLoan && matchesGroup;
     });
 
-    // ... (keep existing helper functions)
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const paginatedMembers = membersWithLoans.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(membersWithLoans.length / itemsPerPage);
 
+    const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+
+    // ... (keep existing helper functions)
+    // Get total repaid amount
     const getAmountRepaid = (memberId) => {
         const repayments =
             data.transactions?.filter(
                 (t) => t.memberId === memberId && t.type === "repayment"
             ) || [];
+
         return repayments.reduce((sum, t) => sum + (t.amount || 0), 0);
     };
 
+    // Get active approved loan
+    const getActiveLoan = (memberId) => {
+        return (
+            data.loans.find(
+                (loan) => loan.memberId === memberId && loan.status === "approved"
+            ) || null
+        );
+    };
+
+    // Get outstanding loan balance
     const getLoanBalance = (memberId) => {
         const loan = getActiveLoan(memberId);
         if (!loan) return 0;
@@ -205,22 +227,8 @@ export default function LoanManagement() {
 
     return (
         <div className="fade-in">
-            {/* Header */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 className="h2 fw-bold">Loan Management</h1>
-                    <p className="text-muted">
-                        Create loan requests and collect repayments
-                    </p>
-                </div>
-
-                <Button variant="warning" onClick={() => setShowModal(true)}>
-                    ➕ Add Loan Request
-                </Button>
-            </div>
-
             {/* Table */}
-            <Card className="border-0 shadow-sm mb-4">
+            <Card className="border-1 shadow-sm" style={{ height: '10px' }}>
                 <Card.Header className="bg-white">
                     <Row className="align-items-center">
                         <Col md={8}>
@@ -231,7 +239,10 @@ export default function LoanManagement() {
                                 <Form.Select
                                     size="sm"
                                     value={repaymentGroup}
-                                    onChange={(e) => setRepaymentGroup(e.target.value)}
+                                    onChange={(e) => {
+                                        setRepaymentGroup(e.target.value);
+                                        setCurrentPage(1); // Reset to page 1 on filter change
+                                    }}
                                     style={{ fontSize: '0.875rem' }}
                                 >
                                     <option value="">All Groups</option>
@@ -243,28 +254,28 @@ export default function LoanManagement() {
                         </Col>
                     </Row>
                 </Card.Header>
-             <Card.Body className="p-0">
+                <Card.Body className="p-0">
                     <div style={{ maxHeight: '65vh', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
-                        <Table className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0 }}>
-                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f5f5f5', zIndex: 10 }}>
+                        <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
+                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#d9d9d9ff', zIndex: 10 }}>
                                 <tr>
-                                    <th style={{ width: '7%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>EMP<br />CODE</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>NAME</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>OUTSTANDING</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PRINCIPAL</th>
-                                    <th style={{ width: '7%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>1% INT.</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL<br />DEMAND</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>COLLECTION</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>INT.</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TYPE</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PERSON</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL</th>
-                                    <th style={{ width: '6%', fontSize: '0.65rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #e0e0e0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>ACTION</th>
+                                    <th style={{ width: '7%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>EMP<br />CODE</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>NAME</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>OUTSTANDING</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PRINCIPAL</th>
+                                    <th style={{ width: '7%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>1% INT.</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL<br />DEMAND</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>COLLECTION</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>INT.</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TYPE</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PERSON</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL</th>
+                                    <th style={{ width: '6%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>ACTION</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                {membersWithLoans.map((m) => {
+                                {paginatedMembers.map((m, index) => {
                                     const loan = getActiveLoan(m.id);
                                     const repaid = getAmountRepaid(m.id);
                                     const balance = getLoanBalance(m.id);
@@ -276,16 +287,23 @@ export default function LoanManagement() {
                                     const principal = Number(entry.collectionAmount || 0);
                                     const intr = entry.interestAmount !== undefined ? Number(entry.interestAmount) : 0;
                                     const total = principal + intr;
+                                    const rowBg = index % 2 === 0 ? "#d2e6fcff" : "#f0f6fcff";
 
                                     return (
-                                        <tr key={m.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                                            <td style={{ fontSize: '0.875rem', color: '#6c757d', padding: '16px 8px' }}>{m.employeeCode || '-'}</td>
-                                            <td style={{ fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px' }}>{m.name}</td>
-                                            <td style={{ fontSize: '0.875rem', color: '#dc3545', fontWeight: '600', padding: '16px 8px' }}>
+                                        <tr
+                                            key={m.id}
+                                            style={{
+                                                backgroundColor: rowBg,
+                                                borderBottom: "1px solid #dee2e6"
+                                            }}
+                                        >
+                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#6c757d', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{m.employeeCode || '-'}</td>
+                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{m.name}</td>
+                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#dc3545', fontWeight: '600', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
                                                 ₹{balance.toLocaleString()}
                                             </td>
-                                            <td style={{ fontSize: '0.875rem', padding: '16px 8px' }}>₹{demandP.toLocaleString()}</td>
-                                           <td style={{ padding: '12px 8px' }}>
+                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{demandP.toLocaleString()}</td>
+                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', borderRight: '1px solid #dee2e6' }}>
                                                 <Form.Control
                                                     type="number"
                                                     size="sm"
@@ -300,11 +318,11 @@ export default function LoanManagement() {
                                                     style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
                                                 />
                                             </td>
-                                            <td style={{ fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px' }}>
+                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
                                                 ₹{(demandP + demandI).toLocaleString()}
                                             </td>
 
-                                            <td style={{ padding: '12px 8px' }}>
+                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', borderRight: '1px solid #dee2e6' }}>
                                                 <Form.Control
                                                     type="number"
                                                     size="sm"
@@ -320,7 +338,7 @@ export default function LoanManagement() {
                                                 />
                                             </td>
 
-                                            <td style={{ padding: '12px 8px' }}>
+                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', borderRight: '1px solid #dee2e6' }}>
                                                 <Form.Control
                                                     type="number"
                                                     size="sm"
@@ -336,7 +354,7 @@ export default function LoanManagement() {
                                                 />
                                             </td>
 
-                                            <td style={{ padding: '12px 8px' }}>
+                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', borderRight: '1px solid #dee2e6' }}>
                                                 <Form.Select
                                                     size="sm"
                                                     value={entry.paymentType || "cash"}
@@ -354,7 +372,7 @@ export default function LoanManagement() {
                                                 </Form.Select>
                                             </td>
 
-                                            <td style={{ padding: '12px 8px' }}>
+                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', borderRight: '1px solid #dee2e6' }}>
                                                 {entry.paymentType === "online" ? (
                                                     <Form.Select
                                                         size="sm"
@@ -385,11 +403,11 @@ export default function LoanManagement() {
                                                 )}
                                             </td>
 
-                                            <td style={{ fontSize: '0.875rem', color: '#28a745', fontWeight: '600', padding: '16px 8px' }}>
+                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#28a745', fontWeight: '600', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
                                                 {principal > 0 ? `₹${total.toLocaleString()}` : "-"}
                                             </td>
 
-                                            <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', textAlign: 'center' }}>
                                                 <Button
                                                     size="sm"
                                                     variant="success"
@@ -397,7 +415,7 @@ export default function LoanManagement() {
                                                     onClick={() => handleSave(m.id)}
                                                     style={{ fontSize: '0.75rem', padding: '4px 12px', borderRadius: '4px' }}
                                                 >
-                                                  <FaSave/>
+                                                    <FaSave />
                                                 </Button>
                                             </td>
                                         </tr>
@@ -406,22 +424,42 @@ export default function LoanManagement() {
                             </tbody>
                             <tfoot style={{ position: 'sticky', bottom: 0, backgroundColor: '#f8f9fa', zIndex: 10, borderTop: '2px solid #dee2e6' }}>
                                 <tr>
-                                    <td colSpan={3} style={{ fontSize: '0.875rem', fontWeight: '700', textAlign: 'right', padding: '16px 8px' }}>Grand Total:</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px' }}>₹{totalDemandPrincipal.toLocaleString()}</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px' }}>₹{totalDemandInterest.toLocaleString()}</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px' }}>₹{(totalDemandPrincipal + totalDemandInterest).toLocaleString()}</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0d6efd', padding: '16px 8px' }}>₹{totalCollectionPrincipal.toLocaleString()}</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px' }}>₹{totalCollectionInterest.toLocaleString()}</td>
-                                    <td style={{ fontSize: '0.875rem', padding: '16px 8px' }}>-</td>
-                                    <td style={{ fontSize: '0.875rem', padding: '16px 8px' }}>-</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', color: '#28a745', padding: '16px 8px' }}>₹{(totalCollectionPrincipal + totalCollectionInterest).toLocaleString()}</td>
+                                    <td colSpan={3} style={{ fontSize: '0.875rem', fontWeight: '700', textAlign: 'right', color: '#049bffff', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>Grand Total:</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalDemandPrincipal.toLocaleString()}</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalDemandInterest.toLocaleString()}</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{(totalDemandPrincipal + totalDemandInterest).toLocaleString()}</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0d6efd', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalCollectionPrincipal.toLocaleString()}</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalCollectionInterest.toLocaleString()}</td>
+                                    <td style={{ fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>-</td>
+                                    <td style={{ fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>-</td>
+                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', color: '#28a745', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{(totalCollectionPrincipal + totalCollectionInterest).toLocaleString()}</td>
                                     <td style={{ padding: '16px 8px' }}></td>
                                 </tr>
                             </tfoot>
                         </Table>
                     </div>
                 </Card.Body>
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="d-flex justify-content-center py-3 border-top">
+                        <Pagination>
+                            <Pagination.Prev
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                Previous
+                            </Pagination.Prev>
+                            <Pagination.Next
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                            >
+                                Next
+                            </Pagination.Next>
+                        </Pagination>
+                    </div>
+                )}
             </Card>
+
             {/* Loan Request Modal */}
             <Modal
                 show={showModal}
@@ -436,21 +474,6 @@ export default function LoanManagement() {
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
                         <Row>
- <Col md={4} className="text-end">
-                            <Form.Group className="mb-0" style={{ display: 'inline-block', width: 'auto', minWidth: '180px' }}>
-                                <Form.Select
-                                    size="sm"
-                                    value={repaymentGroup}
-                                    onChange={(e) => setRepaymentGroup(e.target.value)}
-                                    style={{ fontSize: '0.875rem' }}
-                                >
-                                    <option value="">All Groups</option>
-                                    {myGroups.map(g => (
-                                        <option key={g.id} value={g.id}>{g.name}</option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
                             <Col md={6}>
                                 {selectedGroup && (
                                     <Form.Group>
