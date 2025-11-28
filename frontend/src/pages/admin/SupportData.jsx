@@ -82,7 +82,7 @@ export default function SupportData() {
                 <div>
                     <h1 className="h4 fw-bold mb-1">Support Data Management</h1>
                 </div>
-                <Button variant="primary" onClick={() => handleOpenModal()}>
+                <Button variant="warning" onClick={() => handleOpenModal()}>
                     ➕ Add New
                 </Button>
             </div>
@@ -225,8 +225,8 @@ export default function SupportData() {
                         <Button variant="secondary" onClick={() => setShowModal(false)}>
                             Cancel
                         </Button>
-                        <Button variant="primary" type="submit">
-                            {editingItem ? 'Update' : 'Create'}
+                        <Button variant="success" type="submit">
+                            {editingItem ? 'Save' : 'Save'}
                         </Button>
                     </Modal.Footer>
                 </Form>

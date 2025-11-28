@@ -70,8 +70,8 @@ export default function MeetingSummary() {
                     <h1 className="h2 fw-bold mb-1">Meeting Summary</h1>
                     <p className="text-muted mb-0">Record and manage SHG meeting details</p>
                 </div>
-                <Button variant="primary" onClick={handleOpenModal}>
-                    ➕ Record Meeting
+                <Button variant="warning" onClick={handleOpenModal}>
+                    ➕ Add Meeting
                 </Button>
             </div>
 
@@ -229,7 +229,7 @@ export default function MeetingSummary() {
                         <Button variant="secondary" onClick={() => setShowModal(false)}>
                             Cancel
                         </Button>
-                        <Button variant="primary" type="submit">
+                        <Button variant="success" type="submit">
                             Save Meeting
                         </Button>
                     </Modal.Footer>
