@@ -292,6 +292,7 @@ export default function LoanRequestPage() {
                                         value={date}
                                         onChange={(e) => setDate(e.target.value)}
                                         required
+                                        max={new Date().toISOString().split('T')[0]}
                                     />
                                 </Form.Group>
                             </Col>

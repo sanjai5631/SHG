@@ -75,12 +75,12 @@ export default function LoanRepaymentSchedulerPage() {
   };
 
   return (
-    <div style={{ padding: "25px" }}>
+    <div >
       <h4 className="fw-bold mb-1">Loan Repayment Scheduler</h4>
 
 
       {/* FILTERS CARD */}
-      <Card className="shadow-sm border-0" style={{ maxWidth: "1100px" }}>
+      <Card className="shadow-sm border-0 w-100">
         <Card.Body style={{ padding: "30px" }}>
           <Form onSubmit={handleShow}>
             <Row className="gx-4 gy-4">
@@ -147,14 +147,13 @@ export default function LoanRepaymentSchedulerPage() {
       {showTable && (
         <div
           className="d-flex justify-content-between align-items-center mt-3"
-          style={{ maxWidth: "1100px" }}
         >
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2 ms-2">
             <Button variant="dark" style={{ background: '#54b4f8ff' }} size="sm">
-              <FaPrint /> Print
+              <FaPrint /> 
             </Button>
             <Button variant="dark" style={{ backgroundColor: '#069f53ff' }} size="sm">
-              <FaFileExport /> Export
+              <FaFileExport /> 
             </Button>
           </div>
 
@@ -172,7 +171,6 @@ export default function LoanRepaymentSchedulerPage() {
       {showTable && (
         <Card
           className="shadow-sm border-0 mt-3"
-          style={{ maxWidth: "1100px" }}
         >
           <Card.Body style={{ padding: "20px" }}>
             <Table bordered hover size="sm">
