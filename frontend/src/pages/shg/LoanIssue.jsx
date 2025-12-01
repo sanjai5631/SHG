@@ -422,7 +422,7 @@ export default function LoanIssue() {
                         {/* ---------------- SUBMIT BUTTON ---------------- */}
                         <div className="text-end">
                             <Button
-                                variant="secondary"
+                                variant="danger"
                                 className="me-2"
                                 onClick={() => setShowModal(false)}
                             >
@@ -430,7 +430,7 @@ export default function LoanIssue() {
                             </Button>
                             <Button
                                 type="submit"
-                                variant="primary"
+                                variant="success"
                                 className="px-4"
                             >
                                 Issue Loan

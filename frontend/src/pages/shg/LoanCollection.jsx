@@ -8,12 +8,12 @@ import {
     Alert,
     Row,
     Col,
+    Badge,
     Pagination,
 } from "react-bootstrap";
-import {
-    FaSave
-} from "react-icons/fa";
+
 import { useApp } from "../../context/AppContext";
+import { FaSave } from "react-icons/fa";
 
 export default function LoanManagement() {
     const {
@@ -283,20 +283,20 @@ export default function LoanManagement() {
                 <Card.Body className="p-0">
                     <div style={{ maxHeight: '65vh', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
                         <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
-                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#d9d9d9ff', zIndex: 10 }}>
+                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f8f9fa', zIndex: 10 }}>
                                 <tr>
-                                    <th style={{ width: '7%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>EMP<br />CODE</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>NAME</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>OUTSTANDING</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PRINCIPAL</th>
-                                    <th style={{ width: '7%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>1% INT.</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL<br />DEMAND</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>COLLECTION</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>INT.</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TYPE</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PERSON</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL</th>
-                                    <th style={{ width: '6%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>ACTION</th>
+                                    <th style={{ width: '7%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>EMP<br />CODE</th>
+                                    <th style={{ width: '10%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>NAME</th>
+                                    <th style={{ width: '10%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>OUTSTANDING</th>
+                                    <th style={{ width: '8%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PRINCIPAL</th>
+                                    <th style={{ width: '7%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>1% INT.</th>
+                                    <th style={{ width: '8%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL<br />DEMAND</th>
+                                    <th style={{ width: '10%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>COLLECTION</th>
+                                    <th style={{ width: '8%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>INT.</th>
+                                    <th style={{ width: '8%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TYPE</th>
+                                    <th style={{ width: '10%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PERSON</th>
+                                    <th style={{ width: '8%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL</th>
+                                    <th style={{ width: '6%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>ACTION</th>
                                 </tr>
                             </thead>
 
@@ -313,7 +313,7 @@ export default function LoanManagement() {
                                     const principal = Number(entry.collectionAmount || 0);
                                     const intr = Math.round(principal * 0.01);
                                     const total = principal + intr;
-                                    const rowBg = index % 2 === 0 ? "#d2e6fcff" : "#f0f6fcff";
+                                    const rowBg = index % 2 === 0 ? "#bbdefb" : "#ffffff";
 
                                     return (
                                         <tr
@@ -341,7 +341,7 @@ export default function LoanManagement() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
+                                                    style={{ fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
                                                 />
                                             </td>
                                             <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
@@ -360,8 +360,7 @@ export default function LoanManagement() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    style={{ minWidth: '90px' }}
-                                                    className="border-secondary-subtle"
+                                                    style={{ minWidth: '90px', fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
                                                 />
                                             </td>
 
@@ -377,7 +376,7 @@ export default function LoanManagement() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
+                                                    style={{ fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
                                                 />
                                             </td>
 
@@ -392,8 +391,7 @@ export default function LoanManagement() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    style={{ minWidth: '90px' }}
-                                                    className="border-secondary-subtle"
+                                                    style={{ minWidth: '80px', fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
                                                 >
                                                     <option value="cash">Cash</option>
                                                     <option value="online">Online</option>
@@ -404,7 +402,6 @@ export default function LoanManagement() {
                                                 {entry.paymentType === "online" ? (
                                                     <Form.Select
                                                         size="sm"
-            
                                                         value={entry.onlinePerson || ""}
                                                         onChange={(e) =>
                                                             handleInputChange(
@@ -413,8 +410,7 @@ export default function LoanManagement() {
                                                                 e.target.value
                                                             )
                                                         }
-                                                        style={{ minWidth: '110px' }}
-                                                        className="border-secondary-subtle"
+                                                        style={{ minWidth: '110px', fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
                                                     >
                                                         <option value="">Select</option>
                                                         {data.members
@@ -443,7 +439,16 @@ export default function LoanManagement() {
                                                     variant="success"
                                                     disabled={!principal}
                                                     onClick={() => handleSave(m.id)}
-                                                    className="py-0 px-2"
+                                                    style={{
+                                                        backgroundColor: '#10b981',
+                                                        border: 'none',
+                                                        borderRadius: '8px',
+                                                        width: '32px',
+                                                        height: '32px',
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
                                                 >
                                                     <FaSave />
                                                 </Button>
