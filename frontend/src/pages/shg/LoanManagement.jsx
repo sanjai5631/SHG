@@ -8,6 +8,7 @@ import {
     Alert,
     Row,
     Col,
+    Badge,
 } from "react-bootstrap";
 import {
       FaSave
