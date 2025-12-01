@@ -5,11 +5,13 @@ import {
     Button,
     Modal,
     Form,
-    Badge,
     Alert,
     Row,
     Col,
 } from "react-bootstrap";
+import {
+      FaSave
+}from "react-icons/fa";
 import { useApp } from "../../context/AppContext";
 
 export default function LoanManagement() {
@@ -23,7 +25,7 @@ export default function LoanManagement() {
 
     const [showModal, setShowModal] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState("");
-    const [repaymentGroup, setRepaymentGroup] = useState(""); // Group filter for repayment section
+    const [repaymentGroup, setRepaymentGroup] = useState("");
     const [entries, setEntries] = useState({});
     const [formData, setFormData] = useState({
         memberId: "",

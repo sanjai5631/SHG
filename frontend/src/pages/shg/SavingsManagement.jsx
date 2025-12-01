@@ -226,6 +226,13 @@ export default function SavingsManagement() {
         }
     };
 
+    // Filter members based on search
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredMembers = membersData.filter(member =>
+        member.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="fade-in">
             <div className="d-flex justify-content-between align-items-center mb-4">
