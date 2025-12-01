@@ -121,6 +121,7 @@ const initialData = {
     ],
 };
 
+
 export const AppProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [data, setData] = useState(() => {
@@ -229,6 +230,14 @@ export const AppProvider = ({ children }) => {
         return totalAmount - paid;
     };
 
+    // Add Loan Request
+    const addLoanRequest = (loan) => {
+        setData((prev) => ({
+            ...prev,
+            loans: [...prev.loans, loan],
+        }));
+    };
+
     // Get member loans
     const getMemberLoans = (memberId) => {
         return data.loans.filter(l => l.memberId === memberId);
@@ -250,6 +259,7 @@ export const AppProvider = ({ children }) => {
         deleteItem,
         getItem,
         getItems,
+        addLoanRequest,
         getMemberSavingsBalance,
         getLoanOutstanding,
         getMemberLoans,
