@@ -18,9 +18,11 @@ import Reports from './pages/admin/Reports';
 
 // SHG Team Member Pages
 import SHGDashboard from './pages/shg/Dashboard';
+import ApprovedLoansPage from './pages/shg/LoanApproval';
+import LoanRepaymentSchedulerPage from './pages/shg/LoanReschedulepage';
+import LoanRequestPage from './pages/shg/LoanRequest';
 import SavingsManagement from './pages/shg/SavingsManagement';
-import LoanManagement from './pages/shg/LoanManagement';
-import CollectionPayment from './pages/shg/CollectionPayment';
+import CollectionPayment from './pages/shg/LoanCollection';
 import MeetingSummary from './pages/shg/MeetingSummary';
 import EasyEntry from './pages/shg/EasyEntry';
 import AssignCollector from './pages/shg/AssignCollector';
@@ -79,10 +81,11 @@ const AppRoutes = () => {
                 <Route path="assign-collector" element={<AssignCollector />} />
 
                 {/* Loan Dropdown Routes */}
-                <Route path="repayment-schedule" element={<LoanManagement />} />
-                <Route path="loan-request" element={<LoanManagement />} />
+                {/* <Route path="repayment-schedule" element={<LoanManagement />} /> */}
+                <Route path="loanapproval" element={<ApprovedLoansPage />} />
+                <Route path="loan-request" element={<LoanRequestPage />} />
                 <Route path="loan-issue" element={<LoanIssue />} />
-
+                <Route path='loan-reschedule' element ={<LoanRepaymentSchedulerPage/>}/>
                 {/* Report Dropdown Routes */}
                 <Route path="memberwise-report" element={<Reports />} />
                 <Route path="daywise-report" element={<Reports />} />
