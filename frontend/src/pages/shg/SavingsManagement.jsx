@@ -103,6 +103,12 @@ export default function SavingsManagement() {
         setSuccessMessage('');
     };
 
+    // Get current group details
+    const currentGroup = useMemo(() =>
+        data.shgGroups.find(g => g.id === parseInt(selectedGroup)),
+        [data.shgGroups, selectedGroup]
+    );
+
     // Reload data when group, month, FY, or savings data changes
     useEffect(() => {
         loadGroupData(selectedGroup);
@@ -144,9 +150,22 @@ export default function SavingsManagement() {
     };
 
     const handlePaymentModeChange = (id, mode) => {
-        setMembersData(prev => prev.map(m =>
-            m.id === id ? { ...m, paymentMode: mode, selectedPerson: mode === 'cash' ? '' : m.selectedPerson } : m
-        ));
+        setMembersData(prev => prev.map(m => {
+            if (m.id === id) {
+                let selectedPerson = '';
+                if (mode === 'online') {
+                    // Auto-select the assigned online collection account if available
+                    if (currentGroup?.onlineCollectionId) {
+                        selectedPerson = currentGroup.onlineCollectionId;
+                    } else {
+                        // Keep existing selection if any, or default to empty
+                        selectedPerson = m.selectedPerson;
+                    }
+                }
+                return { ...m, paymentMode: mode, selectedPerson };
+            }
+            return m;
+        }));
     };
 
     const handlePersonChange = (id, personId) => {

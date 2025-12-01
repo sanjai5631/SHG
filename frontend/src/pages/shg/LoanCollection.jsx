@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
     Card,
     Table,
@@ -41,6 +41,12 @@ export default function LoanManagement() {
     // ============================================================
     //                 LOAN REQUEST SECTION
     // ============================================================
+
+    // Get current group details for repayment section (moved up for scope)
+    const currentRepaymentGroup = useMemo(() =>
+        data.shgGroups.find(g => g.id === parseInt(repaymentGroup)),
+        [data.shgGroups, repaymentGroup]
+    );
 
     const myGroups = data.shgGroups.filter(
         (g) => g.assignedTo === currentUser.id && g.status === "active"
@@ -163,6 +169,13 @@ export default function LoanManagement() {
 
             if (field === "collectionAmount") {
                 updates.interestAmount = Math.round(Number(value) * 0.01);
+            }
+
+            if (field === "paymentType" && value === "online") {
+                // Auto-select the assigned online collection account if available
+                if (currentRepaymentGroup?.onlineCollectionId) {
+                    updates.onlinePerson = currentRepaymentGroup.onlineCollectionId;
+                }
             }
 
             return {
