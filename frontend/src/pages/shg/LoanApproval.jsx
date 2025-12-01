@@ -111,7 +111,7 @@ export default function ApprovedLoansPage() {
     return (
         <div>
             <h4 className="fw-bold mb-3">Loan Management</h4>
-          
+
 
             {/* ------------ LOAN REQUESTS TABLE ------------ */}
             <Card className="border-0 shadow-sm mb-4">
@@ -121,15 +121,15 @@ export default function ApprovedLoansPage() {
 
                 <Card.Body className="p-0">
                     <div className="table-responsive" style={{ maxHeight: "340px" }}>
-                        <Table hover size="sm" className="mb-0 text-nowrap" style={{ border: "1px solid #dee2e6" }}>
-                            <thead style={stickyHeader}>
+                        <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
+                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#d9d9d9ff', zIndex: 10 }}>
                                 <tr>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Employee Code</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Name</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Loan Amount</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Purpose</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Date</th>
-                                    <th className="text-center" style={{ color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Action</th>
+                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Employee Code</th>
+                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Name</th>
+                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Loan Amount</th>
+                                    <th style={{ width: '25%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Purpose</th>
+                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Date</th>
+                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Action</th>
                                 </tr>
                             </thead>
 
@@ -144,18 +144,19 @@ export default function ApprovedLoansPage() {
                                                 key={loan.id}
                                                 style={{
                                                     backgroundColor: rowBg,
+                                                    borderBottom: "1px solid #dee2e6"
                                                 }}
                                             >
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>{member.code || "N/A"}</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>{member.name || "Unknown"}</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>₹{loan.amount?.toLocaleString()}</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>{loan.purpose || "-"}</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#6c757d', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{member.code || "N/A"}</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{member.name || "Unknown"}</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#28a745', fontWeight: '600', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{loan.amount?.toLocaleString()}</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{loan.purpose || "-"}</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
                                                     {loan.appliedDate
                                                         ? new Date(loan.appliedDate).toLocaleDateString()
                                                         : "-"}
                                                 </td>
-                                                <td className="text-center" style={{ backgroundColor: rowBg }}>
+                                                <td style={{ backgroundColor: rowBg, padding: '16px 8px', textAlign: 'center' }}>
                                                     <Button
                                                         variant="link"
                                                         className="text-success p-0 me-3"
@@ -245,18 +246,18 @@ export default function ApprovedLoansPage() {
 
                 <Card.Body className="p-0">
                     <div className="table-responsive" style={{ maxHeight: "340px" }}>
-                        <Table hover size="sm" className="mb-0 text-nowrap" style={{ border: "1px solid #dee2e6" }}>
-                            <thead style={stickyHeader}>
+                        <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
+                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#d9d9d9ff', zIndex: 10 }}>
                                 <tr>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Member</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Product</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Amount</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Interest</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Tenor</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>EMI</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Purpose</th>
-                                    <th style={{ borderRight: "1px solid #dee2e6", color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Date</th>
-                                    <th style={{ color: '#565151ff', borderBottom: '1px solid #c2c0c0ff' }}>Status</th>
+                                    <th style={{ width: '12%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Member</th>
+                                    <th style={{ width: '12%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Product</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Amount</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Interest</th>
+                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Tenor</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>EMI</th>
+                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Purpose</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Date</th>
+                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Status</th>
                                 </tr>
                             </thead>
 
@@ -271,21 +272,22 @@ export default function ApprovedLoansPage() {
                                                 key={loan.id}
                                                 style={{
                                                     backgroundColor: rowBg,
+                                                    borderBottom: "1px solid #dee2e6"
                                                 }}
                                             >
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>{member.name || "Unknown"}</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>{getProductName(loan.productId)}</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>₹{loan.amount?.toLocaleString()}</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>{loan.interestRate}%</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>{loan.tenor} months</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>₹{loan.emi?.toLocaleString()}</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>{loan.purpose || "-"}</td>
-                                                <td style={{ backgroundColor: rowBg, borderRight: "1px solid #dee2e6" }}>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{member.name || "Unknown"}</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{getProductName(loan.productId)}</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#28a745', fontWeight: '600', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{loan.amount?.toLocaleString()}</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{loan.interestRate}%</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{loan.tenor} months</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{loan.emi?.toLocaleString()}</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{loan.purpose || "-"}</td>
+                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
                                                     {loan.appliedDate
                                                         ? new Date(loan.appliedDate).toLocaleDateString()
                                                         : "-"}
                                                 </td>
-                                                <td style={{ backgroundColor: rowBg }}>
+                                                <td style={{ backgroundColor: rowBg, padding: '16px 8px', textAlign: 'center' }}>
                                                     {loan.status === "approved" ? (
                                                         <Badge bg="success">Approved</Badge>
                                                     ) : (
@@ -304,27 +306,29 @@ export default function ApprovedLoansPage() {
                                 )}
                             </tbody>
                         </Table>
-                    </div>
+                    </div >
                     {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                        <div className="d-flex justify-content-center py-3 border-top">
-                            <Pagination>
-                                <Pagination.Prev
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                >
-                                    Previous
-                                </Pagination.Prev>
-                                <Pagination.Next
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    Next
-                                </Pagination.Next>
-                            </Pagination>
-                        </div>
-                    )}
-                </Card.Body>
+                    {
+                        totalPages > 1 && (
+                            <div className="d-flex justify-content-center py-3 border-top">
+                                <Pagination>
+                                    <Pagination.Prev
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Previous
+                                    </Pagination.Prev>
+                                    <Pagination.Next
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Next
+                                    </Pagination.Next>
+                                </Pagination>
+                            </div>
+                        )
+                    }
+                </Card.Body >
             </Card>
         </div>
     );

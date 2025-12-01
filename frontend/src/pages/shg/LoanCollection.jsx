@@ -404,6 +404,7 @@ export default function LoanManagement() {
                                                 {entry.paymentType === "online" ? (
                                                     <Form.Select
                                                         size="sm"
+            
                                                         value={entry.onlinePerson || ""}
                                                         onChange={(e) =>
                                                             handleInputChange(
@@ -412,7 +413,7 @@ export default function LoanManagement() {
                                                                 e.target.value
                                                             )
                                                         }
-                                                        style={{ minWidth: '130px' }}
+                                                        style={{ minWidth: '110px' }}
                                                         className="border-secondary-subtle"
                                                     >
                                                         <option value="">Select</option>

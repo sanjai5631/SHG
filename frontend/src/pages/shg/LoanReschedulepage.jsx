@@ -150,10 +150,10 @@ export default function LoanRepaymentSchedulerPage() {
         >
           <div className="d-flex gap-2 ms-2">
             <Button variant="dark" style={{ background: '#54b4f8ff' }} size="sm">
-              <FaPrint /> 
+              <FaPrint />
             </Button>
             <Button variant="dark" style={{ backgroundColor: '#069f53ff' }} size="sm">
-              <FaFileExport /> 
+              <FaFileExport />
             </Button>
           </div>
 
@@ -173,46 +173,49 @@ export default function LoanRepaymentSchedulerPage() {
           className="shadow-sm border-0 mt-3"
         >
           <Card.Body style={{ padding: "20px" }}>
-            <Table bordered hover size="sm">
-              <thead className="table-light">
+            <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
+              <thead style={{ position: 'sticky', top: 0, backgroundColor: '#d9d9d9ff', zIndex: 10 }}>
                 <tr>
-                  <th>Action</th>
-                  <th>Member Code</th>
-                  <th>Member Name</th>
-                  <th>Group</th>
-                  <th>Requested On</th>
-                  <th>Loan Type</th>
-                  <th>Loan Term</th>
-                  <th>Amount</th>
-                  <th>Installments</th>
+                  <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Action</th>
+                  <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Member Code</th>
+                  <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Member Name</th>
+                  <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Group</th>
+                  <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Requested On</th>
+                  <th style={{ width: '12%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Loan Type</th>
+                  <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Term</th>
+                  <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Amount</th>
+                  <th style={{ width: '12%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Installments</th>
                 </tr>
               </thead>
 
               <tbody>
                 {filteredRows.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="text-center py-3 text-muted">
+                    <td colSpan={9} className="text-center py-4 text-muted">
                       No loan records found.
                     </td>
                   </tr>
                 ) : (
-                  filteredRows.map((row) => (
-                    <tr key={row.id}>
-                      <td>
-                        <Button size="sm" variant="outline-primary">
-                          <i className="bi bi-eye"></i>
-                        </Button>
-                      </td>
-                      <td>{row.memberCode}</td>
-                      <td>{row.memberName}</td>
-                      <td>{row.cigName}</td>
-                      <td>{row.requestedOn}</td>
-                      <td>{row.loanType}</td>
-                      <td>{row.loanTerm}</td>
-                      <td>₹{row.amount.toLocaleString()}</td>
-                      <td>{row.installments}</td>
-                    </tr>
-                  ))
+                  filteredRows.map((row, index) => {
+                    const rowBg = index % 2 === 0 ? "#d2e6fcff" : "#f0f6fcff";
+                    return (
+                      <tr key={row.id} style={{ backgroundColor: rowBg, borderBottom: "1px solid #dee2e6" }}>
+                        <td style={{ backgroundColor: rowBg, padding: '16px 8px', textAlign: 'center', borderRight: '1px solid #dee2e6' }}>
+                          <Button size="sm" variant="outline-primary" className="py-0 px-2">
+                            <i className="bi bi-eye"></i>
+                          </Button>
+                        </td>
+                        <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#6c757d', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{row.memberCode}</td>
+                        <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{row.memberName}</td>
+                        <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{row.cigName}</td>
+                        <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{row.requestedOn}</td>
+                        <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{row.loanType}</td>
+                        <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{row.loanTerm}</td>
+                        <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#28a745', fontWeight: '600', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{row.amount.toLocaleString()}</td>
+                        <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px' }}>{row.installments}</td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </Table>
