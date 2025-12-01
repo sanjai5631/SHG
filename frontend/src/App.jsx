@@ -94,7 +94,6 @@ const AppRoutes = () => {
 
                 {/* Other Routes */}
                 <Route path="collections" element={<CollectionPayment />} />
-                <Route path="meetings" element={<MeetingSummary />} />
                 <Route path="easy-entry" element={<EasyEntry />} />
             </Route>
 

@@ -1,80 +1,171 @@
-import { useState } from 'react';
-import { Card, Table, Form, Button, Row, Col } from 'react-bootstrap';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Card, Table, Form, Button, Row, Col, Alert } from 'react-bootstrap';
+import DataTable from 'react-data-table-component';
 import { useApp } from '../../context/AppContext';
 
 export default function SavingsManagement() {
     const { data, addItem, currentUser } = useApp();
 
     // Financial year and month selection
-    const [selectedFY, setSelectedFY] = useState('2025-2026');
+    const [selectedFY, setSelectedFY] = useState('2024-2025');
     const [selectedMonth, setSelectedMonth] = useState('December');
     const [selectedGroup, setSelectedGroup] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
-    const financialYears = ['2024-2025', '2025-2026', '2026-2027'];
+    const financialYears = ['2023-2024', '2024-2025', '2025-2026', '2026-2027'];
     const months = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
 
-    // Sample members data with demand and collect (NO currentAmount)
-    const [membersData, setMembersData] = useState([
-        { id: 1, name: 'Sanjay', demand: 3000, collect: 3000, totalAmount: 36000, shareAmount: 2611, closing2025: 38611, withdrawal: 36000, paymentMode: 'cash', selectedPerson: '' },
-        { id: 2, name: 'Lavanya Shree', demand: 500, collect: 500, totalAmount: 37847, shareAmount: 2273, closing2025: 40120, withdrawal: 37000, paymentMode: 'online', selectedPerson: '' },
-        { id: 3, name: 'Rahul', demand: 2000, collect: 2000, totalAmount: 24000, shareAmount: 1740, closing2025: 25740, withdrawal: 0, paymentMode: 'cash', selectedPerson: '' },
-        { id: 4, name: 'Jayasree', demand: 2000, collect: 2000, totalAmount: 24000, shareAmount: 1740, closing2025: 25740, withdrawal: 24000, paymentMode: 'cash', selectedPerson: '' },
-        { id: 5, name: 'Priya Dharshini', demand: 1500, collect: 1500, totalAmount: 17500, shareAmount: 1269, closing2025: 18769, withdrawal: 0, paymentMode: 'online', selectedPerson: '' },
-        { id: 1, name: 'Sanjay', demand: 3000, collect: 3000, totalAmount: 36000, shareAmount: 2611, closing2025: 38611, withdrawal: 36000, paymentMode: 'cash', selectedPerson: '' },
-        { id: 2, name: 'Lavanya Shree', demand: 500, collect: 500, totalAmount: 37847, shareAmount: 2273, closing2025: 40120, withdrawal: 37000, paymentMode: 'online', selectedPerson: '' },
-        { id: 3, name: 'Rahul', demand: 2000, collect: 2000, totalAmount: 24000, shareAmount: 1740, closing2025: 25740, withdrawal: 0, paymentMode: 'cash', selectedPerson: '' },
-        { id: 4, name: 'Jayasree', demand: 2000, collect: 2000, totalAmount: 24000, shareAmount: 1740, closing2025: 25740, withdrawal: 24000, paymentMode: 'cash', selectedPerson: '' },
-        { id: 5, name: 'Priya Dharshini', demand: 1500, collect: 1500, totalAmount: 17500, shareAmount: 1269, closing2025: 18769, withdrawal: 0, paymentMode: 'online', selectedPerson: '' },
-        { id: 1, name: 'Sanjay', demand: 3000, collect: 3000, totalAmount: 36000, shareAmount: 2611, closing2025: 38611, withdrawal: 36000, paymentMode: 'cash', selectedPerson: '' },
-        { id: 2, name: 'Lavanya Shree', demand: 500, collect: 500, totalAmount: 37847, shareAmount: 2273, closing2025: 40120, withdrawal: 37000, paymentMode: 'online', selectedPerson: '' },
-        { id: 3, name: 'Rahul', demand: 2000, collect: 2000, totalAmount: 24000, shareAmount: 1740, closing2025: 25740, withdrawal: 0, paymentMode: 'cash', selectedPerson: '' },
-        { id: 4, name: 'Jayasree', demand: 2000, collect: 2000, totalAmount: 24000, shareAmount: 1740, closing2025: 25740, withdrawal: 24000, paymentMode: 'cash', selectedPerson: '' },
-        { id: 5, name: 'Priya Dharshini', demand: 1500, collect: 1500, totalAmount: 17500, shareAmount: 1269, closing2025: 18769, withdrawal: 0, paymentMode: 'online', selectedPerson: '' },
-        { id: 1, name: 'Sanjay', demand: 3000, collect: 3000, totalAmount: 36000, shareAmount: 2611, closing2025: 38611, withdrawal: 36000, paymentMode: 'cash', selectedPerson: '' },
-        { id: 2, name: 'Lavanya Shree', demand: 500, collect: 500, totalAmount: 37847, shareAmount: 2273, closing2025: 40120, withdrawal: 37000, paymentMode: 'online', selectedPerson: '' },
-        { id: 3, name: 'Rahul', demand: 2000, collect: 2000, totalAmount: 24000, shareAmount: 1740, closing2025: 25740, withdrawal: 0, paymentMode: 'cash', selectedPerson: '' },
-        { id: 4, name: 'Jayasree', demand: 2000, collect: 2000, totalAmount: 24000, shareAmount: 1740, closing2025: 25740, withdrawal: 24000, paymentMode: 'cash', selectedPerson: '' },
-        { id: 5, name: 'Priya Dharshini', demand: 1500, collect: 1500, totalAmount: 17500, shareAmount: 1269, closing2025: 18769, withdrawal: 0, paymentMode: 'online', selectedPerson: '' },
-    ]);
+    // Members data state
+    const [membersData, setMembersData] = useState([]);
 
     // Get all active members for person dropdown
-    const activeMembers = data.members.filter(m => m.status === 'active');
+    const activeMembers = useMemo(() =>
+        data.members.filter(m => m.status === 'active'),
+        [data.members]
+    );
 
-    const handleGroupChange = (e) => {
-        const groupId = e.target.value;
-        setSelectedGroup(groupId);
+    // Get groups based on user role
+    const availableGroups = useMemo(() => {
+        if (currentUser?.role === 'admin') {
+            return data.shgGroups.filter(g => g.status === 'active');
+        } else if (currentUser?.role === 'shg_team') {
+            return data.shgGroups.filter(g => g.assignedTo === currentUser.id && g.status === 'active');
+        } else if (currentUser?.role === 'shg_member') {
+            if (currentUser.groupId) {
+                return data.shgGroups.filter(g => g.id === currentUser.groupId && g.status === 'active');
+            }
+            return data.shgGroups.filter(g => g.assignedTo === currentUser.id && g.status === 'active');
+        }
+        return [];
+    }, [data.shgGroups, currentUser]);
 
-        if (groupId) {
-            const groupMembers = data.members.filter(m => m.groupId === parseInt(groupId) && m.status === 'active');
-            const newMembersData = groupMembers.map(m => ({
+    // Calculate total savings for a member
+    const getMemberTotalSavings = useCallback((memberId) => {
+        return data.savings
+            .filter(s => s.memberId === memberId)
+            .reduce((sum, s) => sum + s.amount, 0);
+    }, [data.savings]);
+
+    // Get savings for specific month and year
+    const getMemberSavingsForMonth = useCallback((memberId, month, fy) => {
+        return data.savings
+            .filter(s => s.memberId === memberId && s.month === month && s.financialYear === fy)
+            .reduce((sum, s) => sum + s.amount, 0);
+    }, [data.savings]);
+
+    // Calculate opening balance (total savings before current month)
+    const getOpeningBalance = useCallback((memberId) => {
+        const totalSavings = getMemberTotalSavings(memberId);
+        const currentMonthSavings = getMemberSavingsForMonth(memberId, selectedMonth, selectedFY);
+        return totalSavings - currentMonthSavings;
+    }, [getMemberTotalSavings, getMemberSavingsForMonth, selectedMonth, selectedFY]);
+
+    // Load members data
+    const loadGroupData = useCallback((groupId) => {
+        if (!groupId) {
+            setMembersData([]);
+            return;
+        }
+
+        const groupMembers = data.members.filter(m => m.groupId === parseInt(groupId) && m.status === 'active');
+        const newMembersData = groupMembers.map(m => {
+            const openingBalance = getOpeningBalance(m.id);
+            const dbTotalSavings = getMemberTotalSavings(m.id);
+
+            // Initial calculations based on DB data
+            const totalAmount = dbTotalSavings;
+            const shareAmount = Math.round(totalAmount * 0.0725); // 7.25% share
+            const closing2025 = totalAmount + shareAmount;
+
+            return {
                 id: m.id,
                 name: m.name,
+                memberCode: m.memberCode,
                 demand: 0,
                 collect: 0,
-                totalAmount: 0,
-                shareAmount: 0,
-                closing2025: 0,
+                openingBalance: openingBalance,
+                dbTotalAmount: dbTotalSavings, // Store DB total for calculations
+                totalAmount: totalAmount,
+                shareAmount: shareAmount,
+                closing2025: closing2025,
                 withdrawal: 0,
                 paymentMode: 'cash',
                 selectedPerson: ''
-            }));
-            setMembersData(newMembersData);
-        } else {
-            // Reset to empty or keep previous? Resetting to empty for now as per "fetch" logic
-            setMembersData([]);
-        }
+            };
+        });
+        setMembersData(newMembersData);
+    }, [data.members, getOpeningBalance, getMemberTotalSavings]);
+
+    // Handle group selection change
+    const handleGroupChange = (e) => {
+        const groupId = e.target.value;
+        setSelectedGroup(groupId);
+        setSuccessMessage('');
     };
 
+    // Get current group details
+    const currentGroup = useMemo(() =>
+        data.shgGroups.find(g => g.id === parseInt(selectedGroup)),
+        [data.shgGroups, selectedGroup]
+    );
+
+    // Reload data when group, month, FY, or savings data changes
+    useEffect(() => {
+        loadGroupData(selectedGroup);
+    }, [selectedGroup, selectedMonth, selectedFY, data.savings, loadGroupData]);
+
     const handleDataChange = (id, field, value) => {
-        setMembersData(prev => prev.map(m =>
-            m.id === id ? { ...m, [field]: parseFloat(value) || 0 } : m
-        ));
+        // Allow empty string to let user clear the input
+        if (value === '') {
+            setMembersData(prev => prev.map(m => {
+                if (m.id === id) {
+                    return { ...m, [field]: 0 };
+                }
+                return m;
+            }));
+            return;
+        }
+
+        const numValue = parseFloat(value);
+
+        // Only allow positive values
+        if (numValue < 0) return;
+
+        setMembersData(prev => prev.map(m => {
+            if (m.id === id) {
+                const updatedMember = { ...m, [field]: numValue || 0 };
+
+                // Recalculate totals based on DB total + new collection
+                const newTotal = updatedMember.dbTotalAmount + updatedMember.collect;
+                updatedMember.totalAmount = newTotal;
+                updatedMember.shareAmount = Math.round(newTotal * 0.0725);
+
+                // Closing balance = Total + Share
+                updatedMember.closing2025 = newTotal + updatedMember.shareAmount;
+
+                return updatedMember;
+            }
+            return m;
+        }));
     };
 
     const handlePaymentModeChange = (id, mode) => {
-        setMembersData(prev => prev.map(m =>
-            m.id === id ? { ...m, paymentMode: mode, selectedPerson: mode === 'cash' ? '' : m.selectedPerson } : m
-        ));
+        setMembersData(prev => prev.map(m => {
+            if (m.id === id) {
+                let selectedPerson = '';
+                if (mode === 'online') {
+                    // Auto-select the assigned online collection account if available
+                    if (currentGroup?.onlineCollectionId) {
+                        selectedPerson = currentGroup.onlineCollectionId;
+                    } else {
+                        // Keep existing selection if any, or default to empty
+                        selectedPerson = m.selectedPerson;
+                    }
+                }
+                return { ...m, paymentMode: mode, selectedPerson };
+            }
+            return m;
+        }));
     };
 
     const handlePersonChange = (id, personId) => {
@@ -99,24 +190,59 @@ export default function SavingsManagement() {
             return;
         }
 
-        // Save each member's savings
+        let savedCount = 0;
+        let errors = [];
+
+        // Validate online payments have a person selected
         membersData.forEach(member => {
-            if (member.collect > 0) {
-                // Add savings transaction
-                addItem('savings', {
-                    memberId: member.id,
-                    productId: 1, // Default to first savings product
-                    amount: member.collect,
-                    date: new Date().toISOString().split('T')[0],
-                    collectedBy: currentUser?.id || 1
-                });
+            if (member.collect > 0 && member.paymentMode === 'online' && !member.selectedPerson) {
+                errors.push(`${member.name}: Please select a person for online payment`);
             }
         });
 
-        alert(`Saved ${membersData.filter(m => m.collect > 0).length} savings transactions for ${selectedMonth} ${selectedFY}`);
+        if (errors.length > 0) {
+            alert('Please fix the following errors:\n\n' + errors.join('\n'));
+            return;
+        }
 
-        // Reset collect amounts after saving
-        setMembersData(prev => prev.map(m => ({ ...m, collect: 0 })));
+        // Save each member's savings
+        membersData.forEach(member => {
+            if (member.collect > 0) {
+                addItem('savings', {
+                    memberId: member.id,
+                    productId: 1,
+                    amount: member.collect,
+                    date: new Date().toISOString().split('T')[0],
+                    collectedBy: currentUser?.id || 1,
+                    month: selectedMonth,
+                    financialYear: selectedFY,
+                    paymentMode: member.paymentMode,
+                    paidBy: member.paymentMode === 'online' ? parseInt(member.selectedPerson) : null
+                });
+                savedCount++;
+            }
+
+            if (member.withdrawal > 0) {
+                addItem('savings', {
+                    memberId: member.id,
+                    productId: 1,
+                    amount: -member.withdrawal,
+                    date: new Date().toISOString().split('T')[0],
+                    collectedBy: currentUser?.id || 1,
+                    month: selectedMonth,
+                    financialYear: selectedFY,
+                    type: 'withdrawal'
+                });
+                savedCount++;
+            }
+        });
+
+        if (savedCount > 0) {
+            setSuccessMessage(`Saved ${savedCount} savings transactions for ${selectedMonth} ${selectedFY}`);
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } else {
+            alert('No collections to save.');
+        }
     };
 
     // Filter members based on search
@@ -128,218 +254,302 @@ export default function SavingsManagement() {
 
     return (
         <div className="fade-in">
-            <div className="mb-4">
-                <h1 className="h4 fw-bold mb-1">Savings</h1>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 className="h4 fw-bold mb-0">Savings Management</h1>
+                </div>
+                {/* Optional: Add button here if needed in future, currently empty to match layout */}
             </div>
 
-            {/* Financial Year and Month Selection */}
-            <Card className="border-0 shadow-sm mb-3 bg-white">
-                <Card.Body className="p-2">
-                    <div className="d-flex gap-2 align-items-center">
-                        <Form.Select
-                            size="sm"
-                            value={selectedFY}
-                            onChange={(e) => setSelectedFY(e.target.value)}
-                            className="border-secondary-subtle fw-medium"
-                            style={{ fontSize: '0.85rem', width: 'auto', minWidth: '120px' }}
-                        >
-                            {financialYears.map(fy => (
-                                <option key={fy} value={fy}>{fy}</option>
-                            ))}
-                        </Form.Select>
+            {successMessage && (
+                <Alert variant="success" dismissible onClose={() => setSuccessMessage('')} className="mb-3">
+                    ✓ {successMessage}
+                </Alert>
+            )}
 
-                        <Form.Select
-                            size="sm"
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                            className="border-secondary-subtle fw-medium"
-                            style={{ fontSize: '0.85rem', width: 'auto', minWidth: '120px' }}
-                        >
-                            {months.map(month => (
-                                <option key={month} value={month}>{month}</option>
-                            ))}
-                        </Form.Select>
-
-                        <Form.Select
-                            size="sm"
-                            value={selectedGroup}
-                            onChange={handleGroupChange}
-                            className="border-secondary-subtle fw-medium"
-                            style={{ fontSize: '0.85rem', width: 'auto', minWidth: '200px' }}
-                        >
-                            <option value="">Select Group</option>
-                            {data.shgGroups.map(group => (
-                                <option key={group.id} value={group.id}>{group.name}</option>
-                            ))}
-                        </Form.Select>
-                    </div>
+            {/* Filters Card */}
+            <Card className="border-0 shadow-sm mb-4">
+                <Card.Body className="p-4">
+                    <Row className="g-3 align-items-end">
+                        <Col md={4}>
+                            <Form.Group>
+                                <Form.Label className="fw-medium small text-muted text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>Financial Year</Form.Label>
+                                <Form.Select
+                                    value={selectedFY}
+                                    onChange={(e) => setSelectedFY(e.target.value)}
+                                    className="border-secondary-subtle"
+                                >
+                                    {financialYears.map(fy => (
+                                        <option key={fy} value={fy}>{fy}</option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                            <Form.Group>
+                                <Form.Label className="fw-medium small text-muted text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>Month</Form.Label>
+                                <Form.Select
+                                    value={selectedMonth}
+                                    onChange={(e) => setSelectedMonth(e.target.value)}
+                                    className="border-secondary-subtle"
+                                >
+                                    {months.map(month => (
+                                        <option key={month} value={month}>{month}</option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                            <Form.Group>
+                                <Form.Label className="fw-medium small text-muted text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>Group Name</Form.Label>
+                                <Form.Select
+                                    value={selectedGroup}
+                                    onChange={handleGroupChange}
+                                    className="border-secondary-subtle"
+                                >
+                                    <option value="">Select Group</option>
+                                    {availableGroups.map(group => (
+                                        <option key={group.id} value={group.id}>{group.name} ({group.code})</option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                    </Row>
                 </Card.Body>
             </Card>
 
+            {/* Savings Table Card */}
             <Card className="border-0 shadow-sm">
-                <Card.Header className="bg-white py-2 border-bottom d-flex justify-content-between align-items-center">
-                    <div className="d-flex align-items-center gap-3">
-                        <h6 className="mb-0 fw-bold text-dark">Member Savings Overview</h6>
-                        <span className="badge bg-light text-dark border">{filteredMembers.length} Members</span>
-                    </div>
-                    <div style={{ width: '250px' }}>
-                        <div className="position-relative">
-                            <Form.Control
-                                type="text"
-                                size="sm"
-                                placeholder="Search member..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="border-secondary-subtle ps-4"
-                                style={{ fontSize: '0.85rem' }}
-                            />
-                            <span className="position-absolute top-50 start-0 translate-middle-y ps-2 text-muted small">
-                                🔍
-                            </span>
-                        </div>
-                    </div>
+                <Card.Header className="bg-white py-3 border-bottom">
+                    <h5 className="mb-0 fw-bold h6">Member Savings Overview - {selectedMonth} {selectedFY}</h5>
                 </Card.Header>
-                <div className="table-responsive" style={{ maxHeight: '600px', overflowY: 'auto' }}>
-                    <Table className="mb-0 align-middle savings-table table-hover" style={{ minWidth: '1200px' }}>
-                        <thead className="bg-light sticky-top" style={{ zIndex: 1 }}>
-                            <tr>
-                                <th className="text-center py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ width: '50px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>Sno</th>
-                                <th className="py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ minWidth: '150px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>Name</th>
-                                <th className="text-end py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ width: '100px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>Demand</th>
-                                <th className="text-end py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ width: '100px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>Act.Collect</th>
-                                <th className="text-end py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ width: '110px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>Total<br />Amount</th>
-                                <th className="text-end py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ width: '100px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>Share<br />Amount</th>
-                                <th className="text-end py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ width: '110px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>2025<br />Closing</th>
-                                <th className="text-end py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ width: '110px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>Withdrawal<br />Amount</th>
-                                <th className="text-end py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ width: '110px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>2026<br />Opening</th>
-                                <th className="py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ width: '130px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>Payment<br />Mode</th>
-                                <th className="py-2 text-secondary text-uppercase small fw-bold border-bottom-0" style={{ minWidth: '180px', backgroundColor: '#f8f9fa', fontSize: '0.75rem' }}>Select Person</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredMembers.map((member, index) => (
-                                <tr key={member.id}>
-                                    <td className="text-center fw-medium text-muted small">{index + 1}</td>
-                                    <td className="fw-semibold text-dark small">{member.name}</td>
-                                    <td className="text-end">
-                                        <Form.Control
-                                            type="number"
-                                            size="sm"
-                                            value={member.demand || ''}
-                                            onChange={(e) => handleDataChange(member.id, 'demand', e.target.value)}
-                                            className="text-end border-0 bg-light"
-                                            style={{ fontSize: '0.85rem', fontWeight: '500' }}
-                                        />
-                                    </td>
-                                    <td className="text-end">
-                                        <Form.Control
-                                            type="number"
-                                            size="sm"
-                                            value={member.collect || ''}
-                                            onChange={(e) => handleDataChange(member.id, 'collect', e.target.value)}
-                                            className="text-end border-primary-subtle"
-                                            style={{ fontSize: '0.85rem', fontWeight: '600' }}
-                                        />
-                                    </td>
-                                    <td className="text-end text-muted small">₹{member.totalAmount.toLocaleString()}</td>
-                                    <td className="text-end text-muted small">{member.shareAmount}</td>
-                                    <td className="text-end text-muted small">₹{member.closing2025.toLocaleString()}</td>
-                                    <td className="text-end">
-                                        <Form.Control
-                                            type="number"
-                                            size="sm"
-                                            value={member.withdrawal || ''}
-                                            onChange={(e) => handleDataChange(member.id, 'withdrawal', e.target.value)}
-                                            className="text-end border-success-subtle"
-                                            style={{ fontSize: '0.85rem', background: '#e8f5e9' }}
-                                        />
-                                    </td>
-                                    <td className="text-end fw-bold text-success small" style={{ background: '#f1f8e9' }}>
-                                        {calculateOpening2026(member).toLocaleString()}
-                                    </td>
-                                    <td>
+                <Card.Body className="p-4">
+                    <DataTable
+                        columns={[
+                            {
+                                name: 'SNO',
+                                selector: (row, index) => index + 1,
+                                width: '60px',
+                                center: true,
+                            },
+                            {
+                                name: 'NAME',
+                                selector: row => row.name,
+                                cell: row => (
+                                    <div className="py-2">
+                                        <div className="fw-medium">{row.name}</div>
+                                        <div className="text-muted small">{row.memberCode}</div>
+                                    </div>
+                                ),
+                                width: '175px',
+                            },
+                            {
+                                name: 'DEMAND',
+                                cell: row => (
+                                    <Form.Control
+                                        type="number"
+                                        min="0"
+                                        size="sm"
+                                        value={row.demand || ''}
+                                        onChange={(e) => handleDataChange(row.id, 'demand', e.target.value)}
+                                        className="text-end border fw-medium"
+                                        style={{
+                                            backgroundColor: '#fff',
+                                            borderColor: '#dee2e6',
+                                            minWidth: '80px',
+                                            padding: '0.375rem 0.5rem'
+                                        }}
+                                    />
+                                ),
+                                width: '110px',
+                                right: true,
+                            },
+                            {
+                                name: 'ACT.COLLECT',
+                                cell: row => (
+                                    <Form.Control
+                                        type="number"
+                                        min="0"
+                                        size="sm"
+                                        value={row.collect || ''}
+                                        onChange={(e) => handleDataChange(row.id, 'collect', e.target.value)}
+                                        className="text-end border fw-medium"
+                                        style={{
+                                            backgroundColor: '#fff',
+                                            borderColor: '#dee2e6',
+                                            minWidth: '90px',
+                                            padding: '0.375rem 0.5rem'
+                                        }}
+                                    />
+                                ),
+                                width: '120px',
+                                right: true,
+                            },
+                            {
+                                name: 'TOTAL AMOUNT',
+                                selector: row => row.totalAmount,
+                                cell: row => <span className="fw-medium text-dark">₹{row.totalAmount.toLocaleString()}</span>,
+                                width: '105px',
+                                right: true,
+                            },
+                            {
+                                name: 'SHARE AMOUNT',
+                                selector: row => row.shareAmount,
+                                cell: row => <span className="text-muted">{row.shareAmount.toLocaleString()}</span>,
+                                width: '95px',
+                                right: true,
+                            },
+                            {
+                                name: '2025 CLOSING',
+                                selector: row => row.closing2025,
+                                cell: row => <span className="text-muted">₹{row.closing2025.toLocaleString()}</span>,
+                                width: '105px',
+                                right: true,
+                            },
+                            {
+                                name: 'WITHDRAWAL',
+                                cell: row => (
+                                    <Form.Control
+                                        type="number"
+                                        min="0"
+                                        size="sm"
+                                        value={row.withdrawal || ''}
+                                        onChange={(e) => handleDataChange(row.id, 'withdrawal', e.target.value)}
+                                        className="text-end border fw-medium"
+                                        style={{
+                                            backgroundColor: '#fff',
+                                            borderColor: '#dee2e6',
+                                            minWidth: '90px',
+                                            padding: '0.375rem 0.5rem'
+                                        }}
+                                    />
+                                ),
+                                width: '115px',
+                                right: true,
+                            },
+                            {
+                                name: '2026 OPENING',
+                                selector: row => calculateOpening2026(row),
+                                cell: row => <span className="fw-medium text-dark">₹{calculateOpening2026(row).toLocaleString()}</span>,
+                                width: '130px',
+                                right: true,
+                            },
+                            {
+                                name: 'PAYMENT MODE',
+                                cell: row => (
+                                    <Form.Select
+                                        size="sm"
+                                        value={row.paymentMode}
+                                        onChange={(e) => handlePaymentModeChange(row.id, e.target.value)}
+                                        className="border-0 bg-transparent text-muted"
+                                        style={{ fontSize: '0.8rem' }}
+                                    >
+                                        <option value="cash">Cash</option>
+                                        <option value="online">Online</option>
+                                    </Form.Select>
+                                ),
+                                width: '120px',
+                            },
+                            {
+                                name: 'SELECT PERSON',
+                                cell: row => (
+                                    row.paymentMode === 'online' ? (
                                         <Form.Select
                                             size="sm"
-                                            value={member.paymentMode}
-                                            onChange={(e) => handlePaymentModeChange(member.id, e.target.value)}
-                                            style={{ fontSize: '0.8rem' }}
-                                            className="border-secondary-subtle"
+                                            value={row.selectedPerson}
+                                            onChange={(e) => handlePersonChange(row.id, e.target.value)}
+                                            className={`border ${!row.selectedPerson && row.collect > 0 ? 'text-danger fw-bold' : 'text-dark'}`}
+                                            style={{ fontSize: '0.8rem', backgroundColor: '#fff', borderColor: '#dee2e6' }}
                                         >
-                                            <option value="cash">Cash</option>
-                                            <option value="online">Online</option>
+                                            <option value="">Select Person...</option>
+                                            {activeMembers.map(m => (
+                                                <option key={m.id} value={m.id}>{m.name}</option>
+                                            ))}
                                         </Form.Select>
-                                    </td>
-                                    <td>
-                                        {member.paymentMode === 'online' ? (
-                                            <Form.Select
-                                                size="sm"
-                                                value={member.selectedPerson}
-                                                onChange={(e) => handlePersonChange(member.id, e.target.value)}
-                                                style={{ fontSize: '0.8rem' }}
-                                                className="border-secondary-subtle"
-                                            >
-                                                <option value="">Select Person...</option>
-                                                {activeMembers.map(m => (
-                                                    <option key={m.id} value={m.id}>{m.name}</option>
-                                                ))}
-                                            </Form.Select>
-                                        ) : (
-                                            <div className="text-center text-muted small">-</div>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                        <tfoot className="table-footer bg-light sticky-bottom" style={{ zIndex: 1, borderTop: '2px solid #dee2e6' }}>
-                            <tr>
-                                <td colSpan="2" className="fw-bold text-end pe-3 py-2 small">Total</td>
-                                <td className="fw-bold text-end py-2 small">
-                                    ₹{filteredMembers.reduce((sum, m) => sum + (m.demand || 0), 0).toLocaleString()}
-                                </td>
-                                <td className="fw-bold text-end py-2 text-primary small">
-                                    ₹{filteredMembers.reduce((sum, m) => sum + (m.collect || 0), 0).toLocaleString()}
-                                </td>
-                                <td className="fw-bold text-end py-2 text-muted small">
-                                    ₹{filteredMembers.reduce((sum, m) => sum + m.totalAmount, 0).toLocaleString()}
-                                </td>
-                                <td className="fw-bold text-end py-2 text-muted small">
-                                    {filteredMembers.reduce((sum, m) => sum + m.shareAmount, 0).toLocaleString()}
-                                </td>
-                                <td className="fw-bold text-end py-2 text-muted small">
-                                    ₹{filteredMembers.reduce((sum, m) => sum + m.closing2025, 0).toLocaleString()}
-                                </td>
-                                <td className="fw-bold text-end py-2 text-success small">
-                                    ₹{filteredMembers.reduce((sum, m) => sum + (m.withdrawal || 0), 0).toLocaleString()}
-                                </td>
-                                <td className="fw-bold text-end py-2 text-success small">
-                                    ₹{filteredMembers.reduce((sum, m) => sum + calculateOpening2026(m), 0).toLocaleString()}
-                                </td>
-                                <td colSpan="2" className="text-center py-2">
-                                    <button
-                                        onClick={handleSave}
-                                        className="btn btn-success fw-bold px-5 py-2"
-                                        style={{
-                                            backgroundColor: '#198754',
-                                            border: 'black',
-                                            borderRadius: '4px',
-                                            color: 'black',
-                                            fontSize: '0.9rem',
-                                            letterSpacing: '1px',
-                                            cursor: 'pointer',
-                                            pointerEvents: 'auto'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#198754'}
-                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#198754'}
-                                        onMouseDown={(e) => e.currentTarget.style.backgroundColor = '#198754'}
-                                        onMouseUp={(e) => e.currentTarget.style.backgroundColor = '#198754'}
-                                    >
-                                        SAVE
-                                    </button>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </Table>
-                </div>
+                                    ) : (
+                                        <div className="text-center text-muted small w-100">-</div>
+                                    )
+                                ),
+                                width: '200px',
+                            },
+                        ]}
+                        data={membersData}
+                        highlightOnHover
+                        pointerOnHover
+                        dense
+                        fixedHeader
+                        fixedHeaderScrollHeight="600px"
+                        customStyles={{
+                            responsiveWrapper: {
+                                style: {
+                                    overflowX: 'visible',
+                                },
+                            },
+                            rows: {
+                                style: {
+                                    minHeight: '48px',
+                                    fontSize: '0.875rem',
+                                    '&:nth-of-type(odd)': {
+                                        backgroundColor: '#bbdefb',
+                                    },
+                                    '&:nth-of-type(even)': {
+                                        backgroundColor: '#ffffff',
+                                    },
+                                },
+                            },
+                            headCells: {
+                                style: {
+                                    paddingLeft: '12px',
+                                    paddingRight: '12px',
+                                    paddingTop: '10px',
+                                    paddingBottom: '10px',
+                                    fontWeight: '600',
+                                    fontSize: '0.7rem',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                    color: '#6c757d',
+                                    backgroundColor: '#f8f9fa',
+                                },
+                            },
+                            cells: {
+                                style: {
+                                    paddingLeft: '12px',
+                                    paddingRight: '12px',
+                                    paddingTop: '8px',
+                                    paddingBottom: '8px',
+                                },
+                            },
+                        }}
+                        noDataComponent={
+                            <div className="text-center text-muted py-4">
+                                {selectedGroup ? 'No members found in this group' : 'Please select a group to view members'}
+                            </div>
+                        }
+                    />
+
+                    {/* Totals Footer */}
+                    {membersData.length > 0 && (
+                        <div className="bg-light border-top p-3 mt-3 rounded">
+                            <div className="d-flex fw-bold text-dark small text-uppercase align-items-center" style={{ fontSize: '1rem' }}>
+                                <div style={{ width: '55px', textAlign: 'center' }}></div>
+                                <div style={{ width: '170px', paddingLeft: '12px' }}>TOTAL</div>
+                                <div style={{ width: '110px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + (m.demand || 0), 0).toLocaleString()}</div>
+                                <div style={{ width: '120px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + (m.collect || 0), 0).toLocaleString()}</div>
+                                <div style={{ width: '105px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + m.totalAmount, 0).toLocaleString()}</div>
+                                <div style={{ width: '95px', textAlign: 'right', paddingRight: '12px' }}>{membersData.reduce((sum, m) => sum + m.shareAmount, 0).toLocaleString()}</div>
+                                <div style={{ width: '105px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + m.closing2025, 0).toLocaleString()}</div>
+                                <div style={{ width: '110px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + (m.withdrawal || 0), 0).toLocaleString()}</div>
+                                <div style={{ width: '130px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + calculateOpening2026(m), 0).toLocaleString()}</div>
+                                <div style={{ width: '120px', textAlign: 'center' }}></div>
+                                <div style={{ width: '190px', textAlign: 'center', paddingRight: '12px' }}>
+                                    <Button variant="success" onClick={handleSave} className="fw-medium" size="sm">
+                                        Save
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </Card.Body>
             </Card>
         </div>
     );

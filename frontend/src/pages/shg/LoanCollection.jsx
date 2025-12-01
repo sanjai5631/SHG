@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
     Card,
     Table,
@@ -38,9 +38,15 @@ export default function LoanManagement() {
         purpose: "",
     });
 
-    // ===========================
-    // LOAN REQUEST
-    // ===========================
+    // ============================================================
+    //                 LOAN REQUEST SECTION
+    // ============================================================
+
+    // Get current group details for repayment section (moved up for scope)
+    const currentRepaymentGroup = useMemo(() =>
+        data.shgGroups.find(g => g.id === parseInt(repaymentGroup)),
+        [data.shgGroups, repaymentGroup]
+    );
 
     const myGroups = data.shgGroups.filter(
         (g) => g.assignedTo === currentUser.id && g.status === "active"
@@ -53,6 +59,11 @@ export default function LoanManagement() {
                 m.groupId === parseInt(selectedGroup) && m.status === "active"
         )
         : [];
+
+    const myLoans = data.loans.filter((l) => {
+        const member = data.members.find((m) => m.id === l.memberId);
+        return member && myGroupIds.includes(member.groupId);
+    });
 
     const loanProducts = data.loanProducts.filter((p) => p.status === "active");
 
@@ -72,16 +83,14 @@ export default function LoanManagement() {
         );
 
         const tenor = Number(formData.tenor);
-        const monthlyInterest =
-            (loanAmount * product.interestRate) / (100 * 12);
-
+        const monthlyInterest = (loanAmount * product.interestRate) / (100 * 12);
         const emi = Math.round(loanAmount / tenor + monthlyInterest);
 
         addItem("loans", {
             memberId: Number(formData.memberId),
             productId: Number(formData.productId),
             amount: loanAmount,
-            interestRate: product.interestRate,
+            interestRate: product.intermentRoute,
             tenor,
             purpose: formData.purpose,
             status: "pending",
@@ -93,17 +102,27 @@ export default function LoanManagement() {
         alert("Loan request created successfully!");
     };
 
-    // ===========================
-    // REPAYMENT SECTION
-    // ===========================
+    const getMemberName = (id) =>
+        data.members.find((m) => m.id === id)?.name || "Unknown";
 
+    const getProductName = (id) =>
+        data.loanProducts.find((p) => p.id === id)?.name || "Unknown";
+
+    // ============================================================
+    //                 LOAN REPAYMENT SECTION
+    // ============================================================
+
+    // Search state
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // Filter members with loans by selected group and search term
     const membersWithLoans = data.members.filter((member) => {
         const hasLoan = data.loans.some(
             (l) => l.memberId === member.id && l.status === "approved"
         );
-        const matchesGroup =
-            !repaymentGroup || member.groupId === parseInt(repaymentGroup);
-        return hasLoan && matchesGroup;
+        const matchesGroup = !repaymentGroup || member.groupId === parseInt(repaymentGroup);
+        const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase());
+        return hasLoan && matchesGroup && matchesSearch;
     });
 
     // Pagination logic
@@ -150,6 +169,13 @@ export default function LoanManagement() {
 
             if (field === "collectionAmount") {
                 updates.interestAmount = Math.round(Number(value) * 0.01);
+            }
+
+            if (field === "paymentType" && value === "online") {
+                // Auto-select the assigned online collection account if available
+                if (currentRepaymentGroup?.onlineCollectionId) {
+                    updates.onlinePerson = currentRepaymentGroup.onlineCollectionId;
+                }
             }
 
             return {
@@ -280,12 +306,12 @@ export default function LoanManagement() {
                                     const repaid = getAmountRepaid(m.id);
                                     const balance = getLoanBalance(m.id);
 
-                                    const entry = entries[m.id] || {};
                                     const demandP = Math.round(loan.amount / 5);
-                                    const demandI = entry.demandInterest !== undefined ? Number(entry.demandInterest) : Math.round(demandP * 0.01);
+                                    const demandI = Math.round(demandP * 0.01);
 
+                                    const entry = entries[m.id] || {};
                                     const principal = Number(entry.collectionAmount || 0);
-                                    const intr = entry.interestAmount !== undefined ? Number(entry.interestAmount) : 0;
+                                    const intr = Math.round(principal * 0.01);
                                     const total = principal + intr;
                                     const rowBg = index % 2 === 0 ? "#d2e6fcff" : "#f0f6fcff";
 
@@ -334,7 +360,8 @@ export default function LoanManagement() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
+                                                    style={{ minWidth: '90px' }}
+                                                    className="border-secondary-subtle"
                                                 />
                                             </td>
 
@@ -365,7 +392,8 @@ export default function LoanManagement() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
+                                                    style={{ minWidth: '90px' }}
+                                                    className="border-secondary-subtle"
                                                 >
                                                     <option value="cash">Cash</option>
                                                     <option value="online">Online</option>
@@ -384,7 +412,8 @@ export default function LoanManagement() {
                                                                 e.target.value
                                                             )
                                                         }
-                                                        style={{ fontSize: '0.875rem', padding: '6px 8px', border: '1px solid #e0e0e0', borderRadius: '6px' }}
+                                                        style={{ minWidth: '130px' }}
+                                                        className="border-secondary-subtle"
                                                     >
                                                         <option value="">Select</option>
                                                         {data.members
@@ -399,7 +428,7 @@ export default function LoanManagement() {
                                                             ))}
                                                     </Form.Select>
                                                 ) : (
-                                                    <span style={{ fontSize: '0.875rem', color: '#6c757d' }}>-</span>
+                                                    <span className="text-muted small">-</span>
                                                 )}
                                             </td>
 
@@ -413,7 +442,7 @@ export default function LoanManagement() {
                                                     variant="success"
                                                     disabled={!principal}
                                                     onClick={() => handleSave(m.id)}
-                                                    style={{ fontSize: '0.75rem', padding: '4px 12px', borderRadius: '4px' }}
+                                                    className="py-0 px-2"
                                                 >
                                                     <FaSave />
                                                 </Button>
@@ -464,8 +493,8 @@ export default function LoanManagement() {
             <Modal
                 show={showModal}
                 onHide={() => setShowModal(false)}
-                centered
                 size="lg"
+                centered
             >
                 <Modal.Header closeButton>
                     <Modal.Title>Create Loan Request</Modal.Title>
@@ -476,7 +505,7 @@ export default function LoanManagement() {
                         <Row>
                             <Col md={6}>
                                 {selectedGroup && (
-                                    <Form.Group>
+                                    <Form.Group className="mb-3">
                                         <Form.Label>Member *</Form.Label>
                                         <Form.Select
                                             value={formData.memberId}
@@ -488,16 +517,12 @@ export default function LoanManagement() {
                                             }
                                             required
                                         >
-                                            <option value="">
-                                                Choose member...
-                                            </option>
+                                            <option value="">Choose member...</option>
+
                                             {groupMembers.map((m) => (
                                                 <option key={m.id} value={m.id}>
                                                     {m.name} (Balance: ₹
-                                                    {getMemberSavingsBalance(
-                                                        m.id
-                                                    )}
-                                                    )
+                                                    {getMemberSavingsBalance(m.id)})
                                                 </option>
                                             ))}
                                         </Form.Select>
@@ -508,7 +533,7 @@ export default function LoanManagement() {
 
                         {formData.memberId && (
                             <>
-                                <Form.Group>
+                                <Form.Group className="mb-3">
                                     <Form.Label>Loan Product *</Form.Label>
                                     <Form.Select
                                         value={formData.productId}
@@ -520,13 +545,12 @@ export default function LoanManagement() {
                                         }
                                         required
                                     >
-                                        <option value="">
-                                            Choose product
-                                        </option>
+                                        <option value="">Choose product</option>
+
                                         {loanProducts.map((p) => (
                                             <option key={p.id} value={p.id}>
-                                                {p.name} ({p.interestRate}% - Max:
-                                                ₹{p.maxAmount})
+                                                {p.name} ({p.interestRate}% - Max: ₹
+                                                {p.maxAmount})
                                             </option>
                                         ))}
                                     </Form.Select>
@@ -534,10 +558,8 @@ export default function LoanManagement() {
 
                                 <Row>
                                     <Col md={6}>
-                                        <Form.Group>
-                                            <Form.Label>
-                                                Loan Amount *
-                                            </Form.Label>
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>Loan Amount *</Form.Label>
                                             <Form.Control
                                                 type="number"
                                                 value={formData.amount}
@@ -553,7 +575,7 @@ export default function LoanManagement() {
                                     </Col>
 
                                     <Col md={6}>
-                                        <Form.Group>
+                                        <Form.Group className="mb-3">
                                             <Form.Label>Tenor *</Form.Label>
                                             <Form.Control
                                                 type="number"
@@ -570,7 +592,7 @@ export default function LoanManagement() {
                                     </Col>
                                 </Row>
 
-                                <Form.Group>
+                                <Form.Group className="mb-3">
                                     <Form.Label>Purpose *</Form.Label>
                                     <Form.Control
                                         as="textarea"
@@ -586,9 +608,9 @@ export default function LoanManagement() {
                                     />
                                 </Form.Group>
 
-                                <Alert variant="info" className="mt-3">
-                                    Member must have minimum 10% of loan amount
-                                    in savings balance.
+                                <Alert variant="info">
+                                    Member must have minimum 10% of loan amount in
+                                    savings balance.
                                 </Alert>
                             </>
                         )}
@@ -601,7 +623,7 @@ export default function LoanManagement() {
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" variant="success">
+                        <Button type="submit" variant="primary">
                             Submit Request
                         </Button>
                     </Modal.Footer>
