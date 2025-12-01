@@ -12,7 +12,7 @@ export default function Dashboard() {
     const meetings = getItems('meetings');
 
     // Get user's assigned groups
-    const myGroups = groups.filter(g => g.teamMemberId === currentUser?.id);
+    const myGroups = groups.filter(g => g.assignedTo === currentUser?.id);
     const myGroupIds = myGroups.map(g => g.id);
 
     // Get members in user's groups
@@ -283,7 +283,7 @@ export default function Dashboard() {
                                 onChange={(e) => setToDate(e.target.value)}
                             />
                         </Col>
-                        
+
                         <Col xs={12} sm={4} md={2} lg={1}>
                             <Button
                                 variant="primary"

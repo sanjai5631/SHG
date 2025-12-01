@@ -13,11 +13,12 @@ export const useApp = () => {
 // Initial mock data
 const initialData = {
     users: [
-        { id: 1, name: 'Admin User', email: 'admin@microfund.com', role: 'admin', status: 'active', createdAt: '2024-01-15' },
-        { id: 2, name: 'Priya Sharma', email: 'priya@microfund.com', role: 'shg_member', status: 'active', createdAt: '2024-02-01' },
-        { id: 3, name: 'Rajesh Kumar', email: 'rajesh@microfund.com', role: 'shg_member', status: 'active', createdAt: '2024-02-10' },
-        { id: 4, name: 'Kavita Singh', email: 'kavita@microfund.com', role: 'shg_member', status: 'active', createdAt: '2024-02-15' },
-        { id: 5, name: 'Amit Patel', email: 'amit@microfund.com', role: 'shg_member', status: 'active', createdAt: '2024-02-20' },
+        { id: 1, name: 'Admin User', email: 'admin@microfund.com', password: 'admin123', role: 'admin', status: 'active', createdAt: '2024-01-15' },
+        { id: 2, name: 'Priya Sharma', email: 'priya@microfund.com', password: 'priya123', role: 'shg_member', status: 'active', createdAt: '2024-02-01' },
+        { id: 3, name: 'Rajesh Kumar', email: 'rajesh@microfund.com', password: 'rajesh123', role: 'shg_member', status: 'active', createdAt: '2024-02-10' },
+        { id: 4, name: 'Kavita Singh', email: 'kavita@microfund.com', password: 'kavita123', role: 'shg_member', status: 'active', createdAt: '2024-02-15' },
+        { id: 5, name: 'Amit Patel', email: 'amit@microfund.com', password: 'amit123', role: 'shg_member', status: 'active', createdAt: '2024-02-20' },
+        { id: 6, name: 'Suresh Raina', email: 'suresh@microfund.com', password: 'suresh123', role: 'shg_team', status: 'active', createdAt: '2024-01-25' },
     ],
     savingProducts: [
         { id: 1, name: 'General Savings', code: 'GEN', interestRate: 4.0, status: 'active' },
@@ -64,7 +65,7 @@ const initialData = {
         { id: 7, name: 'Bosco Group', code: 'BSC007', area: 'Central Zone', meetingDay: 'Monday', meetingTime: '2:00 PM', assignedTo: 2, status: 'active', createdAt: '2024-03-10' },
     ],
     members: [
-        { id: 1, groupId: 1, employeeCode: 'EMP001', name: 'Sunita Devi', memberCode: 'MMA001-001', phone: '9876543210', email: 'sunita@example.com', gender: 'female', dateOfBirth: '1985-05-15', address: 'Village Rampur, District North', occupation: 'Agriculture', monthlyIncome: 15000, aadharNumber: '123456789012', panNumber: '', bankName: 'SBI', bankAccountNumber: '12345678901', ifscCode: 'SBIN0001234', nomineeName: 'Ramesh Devi', nomineeRelation: 'spouse', nomineePhone: '9876543299', joinDate: '2024-01-25', memberType: 'primary', status: 'active' },
+        { id: 1, groupId: 1, employeeCode: 'EMP001', name: 'Sunita Devi', memberCode: 'MMA001-001', phone: '9876543210', email: 'sunita@example.com', password: 'member123', gender: 'female', dateOfBirth: '1985-05-15', address: 'Village Rampur, District North', occupation: 'Agriculture', monthlyIncome: 15000, aadharNumber: '123456789012', panNumber: '', bankName: 'SBI', bankAccountNumber: '12345678901', ifscCode: 'SBIN0001234', nomineeName: 'Ramesh Devi', nomineeRelation: 'spouse', nomineePhone: '9876543299', joinDate: '2024-01-25', memberType: 'primary', status: 'active' },
         { id: 2, groupId: 1, employeeCode: 'EMP002', name: 'Geeta Sharma', memberCode: 'MMA001-002', phone: '9876543211', email: '', gender: 'female', dateOfBirth: '1990-08-20', address: 'Village Rampur', occupation: 'Small Business', monthlyIncome: 20000, aadharNumber: '234567890123', panNumber: '', bankName: 'HDFC', bankAccountNumber: '23456789012', ifscCode: 'HDFC0001234', nomineeName: 'Suresh Sharma', nomineeRelation: 'son', nomineePhone: '9876543298', joinDate: '2024-01-25', memberType: 'primary', status: 'active' },
         { id: 3, groupId: 1, employeeCode: 'EMP003', name: 'Rekha Patel', memberCode: 'MMA001-003', phone: '9876543212', email: '', gender: 'female', dateOfBirth: '1988-03-10', address: 'Village Rampur', occupation: 'Daily Wage', monthlyIncome: 10000, aadharNumber: '345678901234', panNumber: '', bankName: 'PNB', bankAccountNumber: '34567890123', ifscCode: 'PUNB0001234', nomineeName: 'Mohan Patel', nomineeRelation: 'spouse', nomineePhone: '9876543297', joinDate: '2024-01-26', memberType: 'associate', status: 'active' },
         { id: 4, groupId: 2, employeeCode: 'EMP004', name: 'Anita Singh', memberCode: 'SHK002-001', phone: '9876543213', email: 'anita@example.com', gender: 'female', dateOfBirth: '1987-11-25', address: 'Village Shaktipur, South Zone', occupation: 'Self Employed', monthlyIncome: 25000, aadharNumber: '456789012345', panNumber: 'ABCDE1234F', bankName: 'ICICI', bankAccountNumber: '45678901234', ifscCode: 'ICIC0001234', nomineeName: 'Vijay Singh', nomineeRelation: 'spouse', nomineePhone: '9876543296', joinDate: '2024-02-10', memberType: 'primary', status: 'active' },
@@ -120,6 +121,7 @@ const initialData = {
     ],
 };
 
+
 export const AppProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [data, setData] = useState(() => {
@@ -134,9 +136,24 @@ export const AppProvider = ({ children }) => {
 
     // Authentication
     const login = (email, password) => {
-        // Simple mock authentication
-        const user = data.users.find(u => u.email === email && u.status === 'active');
+        // Check system users first
+        let user = data.users.find(u => u.email === email && u.status === 'active');
+
+        // If not found, check members
+        if (!user) {
+            const member = data.members.find(m => m.email === email && m.status === 'active');
+            if (member) {
+                // Assign shg_member role to members for routing
+                user = { ...member, role: 'shg_member' };
+            }
+        }
+
         if (user) {
+            // Simple password check if password exists on user object
+            if (user.password && user.password !== password) {
+                return { success: false, message: 'Invalid credentials' };
+            }
+
             setCurrentUser(user);
             localStorage.setItem('microfund_user', JSON.stringify(user));
             return { success: true, user };
@@ -213,6 +230,14 @@ export const AppProvider = ({ children }) => {
         return totalAmount - paid;
     };
 
+    // Add Loan Request
+    const addLoanRequest = (loan) => {
+        setData((prev) => ({
+            ...prev,
+            loans: [...prev.loans, loan],
+        }));
+    };
+
     // Get member loans
     const getMemberLoans = (memberId) => {
         return data.loans.filter(l => l.memberId === memberId);
@@ -234,6 +259,7 @@ export const AppProvider = ({ children }) => {
         deleteItem,
         getItem,
         getItems,
+        addLoanRequest,
         getMemberSavingsBalance,
         getLoanOutstanding,
         getMemberLoans,
