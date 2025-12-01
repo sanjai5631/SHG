@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Container, Navbar, Nav, Dropdown } from 'react-bootstrap';
 import { useApp } from '../context/AppContext';
-import LogoutIcon from '../components/Icons/LogoutIcon';
 
 export default function SHGLayout() {
     const navigate = useNavigate();
@@ -169,7 +168,8 @@ export default function SHGLayout() {
                                     Loan
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
-                                    <Dropdown.Item as={Link} to="/shg/repayment-schedule" onClick={() => setExpanded(false)}>Repayment Schedule</Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/shg/loan-reschedule" onClick={() => setExpanded(false)}>Repayment Schedule</Dropdown.Item>
+                                     <Dropdown.Item as={Link} to="/shg/loanapproval" onClick={() => setExpanded(false)}>Loan Approval</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/shg/loan-request" onClick={() => setExpanded(false)}>Loan Request</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/shg/loan-issue" onClick={() => setExpanded(false)}>Loan Issue</Dropdown.Item>
                                 </Dropdown.Menu>
