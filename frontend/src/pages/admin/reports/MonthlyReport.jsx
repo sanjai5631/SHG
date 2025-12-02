@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card, Form, Row, Col, Button, Table, Spinner } from 'react-bootstrap';
-import { FaSearch, FaFileExcel, FaCalendarAlt, FaFileAlt } from 'react-icons/fa';
+import { FaSearch, FaFileExcel, FaFilePdf, FaCalendarAlt, FaFileAlt } from 'react-icons/fa';
+import './report-styles.css';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 export default function MonthlyReport({ data }) {
@@ -137,7 +140,126 @@ export default function MonthlyReport({ data }) {
         setIsLoading(false);
     };
 
-    // Export to Excel
+    // Export to PDF
+    const exportToPdf = () => {
+        if (!reportData || reportData.length === 0) {
+            alert('No data available to export. Please generate a report first.');
+            return;
+        }
+        
+        setIsLoading(true);
+        try {
+            // Initialize jsPDF with landscape orientation
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const title = 'Monthly Report';
+            const monthYear = `${months[selectedMonth]} ${selectedYear}`;
+            
+            // Set document properties
+            doc.setProperties({
+                title: `Monthly Report - ${monthYear}`,
+                subject: 'Monthly Financial Report',
+                author: 'SHG Management System'
+            });
+
+            // Add title and month/year
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text(title, 14, 15);
+            
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.text(`Month: ${monthYear}`, 14, 25);
+
+            // Prepare table data with proper null checks
+            const headers = [
+                'Date', 'Savings', 'Loan Repayment', 'Total', 'Savings Repaid', 
+                'Loan Given', 'Cash', 'Online', 'Total'
+            ];
+            
+            const tableData = (reportData || []).map(item => {
+                // Ensure item exists and has all required properties
+                const safeItem = item || {};
+                return [
+                    safeItem.date ? new Date(safeItem.date).toLocaleDateString('en-GB') : '-',
+                    `₹${(safeItem.savings || 0).toLocaleString('en-IN')}`,
+                    `₹${(safeItem.loanRepayment || 0).toLocaleString('en-IN')}`,
+                    `₹${(safeItem.totalInflow || 0).toLocaleString('en-IN')}`,
+                    `₹${(safeItem.savingsRepaid || 0).toLocaleString('en-IN')}`,
+                    `₹${(safeItem.loanGiven || 0).toLocaleString('en-IN')}`,
+                    `₹${(safeItem.cash || 0).toLocaleString('en-IN')}`,
+                    `₹${(safeItem.online || 0).toLocaleString('en-IN')}`,
+                    `₹${(safeItem.totalMode || 0).toLocaleString('en-IN')}`
+                ];
+            });
+
+            // Add totals row with null checks
+            const totalsRow = [
+                'Total',
+                `₹${(totals?.savings || 0).toLocaleString('en-IN')}`,
+                `₹${(totals?.loanRepayment || 0).toLocaleString('en-IN')}`,
+                `₹${(totals?.totalInflow || 0).toLocaleString('en-IN')}`,
+                `₹${(totals?.savingsRepaid || 0).toLocaleString('en-IN')}`,
+                `₹${(totals?.loanGiven || 0).toLocaleString('en-IN')}`,
+                `₹${(totals?.cash || 0).toLocaleString('en-IN')}`,
+                `₹${(totals?.online || 0).toLocaleString('en-IN')}`,
+                `₹${(totals?.totalMode || 0).toLocaleString('en-IN')}`
+            ];
+
+            // Add table
+            autoTable(doc, {
+                head: [headers],
+                body: [...tableData, totalsRow],
+                startY: 35,
+                styles: { 
+                    fontSize: 8,
+                    cellPadding: 2,
+                    overflow: 'linebreak',
+                    cellWidth: 'wrap'
+                },
+                headStyles: { 
+                    fillColor: [41, 128, 185],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                columnStyles: {
+                    0: { cellWidth: 20 },
+                    1: { cellWidth: 15 },
+                    2: { cellWidth: 20 },
+                    3: { cellWidth: 15 },
+                    4: { cellWidth: 20 },
+                    5: { cellWidth: 15 },
+                    6: { cellWidth: 15 },
+                    7: { cellWidth: 15 },
+                    8: { cellWidth: 15 }
+                },
+                didDrawPage: function(data) {
+                    // Add page number
+                    const pageSize = doc.internal.pageSize;
+                    const pageHeight = pageSize.height || pageSize.getHeight();
+                    doc.setFontSize(8);
+                    doc.text(
+                        `Page ${doc.internal.getNumberOfPages()}`,
+                        data.settings.margin.left,
+                        pageHeight - 10
+                    );
+                }
+            });
+
+            // Save the PDF
+            doc.save(`Monthly_Report_${monthYear.replace(' ', '_')}.pdf`);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please check console for details.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const exportToExcel = () => {
         if (reportData.length === 0) return;
 
@@ -201,12 +323,15 @@ export default function MonthlyReport({ data }) {
 
     return (
         <div className="fade-in">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1 className="fw-bold mb-0">Monthly Report</h1>
+                <div className="d-flex gap-2">
+                   
+                </div>
+            </div>
+            
             <Card className="border-0 shadow-sm mb-4">
                 <Card.Body className="p-4">
-                    <h4 className="mb-4">
-                        <FaFileAlt className="me-2 text-primary" />
-                        Monthly Report
-                    </h4>
 
                     <Row className="g-3 align-items-end">
                         <Col md={3}>
@@ -262,14 +387,25 @@ export default function MonthlyReport({ data }) {
                         </Col>
 
                         {reportData.length > 0 && (
-                            <Col md={3}>
-                                <Button
-                                    variant="success"
-                                    className="w-100"
-                                    onClick={exportToExcel}
-                                >
-                                    <FaFileExcel className="me-2" /> Export to Excel
-                                </Button>
+                            <Col xs="auto">
+                                <div className="d-flex gap-2">
+                                    <Button
+                                        variant="outline-danger"
+                                        className="export-btn pdf-btn"
+                                        onClick={exportToPdf}
+                                    >
+                                        <FaFilePdf className="me-1" />
+                                        PDF
+                                    </Button>
+                                    <Button
+                                        variant="outline-success"
+                                        className="export-btn excel-btn"
+                                        onClick={exportToExcel}
+                                    >
+                                        <FaFileExcel className="me-1" />
+                                        Excel
+                                    </Button>
+                                </div>
                             </Col>
                         )}
                     </Row>
