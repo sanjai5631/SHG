@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import { Card, Form, Row, Col, Button } from 'react-bootstrap';
 import { FaSearch, FaFilter, FaTimes, FaFilePdf, FaFileExcel, FaList } from 'react-icons/fa';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+// Import jsPDF with autoTable plugin
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+// Initialize jsPDF with autoTable
+const doc = new jsPDF();
+// This makes sure autoTable is available on the jsPDF instance
+Object.assign(jsPDF.API, { autoTable });
 import * as XLSX from 'xlsx';
 
 export default function MemberwiseReport({ data }) {
@@ -178,22 +184,31 @@ export default function MemberwiseReport({ data }) {
 
     const exportToPDF = () => {
         const doc = new jsPDF();
+        
+        // Add title
+        doc.setFontSize(16);
         doc.text("Memberwise Report", 14, 15);
-
+        
+        // Prepare table data
         const tableColumn = ["Name", "Group", "Total Savings", "Total Loans", "Pending Dues", "Last Payment"];
         const tableRows = memberData.map(m => [
-            m.name,
-            m.groupName,
-            `Rs. ${m.displaySavings}`,
-            `Rs. ${m.displayLoans}`,
-            `Rs. ${m.pendingDues}`,
-            m.lastPaymentDate !== 'N/A' ? new Date(m.lastPaymentDate).toLocaleDateString() : 'N/A'
+            m.name || '-',
+            m.groupName || '-',
+            `Rs. ${m.displaySavings || '0'}`,
+            `Rs. ${m.displayLoans || '0'}`,
+            `Rs. ${m.pendingDues || '0'}`,
+            m.lastPaymentDate && m.lastPaymentDate !== 'N/A' 
+                ? new Date(m.lastPaymentDate).toLocaleDateString() 
+                : 'N/A'
         ]);
 
-        doc.autoTable({
+        // Add table
+        autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
-            startY: 20,
+            startY: 25,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [41, 128, 185] }
         });
         doc.save("memberwise_report.pdf");
     };
@@ -213,7 +228,14 @@ export default function MemberwiseReport({ data }) {
     };
 
     return (
-        <div className="fade-in">
+        <div className="container-fluid px-3 py-3">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1 className="fw-bold mb-0">Memberwise Report</h1>
+                <div className="d-flex gap-2">
+                   
+                </div>
+            </div>
+            
             <Card className="border-0 shadow-sm mb-4">
                 <Card.Body className="p-4">
                     <Row className="g-3 align-items-end">
@@ -244,21 +266,41 @@ export default function MemberwiseReport({ data }) {
                         </Col>
                         <Col md={2}>
                             <Form.Label className="small fw-bold text-muted mb-2">Start Date</Form.Label>
-                            <Form.Control type="date" size="sm" value={localMemberwiseDateRange.startDate}
-                                onChange={(e) => setLocalMemberwiseDateRange({ ...localMemberwiseDateRange, startDate: e.target.value })} />
+                            <Form.Control 
+                                type="date" 
+                                size="sm" 
+                                value={localMemberwiseDateRange.startDate}
+                                onChange={(e) => setLocalMemberwiseDateRange({ ...localMemberwiseDateRange, startDate: e.target.value })} 
+                            />
                         </Col>
                         <Col md={2}>
                             <Form.Label className="small fw-bold text-muted mb-2">End Date</Form.Label>
-                            <Form.Control type="date" size="sm" value={localMemberwiseDateRange.endDate}
-                                onChange={(e) => setLocalMemberwiseDateRange({ ...localMemberwiseDateRange, endDate: e.target.value })} />
+                            <Form.Control 
+                                type="date" 
+                                size="sm" 
+                                value={localMemberwiseDateRange.endDate}
+                                onChange={(e) => setLocalMemberwiseDateRange({ ...localMemberwiseDateRange, endDate: e.target.value })} 
+                            />
                         </Col>
                         <Col md={1}>
-                            <Button variant="primary" size="sm" className="w-100" onClick={handleSearch} disabled={!selectedMember}>
+                            <Button 
+                                variant="primary" 
+                                size="sm" 
+                                className="w-100" 
+                                onClick={handleSearch} 
+                                disabled={!selectedMember}
+                            >
                                 <FaSearch />
                             </Button>
                         </Col>
                         <Col md={1}>
-                            <Button variant="outline-secondary" size="sm" className="w-100" onClick={handleClear} title="Clear filters">
+                            <Button 
+                                variant="outline-secondary" 
+                                size="sm" 
+                                className="w-100" 
+                                onClick={handleClear} 
+                                title="Clear filters"
+                            >
                                 <FaTimes />
                             </Button>
                         </Col>
