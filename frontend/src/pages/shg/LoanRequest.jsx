@@ -97,12 +97,35 @@ export default function LoanRequestPage() {
         return group ? group.name : "Unknown";
     };
 
+    // Styles matching SavingsManagement.jsx
+    const headerStyle = {
+        fontSize: '0.7rem',
+        fontWeight: '600',
+        color: '#6c757d',
+        backgroundColor: '#f8f9fa',
+        padding: '10px 12px',
+        borderBottom: '1px solid #dee2e6',
+        borderRight: '1px solid #dee2e6',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        textAlign: 'left',
+        verticalAlign: 'middle',
+        whiteSpace: 'nowrap'
+    };
+
+    const cellStyle = {
+        fontSize: '0.875rem',
+        padding: '8px 12px',
+        borderRight: '1px solid #dee2e6',
+        verticalAlign: 'middle'
+    };
+
     return (
         <div className="fade-in">
             {/* TITLE */}
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h4 className="fw-bold mb-0">Loan Request</h4>
-                <Button variant="primary" onClick={() => setShowModal(true)}>
+                <Button onClick={() => setShowModal(true)} style={{ backgroundColor: '#fd7e14', borderColor: '#fd7e14', color: 'white' }}>
                     + Request Loan
                 </Button>
             </div>
@@ -182,30 +205,30 @@ export default function LoanRequestPage() {
                     <Card.Body className="p-0">
                         <div style={{ maxHeight: '65vh', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
                             <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
-                                <thead style={{ position: 'sticky', top: 0, backgroundColor: '#d9d9d9ff', zIndex: 10 }}>
+                                <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f8f9fa', zIndex: 10 }}>
                                     <tr>
-                                        <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>ID</th>
-                                        <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>GROUP</th>
-                                        <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>MEMBER</th>
-                                        <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>AMOUNT</th>
-                                        <th style={{ width: '20%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PURPOSE</th>
-                                        <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>DATE</th>
-                                        <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>STATUS</th>
+                                        <th style={{ ...headerStyle, width: '10%' }}>ID</th>
+                                        <th style={{ ...headerStyle, width: '15%' }}>GROUP</th>
+                                        <th style={{ ...headerStyle, width: '15%' }}>MEMBER</th>
+                                        <th style={{ ...headerStyle, width: '15%' }}>AMOUNT</th>
+                                        <th style={{ ...headerStyle, width: '20%' }}>PURPOSE</th>
+                                        <th style={{ ...headerStyle, width: '15%' }}>DATE</th>
+                                        <th style={{ ...headerStyle, width: '10%', textAlign: 'center' }}>STATUS</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {displayedRequests.length > 0 ? (
                                         displayedRequests.map((loan, index) => {
-                                            const rowBg = index % 2 === 0 ? "#d2e6fcff" : "#f0f6fcff";
+                                            const rowBg = index % 2 === 0 ? "#bbdefb" : "#ffffff";
                                             return (
-                                                <tr key={loan.id} style={{ backgroundColor: rowBg, borderBottom: "1px solid #dee2e6" }}>
-                                                    <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#6c757d', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>#{loan.id}</td>
-                                                    <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{getGroupName(loan.memberId)}</td>
-                                                    <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{getMemberName(loan.memberId)}</td>
-                                                    <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#28a745', fontWeight: '600', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{loan.amount.toLocaleString()}</td>
-                                                    <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{loan.purpose}</td>
-                                                    <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{loan.appliedDate}</td>
-                                                    <td style={{ backgroundColor: rowBg, padding: '16px 8px', textAlign: 'center' }}>
+                                                <tr key={loan.id} style={{ backgroundColor: rowBg }}>
+                                                    <td style={{ ...cellStyle, backgroundColor: rowBg }}>#{loan.id}</td>
+                                                    <td style={{ ...cellStyle, backgroundColor: rowBg, fontWeight: '500' }}>{getGroupName(loan.memberId)}</td>
+                                                    <td style={{ ...cellStyle, backgroundColor: rowBg, fontWeight: '500' }}>{getMemberName(loan.memberId)}</td>
+                                                    <td style={{ ...cellStyle, backgroundColor: rowBg, color: '#28a745', fontWeight: '600' }}>₹{loan.amount.toLocaleString()}</td>
+                                                    <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.purpose}</td>
+                                                    <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.appliedDate}</td>
+                                                    <td style={{ ...cellStyle, backgroundColor: rowBg, textAlign: 'center' }}>
                                                         <Badge bg="warning" text="dark">
                                                             {loan.status}
                                                         </Badge>
@@ -292,7 +315,7 @@ export default function LoanRequestPage() {
                                         value={date}
                                         onChange={(e) => setDate(e.target.value)}
                                         required
-                                        max={new Date().toISOString().split('T')[0]}
+                                        min={new Date().toISOString().split('T')[0]}
                                     />
                                 </Form.Group>
                             </Col>
