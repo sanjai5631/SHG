@@ -16,6 +16,7 @@ export default function MemberwiseReport({ data }) {
     const [selectedMember, setSelectedMember] = useState('');
     const [localGroup, setLocalGroup] = useState('');
     const [localMemberwiseDateRange, setLocalMemberwiseDateRange] = useState({ startDate: '', endDate: '' });
+    const [dateError, setDateError] = useState('');
     const [selectedGroup, setSelectedGroup] = useState('');
     const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
 
@@ -154,7 +155,43 @@ export default function MemberwiseReport({ data }) {
         return { members, transactions };
     };
 
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    // Helper: get the next day (Start Date + 1) in YYYY-MM-DD format
+    const getNextDayISO = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().split('T')[0];
+    };
+
     const handleSearch = () => {
+        // Validate date range only if both dates are selected
+        const { startDate, endDate } = localMemberwiseDateRange;
+
+        if (startDate && startDate > todayStr) {
+            setDateError('Start Date cannot be in the future.');
+            return;
+        }
+
+        if (endDate && endDate < todayStr) {
+            setDateError('End Date cannot be earlier than today.');
+            return;
+        }
+
+        if (startDate && endDate && endDate < startDate) {
+            setDateError('End Date cannot be earlier than Start Date.');
+            return;
+        }
+
+        // Extra rule: End Date must be at least one day after Start Date (cannot be same day)
+        if (startDate && endDate && endDate === startDate) {
+            setDateError('End Date must be at least one day after Start Date.');
+            return;
+        }
+
+        setDateError('');
         setSelectedGroup(localGroup);
         setDateRange(localMemberwiseDateRange);
         setMemberwiseSearched(true);
@@ -165,6 +202,7 @@ export default function MemberwiseReport({ data }) {
         setLocalGroup('');
         setLocalMemberwiseDateRange({ startDate: '', endDate: '' });
         setMemberwiseSearched(false);
+        setDateError('');
     };
 
     const memberWiseData = memberwiseSearched ? getMemberWiseData() : { members: [], transactions: [] };
@@ -229,8 +267,8 @@ export default function MemberwiseReport({ data }) {
 
     return (
         <div className="container-fluid px-3 py-3">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1 className="fw-bold mb-0">Memberwise Report</h1>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4 className="fw-bold mb-0">Memberwise Report</h4>
                 <div className="d-flex gap-2">
                    
                 </div>
@@ -270,7 +308,26 @@ export default function MemberwiseReport({ data }) {
                                 type="date" 
                                 size="sm" 
                                 value={localMemberwiseDateRange.startDate}
-                                onChange={(e) => setLocalMemberwiseDateRange({ ...localMemberwiseDateRange, startDate: e.target.value })} 
+                                max={todayStr}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setLocalMemberwiseDateRange({
+                                        ...localMemberwiseDateRange,
+                                        startDate: value
+                                    });
+
+                                    if (value && value > todayStr) {
+                                        setDateError('Start Date cannot be in the future.');
+                                    } else if (
+                                        value &&
+                                        localMemberwiseDateRange.endDate &&
+                                        localMemberwiseDateRange.endDate < value
+                                    ) {
+                                        setDateError('End Date cannot be earlier than Start Date.');
+                                    } else {
+                                        setDateError('');
+                                    }
+                                }} 
                             />
                         </Col>
                         <Col md={2}>
@@ -279,16 +336,56 @@ export default function MemberwiseReport({ data }) {
                                 type="date" 
                                 size="sm" 
                                 value={localMemberwiseDateRange.endDate}
-                                onChange={(e) => setLocalMemberwiseDateRange({ ...localMemberwiseDateRange, endDate: e.target.value })} 
+                                min={
+                                    localMemberwiseDateRange.startDate
+                                        ? (
+                                            getNextDayISO(localMemberwiseDateRange.startDate) > todayStr
+                                                ? getNextDayISO(localMemberwiseDateRange.startDate)
+                                                : todayStr
+                                        )
+                                        : todayStr
+                                }
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setLocalMemberwiseDateRange({
+                                        ...localMemberwiseDateRange,
+                                        endDate: value
+                                    });
+
+                                    if (value && value < todayStr) {
+                                        setDateError('End Date cannot be earlier than today.');
+                                    } else if (
+                                        value &&
+                                        localMemberwiseDateRange.startDate &&
+                                        value < localMemberwiseDateRange.startDate
+                                    ) {
+                                        setDateError('End Date cannot be earlier than Start Date.');
+                                    } else if (
+                                        value &&
+                                        localMemberwiseDateRange.startDate &&
+                                        value === localMemberwiseDateRange.startDate
+                                    ) {
+                                        setDateError('End Date must be at least one day after Start Date.');
+                                    } else {
+                                        setDateError('');
+                                    }
+                                }} 
                             />
                         </Col>
+                        {dateError && (
+                            <Col xs={12}>
+                                <div className="text-danger small fw-semibold mt-1">
+                                    {dateError}
+                                </div>
+                            </Col>
+                        )}
                         <Col md={1}>
                             <Button 
                                 variant="primary" 
                                 size="sm" 
                                 className="w-100" 
                                 onClick={handleSearch} 
-                                disabled={!selectedMember}
+                                disabled={!selectedMember || !!dateError}
                             >
                                 <FaSearch />
                             </Button>
