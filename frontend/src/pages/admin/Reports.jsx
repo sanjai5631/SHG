@@ -6,7 +6,7 @@ import { FaUsers, FaCalendarAlt, FaChartBar, FaChartLine } from 'react-icons/fa'
 
 // Import Report Components
 import MemberwiseReport from './reports/MemberwiseReport';
-import DaywiseReport from './reports/DaywiseReport';
+import OverallReport from './reports/OverallReport';
 import MonthlyReport from './reports/MonthlyReport';
 import AnnualReport from './reports/AnnualReport';
 
@@ -21,12 +21,12 @@ export default function Reports() {
         const type = searchParams.get('type');
         let newReportType = reportType;
 
-        if (type && ['memberwise', 'daywise', 'monthly', 'annual'].includes(type)) {
+        if (type && ['memberwise', 'overall', 'monthly', 'annual'].includes(type)) {
             newReportType = type;
         } else {
             // Check path
             if (location.pathname.includes('memberwise-report')) newReportType = 'memberwise';
-            else if (location.pathname.includes('daywise-report')) newReportType = 'daywise';
+            else if (location.pathname.includes('overall-report')) newReportType = 'overall';
             else if (location.pathname.includes('monthly-report')) newReportType = 'monthly';
             else if (location.pathname.includes('annual-report')) newReportType = 'annual';
         }
@@ -41,8 +41,8 @@ export default function Reports() {
         switch (reportType) {
             case 'memberwise':
                 return <MemberwiseReport data={data} />;
-            case 'daywise':
-                return <DaywiseReport data={data} />;
+            case 'overall':
+                return <OverallReport data={data} />;
             case 'monthly':
                 return <MonthlyReport data={data} />;
             case 'annual':

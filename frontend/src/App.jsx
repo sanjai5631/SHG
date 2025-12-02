@@ -23,7 +23,6 @@ import LoanRepaymentSchedulerPage from './pages/shg/LoanReschedulepage';
 import LoanRequestPage from './pages/shg/LoanRequest';
 import SavingsManagement from './pages/shg/SavingsManagement';
 import CollectionPayment from './pages/shg/LoanCollection';
-import MeetingSummary from './pages/shg/MeetingSummary';
 import EasyEntry from './pages/shg/EasyEntry';
 import AssignCollector from './pages/shg/AssignCollector';
 import LoanIssue from './pages/shg/LoanIssue';
@@ -88,7 +87,7 @@ const AppRoutes = () => {
                 <Route path='loan-reschedule' element ={<LoanRepaymentSchedulerPage/>}/>
                 {/* Report Dropdown Routes */}
                 <Route path="memberwise-report" element={<Reports />} />
-                <Route path="daywise-report" element={<Reports />} />
+                <Route path="overall-report" element={<Reports />} />
                 <Route path="monthly-report" element={<Reports />} />
                 <Route path="annual-report" element={<Reports />} />
 
@@ -122,7 +121,7 @@ function App() {
             <Router>
                 <AppRoutes />
             </Router>
-        </AppProvider>
+        </AppProvider>  
     );
 }
 
