@@ -6,7 +6,7 @@ import { FaUsers, FaCalendarAlt, FaChartBar, FaChartLine } from 'react-icons/fa'
 
 // Import Report Components
 import MemberwiseReport from './reports/MemberwiseReport';
-import DaywiseReport from './reports/DaywiseReport';
+import DaywiseReport from './reports/OverallReport';
 import MonthlyReport from './reports/MonthlyReport';
 import AnnualReport from './reports/AnnualReport';
 
