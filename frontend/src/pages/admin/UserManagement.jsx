@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Card, Button, Modal, Form, Badge, InputGroup, Row, Col, Alert } from 'react-bootstrap';
-import DataTable from 'react-data-table-component';
+import DataTable from '../../components/DataTable';
 import { useApp } from '../../context/AppContext';
 
 export default function UserManagement() {
@@ -339,13 +339,13 @@ export default function UserManagement() {
             .reduce((sum, s) => sum + s.amount, 0);
     };
 
-    // Define columns for DataTable
-    const columns = [
+    // Define columns for custom DataTable
+    const columns = useMemo(() => [
         {
-            name: 'Name',
-            selector: row => row.name,
+            key: 'name',
+            label: 'Name',
             sortable: true,
-            cell: row => (
+            render: (value, row) => (
                 <div className="py-2">
                     <div className="fw-medium">{row.name}</div>
                     {row.role === 'member' && row.memberCode && (
@@ -356,21 +356,19 @@ export default function UserManagement() {
                         </div>
                     )}
                 </div>
-            ),
-            width: '250px',
+            )
         },
         {
-            name: 'Phone',
-            selector: row => row.phone,
+            key: 'phone',
+            label: 'Phone',
             sortable: true,
-            cell: row => <span className="text-muted small">{row.phone || '-'}</span>,
-            width: '160px',
+            render: (value) => <span className="text-muted small">{value || '-'}</span>
         },
         {
-            name: 'Type',
-            selector: row => row.role,
+            key: 'role',
+            label: 'Type',
             sortable: true,
-            cell: row => {
+            render: (value, row) => {
                 const roleInfo = getRoleInfo(row.role);
                 const isMember = row.recordType === 'member';
                 return (
@@ -389,14 +387,13 @@ export default function UserManagement() {
                         )}
                     </div>
                 );
-            },
-            width: '220px',
+            }
         },
         {
-            name: 'Group/Assigned',
-            selector: row => row.groupId,
+            key: 'groupId',
+            label: 'Group/Assigned',
             sortable: true,
-            cell: row => {
+            render: (value, row) => {
                 const isMember = row.recordType === 'member';
                 return (
                     <span className="text-muted small">
@@ -411,14 +408,13 @@ export default function UserManagement() {
                         )}
                     </span>
                 );
-            },
-            width: '220px',
+            }
         },
         {
-            name: 'Savings',
-            selector: row => row.id,
+            key: 'id',
+            label: 'Savings',
             sortable: true,
-            cell: row => {
+            render: (value, row) => {
                 const isMember = row.recordType === 'member';
                 return isMember ? (
                     <span className="text-success fw-medium">
@@ -427,105 +423,62 @@ export default function UserManagement() {
                 ) : (
                     <span className="text-muted">-</span>
                 );
-            },
-            width: '150px',
+            }
         },
         {
-            name: 'Status',
-            selector: row => row.status,
+            key: 'status',
+            label: 'Status',
             sortable: true,
-            cell: row => (
+            render: (value) => (
                 <Badge
-                    bg={row.status === 'active' ? 'success' : 'secondary'}
+                    bg={value === 'active' ? 'success' : 'secondary'}
                     className="fw-normal"
                     style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
                 >
-                    {row.status || 'active'}
+                    {value || 'active'}
                 </Badge>
-            ),
-            width: '120px',
-        },
-        {
-            name: 'Actions',
-            cell: row => (
-                <div className="d-flex gap-2 align-items-center">
-                    <Button
-                        variant="light"
-                        size="sm"
-                        className="text-primary border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
-                        style={{ width: '32px', height: '32px', backgroundColor: '#f0f4ff' }}
-                        onClick={() => handleOpenModal(row, row.recordType)}
-                        title="Edit"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
-                        </svg>
-                    </Button>
-                    <Form.Check
-                        type="switch"
-                        id={`custom-switch-${row.id}-${row.recordType}`}
-                        checked={row.status === 'active'}
-                        onChange={() => handleToggleStatus(row)}
-                        className="d-inline-block"
-                        title={row.status === 'active' ? 'Deactivate' : 'Activate'}
-                    />
-                    <Button
-                        variant="light"
-                        size="sm"
-                        className="text-danger border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
-                        style={{ width: '32px', height: '32px', backgroundColor: '#fff0f0' }}
-                        onClick={() => handleDelete(row)}
-                        title="Delete"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                            <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
-                        </svg>
-                    </Button>
-                </div>
-            ),
-            right: true,
-            width: '180px',
-        },
-    ];
+            )
+        }
+    ], []);
 
-    // Custom styles for DataTable with alternating row colors
-    const customStyles = {
-        rows: {
-            style: {
-                minHeight: '48px',
-                fontSize: '0.875rem',
-                '&:nth-of-type(odd)': {
-                    backgroundColor: '#bbdefb',
-                },
-                '&:nth-of-type(even)': {
-                    backgroundColor: '#ffffff',
-                },
-            },
-        },
-        headCells: {
-            style: {
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                paddingTop: '10px',
-                paddingBottom: '10px',
-                fontWeight: '600',
-                fontSize: '0.7rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                color: '#6c757d',
-                backgroundColor: '#f8f9fa',
-            },
-        },
-        cells: {
-            style: {
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                paddingTop: '8px',
-                paddingBottom: '8px',
-            },
-        },
-    };
+    // Action renderer for custom DataTable
+    const actionRenderer = (row) => (
+        <div className="d-flex gap-2 align-items-center">
+            <Button
+                variant="light"
+                size="sm"
+                className="text-primary border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px', backgroundColor: '#f0f4ff' }}
+                onClick={() => handleOpenModal(row, row.recordType)}
+                title="Edit"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+                </svg>
+            </Button>
+            <Form.Check
+                type="switch"
+                id={`custom-switch-${row.id}-${row.recordType}`}
+                checked={row.status === 'active'}
+                onChange={() => handleToggleStatus(row)}
+                className="d-inline-block"
+                title={row.status === 'active' ? 'Deactivate' : 'Activate'}
+            />
+            <Button
+                variant="light"
+                size="sm"
+                className="text-danger border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px', backgroundColor: '#fff0f0' }}
+                onClick={() => handleDelete(row)}
+                title="Delete"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                    <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                </svg>
+            </Button>
+        </div>
+    );
 
     return (
         <div className="fade-in">
@@ -551,48 +504,14 @@ export default function UserManagement() {
             {/* Users Table */}
             <Card className="border-0 shadow-sm">
                 <Card.Body className="p-4">
-
-
                     <DataTable
-                        columns={columns}
+                        initialColumns={columns}
                         data={filteredUsers}
-                        pagination
-                        paginationPerPage={10}
-                        paginationRowsPerPageOptions={[10, 20, 30, 50]}
-                        paginationResetDefaultPage={searchTerm !== ''}
-                        highlightOnHover
-                        pointerOnHover
-                        fixedHeader
-                        fixedHeaderScrollHeight="600px"
-                        customStyles={customStyles}
-                        subHeader
-                        subHeaderComponent={
-                            <div className="d-flex justify-content-end w-100 mb-3">
-                                <InputGroup style={{ maxWidth: '350px' }}>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Filter By Name"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="border-end-0"
-                                    />
-                                    <Button
-                                        variant="primary"
-                                        onClick={() => setSearchTerm('')}
-                                        style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-                                    >
-                                        {searchTerm ? '✕' : <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                                        </svg>}
-                                    </Button>
-                                </InputGroup>
-                            </div>
-                        }
-                        noDataComponent={
-                            <div className="text-center text-muted py-4">
-                                No users found
-                            </div>
-                        }
+                        actionRenderer={actionRenderer}
+                        enableFilter={true}
+                        enablePagination={true}
+                        enableSort={true}
+                        rowsPerPageOptions={[10, 20, 30, 50]}
                     />
                 </Card.Body>
             </Card>

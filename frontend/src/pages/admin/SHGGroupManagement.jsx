@@ -387,55 +387,61 @@ export default function SHGGroupManagement() {
                             </Col>
                         </Row>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Meeting Month *</Form.Label>
-                            <Form.Select
-                                value={formData.meetingDay}
-                                onChange={(e) => setFormData({ ...formData, meetingDay: e.target.value })}
-                                required
-                            >
-                                {meetingMonths.map(month => (
-                                    <option key={month} value={month}>{month}</option>
-                                ))}
-                            </Form.Select>
-                            <Form.Text className="text-muted">
-                                Select the month for the meeting schedule
-                            </Form.Text>
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Group Incharge *</Form.Label>
-                            <Form.Select
-                                value={formData.assignedTo}
-                                onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
-                                required
-                                disabled={shgTeamMembers.length === 0}
-                            >
-                                <option value="">Select Team Member</option>
-                                {shgTeamMembers.map(member => (
-                                    <option key={`${member.source}-${member.id}`} value={member.id}>
-                                        {member.name} {member.memberCode ? `(${member.memberCode})` : member.email ? `(${member.email})` : ''}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                            {shgTeamMembers.length === 0 && (
-                                <Form.Text className="text-danger">
-                                    No active SHG Team members found. Please create a user with 'SHG Team' role first.
-                                </Form.Text>
-                            )}
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Status *</Form.Label>
-                            <Form.Select
-                                value={formData.status}
-                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                required
-                            >
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                            </Form.Select>
-                        </Form.Group>
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Meeting Month *</Form.Label>
+                                    <Form.Select
+                                        value={formData.meetingDay}
+                                        onChange={(e) => setFormData({ ...formData, meetingDay: e.target.value })}
+                                        required
+                                    >
+                                        {meetingMonths.map(month => (
+                                            <option key={month} value={month}>{month}</option>
+                                        ))}
+                                    </Form.Select>
+                                    <Form.Text className="text-muted">
+                                        Select the month for the meeting schedule
+                                    </Form.Text>
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Group Incharge *</Form.Label>
+                                    <Form.Select
+                                        value={formData.assignedTo}
+                                        onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
+                                        required
+                                        disabled={shgTeamMembers.length === 0}
+                                    >
+                                        <option value="">Select Team Member</option>
+                                        {shgTeamMembers.map(member => (
+                                            <option key={`${member.source}-${member.id}`} value={member.id}>
+                                                {member.name} {member.memberCode ? `(${member.memberCode})` : member.email ? `(${member.email})` : ''}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                    {shgTeamMembers.length === 0 && (
+                                        <Form.Text className="text-danger">
+                                            No active SHG Team members found. Please create a user with 'SHG Team' role first.
+                                        </Form.Text>
+                                    )}
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Status *</Form.Label>
+                                    <Form.Select
+                                        value={formData.status}
+                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                        required
+                                    >
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                        </Row>
                     </Modal.Body>
 
                     <Modal.Footer>
