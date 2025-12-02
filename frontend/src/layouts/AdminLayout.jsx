@@ -216,7 +216,7 @@ export default function AdminLayout() {
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
                                     <Dropdown.Item as={Link} to="/admin/reports?type=memberwise" onClick={() => setExpanded(false)}>Memberwise Report</Dropdown.Item>
-                                    <Dropdown.Item as={Link} to="/admin/reports?type=daywise" onClick={() => setExpanded(false)}>Daywise Report</Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/admin/reports?type=overall" onClick={() => setExpanded(false)}>Overall Report</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/admin/reports?type=monthly" onClick={() => setExpanded(false)}>Monthly Report</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/admin/reports?type=annual" onClick={() => setExpanded(false)}>Annual Report</Dropdown.Item>
                                 </Dropdown.Menu>
