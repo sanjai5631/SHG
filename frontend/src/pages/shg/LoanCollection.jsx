@@ -391,7 +391,7 @@ export default function LoanManagement() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    style={{ minWidth: '80px', fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
+                                                    style={{ minWidth: '80px', fontSize: '0.890rem', padding: '8px', border: 'transparent', borderRadius: '8px',  backgroundColor: 'transparent' }}
                                                 >
                                                     <option value="cash">Cash</option>
                                                     <option value="online">Online</option>
@@ -433,26 +433,28 @@ export default function LoanManagement() {
                                                 {principal > 0 ? `₹${total.toLocaleString()}` : "-"}
                                             </td>
 
-                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', textAlign: 'center' }}>
-                                                <Button
-                                                    size="sm"
-                                                    variant="success"
-                                                    disabled={!principal}
-                                                    onClick={() => handleSave(m.id)}
-                                                    style={{
-                                                        backgroundColor: '#10b981',
-                                                        border: 'none',
-                                                        borderRadius: '8px',
-                                                        width: '32px',
-                                                        height: '32px',
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center'
-                                                    }}
-                                                >
-                                                    <FaSave />
-                                                </Button>
-                                            </td>
+                                           <td style={{ backgroundColor: rowBg, padding: '12px 8px', textAlign: 'center' }}>
+    <Button
+        size="sm"
+        variant="success"
+        disabled={!principal}
+        onClick={() => handleSave(m.id)}
+        style={{
+            backgroundColor: '#10b981',
+            border: 'none',
+            width: '50px',
+            height: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '20%',   // make circle
+            padding: 0             // remove inner padding
+        }}
+    >
+        <FaSave size={14} />  {/* icon only */}
+    </Button>
+</td>
+
                                         </tr>
                                     );
                                 })}
