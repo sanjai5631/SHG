@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Card, Tabs, Tab, Button, Modal, Form, Badge, InputGroup } from 'react-bootstrap';
-import DataTable from 'react-data-table-component';
+import { Card, Tabs, Tab, Button, Modal, Form, Badge } from 'react-bootstrap';
+import DataTable from '../../components/DataTable';
 import { useApp } from '../../context/AppContext';
 
 export default function SupportData() {
@@ -77,106 +77,62 @@ export default function SupportData() {
 
     const currentData = data[activeTab] || [];
 
-    // Define columns dynamically based on active tab - wrapped in useMemo
+    // Define columns for custom DataTable
     const columns = useMemo(() => [
         ...fields[activeTab].map(field => ({
-            name: field.label,
-            selector: row => row[field.name],
+            key: field.name,
+            label: field.label,
             sortable: true,
-            cell: row => {
-                const value = row[field.name];
+            render: (value) => {
                 if (field.type === 'number' && field.name.includes('Rate')) {
                     return `${value}%`;
                 } else if (field.type === 'number' && field.name.includes('Amount')) {
                     return `₹${value.toLocaleString()}`;
                 }
                 return value;
-            },
-            minWidth: field.name === 'name' ? '200px' : '150px',
+            }
         })),
         {
-            name: 'Status',
-            selector: row => row.status,
+            key: 'status',
+            label: 'Status',
             sortable: true,
-            cell: row => (
+            render: (status) => (
                 <Badge
-                    bg={row.status === 'active' ? 'success' : 'secondary'}
+                    bg={status === 'active' ? 'success' : 'secondary'}
                     className="fw-normal"
                     style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
                 >
-                    {row.status}
+                    {status}
                 </Badge>
-            ),
-            minWidth: '100px',
-        },
-        {
-            name: 'Actions',
-            cell: row => (
-                <div className="d-flex gap-2 align-items-center">
-                    <Button
-                        variant="light"
-                        size="sm"
-                        className="text-primary border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
-                        style={{ width: '32px', height: '32px', backgroundColor: '#f0f4ff' }}
-                        onClick={() => handleOpenModal(row)}
-                        title="Edit"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
-                        </svg>
-                    </Button>
-                    <Form.Check
-                        type="switch"
-                        id={`custom-switch-${row.id}-${activeTab}`}
-                        checked={row.status === 'active'}
-                        onChange={() => handleToggleStatus(row)}
-                        className="d-inline-block"
-                        title={row.status === 'active' ? 'Deactivate' : 'Activate'}
-                    />
-                </div>
-            ),
-            right: true,
-            minWidth: '120px',
-        },
+            )
+        }
     ], [activeTab]);
 
-    // Custom styles for DataTable
-    const customStyles = {
-        rows: {
-            style: {
-                minHeight: '48px',
-                fontSize: '0.875rem',
-                '&:nth-of-type(odd)': {
-                    backgroundColor: '#bbdefb',
-                },
-                '&:nth-of-type(even)': {
-                    backgroundColor: '#ffffff',
-                },
-            },
-        },
-        headCells: {
-            style: {
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                paddingTop: '10px',
-                paddingBottom: '10px',
-                fontWeight: '600',
-                fontSize: '0.7rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                color: '#6c757d',
-                backgroundColor: '#f8f9fa',
-            },
-        },
-        cells: {
-            style: {
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                paddingTop: '8px',
-                paddingBottom: '8px',
-            },
-        },
-    };
+    // Action renderer for custom DataTable
+    const actionRenderer = (row) => (
+        <div className="d-flex gap-2 align-items-center">
+            <Button
+                variant="light"
+                size="sm"
+                className="text-primary border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px', backgroundColor: '#f0f4ff' }}
+                onClick={() => handleOpenModal(row)}
+                title="Edit"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+                </svg>
+            </Button>
+            <Form.Check
+                type="switch"
+                id={`custom-switch-${row.id}-${activeTab}`}
+                checked={row.status === 'active'}
+                onChange={() => handleToggleStatus(row)}
+                className="d-inline-block"
+                title={row.status === 'active' ? 'Deactivate' : 'Activate'}
+            />
+        </div>
+    );
 
     return (
         <div className="fade-in">
@@ -208,22 +164,13 @@ export default function SupportData() {
                 </Card.Header>
                 <Card.Body className="p-4">
                     <DataTable
-                        columns={columns}
+                        initialColumns={columns}
                         data={currentData}
-                        pagination
-                        paginationPerPage={10}
-                        paginationRowsPerPageOptions={[10, 20, 30, 50]}
-                        highlightOnHover
-                        pointerOnHover
-                        fixedHeader
-                        fixedHeaderScrollHeight="400px"
-                        customStyles={customStyles}
-                        noDataComponent={
-                            <div className="text-center text-muted py-5">
-                                <div className="mb-2">📭</div>
-                                No data found for {tabs.find(t => t.id === activeTab)?.label}
-                            </div>
-                        }
+                        actionRenderer={actionRenderer}
+                        enableFilter={true}
+                        enablePagination={true}
+                        enableSort={true}
+                        rowsPerPageOptions={[10, 20, 30, 50]}
                     />
                 </Card.Body>
             </Card>
