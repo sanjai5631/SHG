@@ -9,8 +9,8 @@ export default function EasyEntry() {
     const [selectedMember, setSelectedMember] = useState('');
     const [transactionDate, setTransactionDate] = useState(new Date().toISOString().split('T')[0]);
     const [transactions, setTransactions] = useState([]);
-    const [openingBalance, setOpeningBalance] = useState({ cash: 0, pettyCash: 0, bank: 0 });
-    const [closingBalance, setClosingBalance] = useState({ cash: 0, pettyCash: 0, bank: 0 });
+    const [openingBalance, setOpeningBalance] = useState({ cash: 0, bank: 0 });
+    const [closingBalance, setClosingBalance] = useState({ cash: 0, bank: 0 });
 
     // Get active groups
     const activeGroups = data.shgGroups.filter(g => g.status === 'active');
@@ -96,7 +96,6 @@ export default function EasyEntry() {
         const total = calculateTotal();
         setClosingBalance({
             cash: openingBalance.cash + total,
-            pettyCash: openingBalance.pettyCash,
             bank: openingBalance.bank
         });
     }, [transactions, openingBalance]);
@@ -145,7 +144,6 @@ export default function EasyEntry() {
             <div className="d-flex align-items-center mb-3">
                 <div className="vr me-2 text-success" style={{ width: '4px', height: '24px', opacity: 1 }}></div>
                 <h5 className="mb-0 fw-bold">Easy Entry - Memberwise Collection</h5>
-                <div className="ms-auto text-danger small">* indicates a required field</div>
             </div>
 
             <Card className="border-0 shadow-sm">
@@ -205,7 +203,6 @@ export default function EasyEntry() {
                         <div>Opening Balance</div>
                         <div className="d-flex gap-5">
                             <div>Cash ₹ {openingBalance.cash.toLocaleString()} DR</div>
-                            <div>Petty Cash ₹ {openingBalance.pettyCash.toLocaleString()} DR</div>
                             <div>Bank ₹ {openingBalance.bank.toLocaleString()} CR</div>
                         </div>
                     </div>
@@ -305,7 +302,6 @@ export default function EasyEntry() {
                         <div>Closing Balance</div>
                         <div className="d-flex gap-5">
                             <div>Cash ₹ {closingBalance.cash.toLocaleString()} DR</div>
-                            <div>Petty Cash ₹ {closingBalance.pettyCash.toLocaleString()} DR</div>
                             <div>Bank ₹ {closingBalance.bank.toLocaleString()} CR</div>
                         </div>
                     </div>

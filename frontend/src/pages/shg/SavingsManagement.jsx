@@ -18,6 +18,29 @@ export default function SavingsManagement() {
     // Members data state
     const [membersData, setMembersData] = useState([]);
 
+    // Cash Denomination State
+    const [denominations, setDenominations] = useState({
+        500: 0,
+        200: 0,
+        100: 0,
+        50: 0,
+        20: 0,
+        10: 0
+    });
+
+    const handleDenominationChange = (value, count) => {
+        setDenominations(prev => ({
+            ...prev,
+            [value]: parseInt(count) || 0
+        }));
+    };
+
+    const totalCashCalculated = Object.entries(denominations).reduce((sum, [val, count]) => sum + (parseInt(val) * count), 0);
+
+    const totalSystemCash = membersData
+        .filter(m => m.paymentMode === 'cash')
+        .reduce((sum, m) => sum + (m.collect || 0), 0);
+
     // Get all active members for person dropdown
     const activeMembers = useMemo(() =>
         data.members.filter(m => m.status === 'active'),
@@ -551,6 +574,70 @@ export default function SavingsManagement() {
                     )}
                 </Card.Body>
             </Card>
+            {/* Cash Denomination Calculator */}
+            {membersData.length > 0 && (
+                <div className="d-flex justify-content-end mt-3">
+                    <Card className="border-0 shadow-sm w-25">
+                        <Card.Body className="p-3">
+                            <h6 className="fw-bold mb-3 text-uppercase text-center" style={{ fontSize: '0.75rem', letterSpacing: '0.5px', color: '#6c757d' }}>Cash Denomination</h6>
+                            <div className="d-flex justify-content-end">
+                                <Table bordered size="sm" className="mb-0" style={{ fontSize: '0.875rem', width: 'auto' }}>
+                                    <thead style={{ backgroundColor: '#f8f9fa' }}>
+                                        <tr>
+                                            <th className="text-center py-2 fw-semibold">Cash</th>
+                                            <th className="text-center py-2 fw-semibold" style={{ width: '100px' }}></th>
+                                            <th className="text-end py-2 fw-semibold">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {[500, 200, 100, 50, 20, 10].map(val => (
+                                            <tr key={val}>
+                                                <td className="text-end align-middle py-1 px-2">{val}</td>
+                                                <td className="py-1 px-1">
+                                                    <Form.Control
+                                                        type="number"
+                                                        min="0"
+                                                        size="sm"
+                                                        className="text-center"
+                                                        style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
+                                                        value={denominations[val] || ''}
+                                                        onChange={(e) => handleDenominationChange(val, e.target.value)}
+                                                    />
+                                                </td>
+                                                <td className="text-end align-middle py-1 px-2">{(val * (denominations[val] || 0)).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                        <tr style={{ backgroundColor: '#ff00ff' }}>
+                                            <td colSpan={2} className="text-end fw-bold py-2 px-2">Total</td>
+                                            <td className="text-end fw-bold py-2 px-2">{totalCashCalculated.toLocaleString()}</td>
+                                        </tr>
+                                        <tr className="border-top border-2">
+                                            <td colSpan={2} className="text-end fw-semibold py-2 px-2 text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>System Cash Total</td>
+                                            <td className="text-end fw-bold py-2 px-2 text-primary">₹{totalSystemCash.toLocaleString()}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan={2} className="text-end fw-semibold py-2 px-2 text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Physical Cash Total</td>
+                                            <td className={`text-end fw-bold py-2 px-2 ${totalCashCalculated === totalSystemCash ? 'text-success' : 'text-danger'}`}>
+                                                ₹{totalCashCalculated.toLocaleString()}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan={2} className="text-end fw-semibold py-2 px-2 text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</td>
+                                            <td className="text-end fw-bold py-2 px-2">
+                                                {totalCashCalculated === totalSystemCash ? (
+                                                    <span className="text-success">✓ Matched</span>
+                                                ) : (
+                                                    <span className="text-danger">⚠ Diff: ₹{Math.abs(totalCashCalculated - totalSystemCash).toLocaleString()}</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </Table>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </div>
+            )}
         </div>
     );
 }
