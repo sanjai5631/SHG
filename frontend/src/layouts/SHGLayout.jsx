@@ -203,7 +203,7 @@ export default function SHGLayout() {
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
                                     <Dropdown.Item as={Link} to="/shg/memberwise-report" onClick={() => setExpanded(false)}>Memberwise Report</Dropdown.Item>
-                                    <Dropdown.Item as={Link} to="/shg/daywise-report" onClick={() => setExpanded(false)}>Daywise Report</Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/shg/daywise-report" onClick={() => setExpanded(false)}>Overall Report</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/shg/monthly-report" onClick={() => setExpanded(false)}>Monthly Report</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/shg/annual-report" onClick={() => setExpanded(false)}>Annual Report</Dropdown.Item>
                                 </Dropdown.Menu>

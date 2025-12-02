@@ -101,11 +101,27 @@ export default function ApprovedLoansPage() {
         }
     };
 
-    const stickyHeader = {
-        position: "sticky",
-        top: 0,
-        zIndex: 10,
-        backgroundColor: "#d9d9d9ff",
+    // Styles matching SavingsManagement.jsx
+    const headerStyle = {
+        fontSize: '0.7rem',
+        fontWeight: '600',
+        color: '#6c757d',
+        backgroundColor: '#f8f9fa',
+        padding: '10px 12px',
+        borderBottom: '1px solid #dee2e6',
+        borderRight: '1px solid #dee2e6',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        textAlign: 'left',
+        verticalAlign: 'middle',
+        whiteSpace: 'nowrap'
+    };
+
+    const cellStyle = {
+        fontSize: '0.875rem',
+        padding: '8px 12px',
+        borderRight: '1px solid #dee2e6',
+        verticalAlign: 'middle'
     };
 
     return (
@@ -122,14 +138,14 @@ export default function ApprovedLoansPage() {
                 <Card.Body className="p-0">
                     <div className="table-responsive" style={{ maxHeight: "340px" }}>
                         <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
-                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#d9d9d9ff', zIndex: 10 }}>
+                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f8f9fa', zIndex: 10 }}>
                                 <tr>
-                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Employee Code</th>
-                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Name</th>
-                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Loan Amount</th>
-                                    <th style={{ width: '25%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Purpose</th>
-                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Date</th>
-                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Action</th>
+                                    <th style={{ ...headerStyle, width: '15%' }}>Employee Code</th>
+                                    <th style={{ ...headerStyle, width: '15%' }}>Name</th>
+                                    <th style={{ ...headerStyle, width: '15%' }}>Loan Amount</th>
+                                    <th style={{ ...headerStyle, width: '25%' }}>Purpose</th>
+                                    <th style={{ ...headerStyle, width: '15%' }}>Date</th>
+                                    <th style={{ ...headerStyle, width: '15%', textAlign: 'center' }}>Action</th>
                                 </tr>
                             </thead>
 
@@ -137,26 +153,25 @@ export default function ApprovedLoansPage() {
                                 {loanRequests.length > 0 ? (
                                     loanRequests.map((loan, index) => {
                                         const member = getMember(loan.memberId);
-                                        const rowBg = index % 2 === 0 ? "#d2e6fcff" : "#f0f6fcff";
+                                        const rowBg = index % 2 === 0 ? "#bbdefb" : "#ffffff";
 
                                         return (
                                             <tr
                                                 key={loan.id}
                                                 style={{
                                                     backgroundColor: rowBg,
-                                                    borderBottom: "1px solid #dee2e6"
                                                 }}
                                             >
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#6c757d', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{member.code || "N/A"}</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{member.name || "Unknown"}</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#28a745', fontWeight: '600', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{loan.amount?.toLocaleString()}</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{loan.purpose || "-"}</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{member.code || "N/A"}</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg, fontWeight: '500' }}>{member.name || "Unknown"}</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg, color: '#28a745', fontWeight: '600' }}>₹{loan.amount?.toLocaleString()}</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.purpose || "-"}</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>
                                                     {loan.appliedDate
                                                         ? new Date(loan.appliedDate).toLocaleDateString()
                                                         : "-"}
                                                 </td>
-                                                <td style={{ backgroundColor: rowBg, padding: '16px 8px', textAlign: 'center' }}>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg, textAlign: 'center' }}>
                                                     <Button
                                                         variant="link"
                                                         className="text-success p-0 me-3"
@@ -247,17 +262,17 @@ export default function ApprovedLoansPage() {
                 <Card.Body className="p-0">
                     <div className="table-responsive" style={{ maxHeight: "340px" }}>
                         <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
-                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#d9d9d9ff', zIndex: 10 }}>
+                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f8f9fa', zIndex: 10 }}>
                                 <tr>
-                                    <th style={{ width: '12%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Member</th>
-                                    <th style={{ width: '12%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Product</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Amount</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Interest</th>
-                                    <th style={{ width: '8%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Tenor</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>EMI</th>
-                                    <th style={{ width: '15%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Purpose</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Date</th>
-                                    <th style={{ width: '10%', fontSize: '0.65rem', fontWeight: '600', color: '#565151ff', padding: '14px 10px', borderBottom: '1px solid #c2c0c0ff', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>Status</th>
+                                    <th style={{ ...headerStyle, width: '12%' }}>Member</th>
+                                    <th style={{ ...headerStyle, width: '12%' }}>Product</th>
+                                    <th style={{ ...headerStyle, width: '10%' }}>Amount</th>
+                                    <th style={{ ...headerStyle, width: '8%' }}>Interest</th>
+                                    <th style={{ ...headerStyle, width: '8%' }}>Tenor</th>
+                                    <th style={{ ...headerStyle, width: '10%' }}>EMI</th>
+                                    <th style={{ ...headerStyle, width: '15%' }}>Purpose</th>
+                                    <th style={{ ...headerStyle, width: '10%' }}>Date</th>
+                                    <th style={{ ...headerStyle, width: '10%', textAlign: 'center' }}>Status</th>
                                 </tr>
                             </thead>
 
@@ -265,29 +280,28 @@ export default function ApprovedLoansPage() {
                                 {currentItems.length > 0 ? (
                                     currentItems.map((loan, index) => {
                                         const member = getMember(loan.memberId);
-                                        const rowBg = index % 2 === 0 ? "#d2e6fcff" : "#f0f6fcff";
+                                        const rowBg = index % 2 === 0 ? "#bbdefb" : "#ffffff";
 
                                         return (
                                             <tr
                                                 key={loan.id}
                                                 style={{
                                                     backgroundColor: rowBg,
-                                                    borderBottom: "1px solid #dee2e6"
                                                 }}
                                             >
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{member.name || "Unknown"}</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{getProductName(loan.productId)}</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#28a745', fontWeight: '600', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{loan.amount?.toLocaleString()}</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{loan.interestRate}%</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{loan.tenor} months</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{loan.emi?.toLocaleString()}</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{loan.purpose || "-"}</td>
-                                                <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg, fontWeight: '500' }}>{member.name || "Unknown"}</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{getProductName(loan.productId)}</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg, color: '#28a745', fontWeight: '600' }}>₹{loan.amount?.toLocaleString()}</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.interestRate}%</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.tenor} months</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>₹{loan.emi?.toLocaleString()}</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.purpose || "-"}</td>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>
                                                     {loan.appliedDate
                                                         ? new Date(loan.appliedDate).toLocaleDateString()
                                                         : "-"}
                                                 </td>
-                                                <td style={{ backgroundColor: rowBg, padding: '16px 8px', textAlign: 'center' }}>
+                                                <td style={{ ...cellStyle, backgroundColor: rowBg, textAlign: 'center' }}>
                                                     {loan.status === "approved" ? (
                                                         <Badge bg="success">Approved</Badge>
                                                     ) : (

@@ -19,7 +19,7 @@ import Reports from './pages/admin/Reports';
 // SHG Team Member Pages
 import SHGDashboard from './pages/shg/Dashboard';
 import ApprovedLoansPage from './pages/shg/LoanApproval';
-import LoanRepaymentSchedulerPage from './pages/shg/LoanReschedulepage';
+import LoanRepaymentSchedulerPage from './pages/shg/LoanRepaymentSchedular';
 import LoanRequestPage from './pages/shg/LoanRequest';
 import SavingsManagement from './pages/shg/SavingsManagement';
 import CollectionPayment from './pages/shg/LoanCollection';
