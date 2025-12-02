@@ -152,21 +152,34 @@ export default function AssignCollector() {
         <div className="fade-in">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h1 className="h2 fw-bold mb-1">Assign Collector</h1>
-                    <p className="text-muted mb-0">Manage collector assignments and online collection accounts</p>
+                    <h1 className="h4 fw-bold mb-1">Assign Collector</h1>
                 </div>
-                <div style={{ width: '300px' }}>
+                <div style={{ width: '400px' }}>
                     <InputGroup>
-                        <InputGroup.Text className="bg-white border-end-0">
-                            <FaSearch className="text-muted" />
-                        </InputGroup.Text>
                         <Form.Control
                             type="text"
-                            placeholder="Search groups..."
-                            className="border-start-0 ps-0"
+                            placeholder="Filter By Name"
+                            className="border-end-0"
+                            style={{
+                                borderTopRightRadius: 0,
+                                borderBottomRightRadius: 0,
+                                fontSize: '0.95rem',
+                                padding: '0.75rem 1rem'
+                            }}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
+                        <Button
+                            variant="primary"
+                            style={{
+                                borderTopLeftRadius: 0,
+                                borderBottomLeftRadius: 0,
+                                paddingLeft: '1.5rem',
+                                paddingRight: '1.5rem'
+                            }}
+                        >
+                            <FaSearch size={18} />
+                        </Button>
                     </InputGroup>
                 </div>
             </div>
