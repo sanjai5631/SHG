@@ -352,8 +352,8 @@ export default function SavingsManagement() {
                             {
                                 name: 'SNO',
                                 selector: (row, index) => index + 1,
+                                cell: (row, index) => <div className="text-center">{index + 1}</div>,
                                 width: '60px',
-                                center: true,
                             },
                             {
                                 name: 'NAME',
@@ -385,7 +385,6 @@ export default function SavingsManagement() {
                                     />
                                 ),
                                 width: '110px',
-                                right: true,
                             },
                             {
                                 name: 'ACT.COLLECT',
@@ -406,28 +405,24 @@ export default function SavingsManagement() {
                                     />
                                 ),
                                 width: '120px',
-                                right: true,
                             },
                             {
                                 name: 'TOTAL AMOUNT',
                                 selector: row => row.totalAmount,
-                                cell: row => <span className="fw-medium text-dark">₹{row.totalAmount.toLocaleString()}</span>,
+                                cell: row => <div className="text-end"><span className="fw-medium text-dark">₹{row.totalAmount.toLocaleString()}</span></div>,
                                 width: '105px',
-                                right: true,
                             },
                             {
                                 name: 'SHARE AMOUNT',
                                 selector: row => row.shareAmount,
-                                cell: row => <span className="text-muted">{row.shareAmount.toLocaleString()}</span>,
+                                cell: row => <div className="text-end"><span className="text-muted">{row.shareAmount.toLocaleString()}</span></div>,
                                 width: '95px',
-                                right: true,
                             },
                             {
                                 name: '2025 CLOSING',
                                 selector: row => row.closing2025,
-                                cell: row => <span className="text-muted">₹{row.closing2025.toLocaleString()}</span>,
+                                cell: row => <div className="text-end"><span className="text-muted">₹{row.closing2025.toLocaleString()}</span></div>,
                                 width: '105px',
-                                right: true,
                             },
                             {
                                 name: 'WITHDRAWAL',
@@ -448,14 +443,12 @@ export default function SavingsManagement() {
                                     />
                                 ),
                                 width: '115px',
-                                right: true,
                             },
                             {
                                 name: '2026 OPENING',
                                 selector: row => calculateOpening2026(row),
-                                cell: row => <span className="fw-medium text-dark">₹{calculateOpening2026(row).toLocaleString()}</span>,
+                                cell: row => <div className="text-end"><span className="fw-medium text-dark">₹{calculateOpening2026(row).toLocaleString()}</span></div>,
                                 width: '130px',
-                                right: true,
                             },
                             {
                                 name: 'PAYMENT MODE',
