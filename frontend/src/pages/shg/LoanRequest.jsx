@@ -292,6 +292,7 @@ export default function LoanRequestPage() {
                                         value={date}
                                         onChange={(e) => setDate(e.target.value)}
                                         required
+                                        max={new Date().toISOString().split('T')[0]}
                                     />
                                 </Form.Group>
                             </Col>
@@ -311,16 +312,16 @@ export default function LoanRequestPage() {
 
                         <div className="text-end">
                             <Button
-                                variant="secondary"
-                                className="me-2"
+                                variant="danger"
+                                className="me-4"
                                 onClick={() => setShowModal(false)}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
-                                variant="primary"
-                                className="px-4"
+                                variant="success"
+                                className="px-2"
                             >
                                 Submit Request
                             </Button>
