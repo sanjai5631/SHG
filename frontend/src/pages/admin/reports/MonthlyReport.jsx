@@ -323,7 +323,7 @@ export default function MonthlyReport({ data }) {
     return (
         <div className="fade-in">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1 className="fw-bold mb-0">Monthly Report</h1>
+                <h4 className="fw-bold mb-0">Monthly Report</h4>
                 <div className="d-flex gap-2">
                    
                 </div>

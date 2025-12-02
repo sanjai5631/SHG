@@ -2,6 +2,7 @@
   "dependencies": {
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",
-    "react-data-table-component": "^7.7.0"
+    "react-data-table-component": "^7.7.0",
+    "xlsx": "^0.18.5"
   }
 }
