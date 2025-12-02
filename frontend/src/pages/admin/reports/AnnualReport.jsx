@@ -3,6 +3,7 @@ import { Card, Form, Row, Col, Button, Table, Spinner } from 'react-bootstrap';
 import { FaSearch, FaFileExcel, FaFilePdf, FaCalendarAlt, FaFileAlt } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
     import * as XLSX from 'xlsx';
 
 export default function AnnualReport({ data }) {
