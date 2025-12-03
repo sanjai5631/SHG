@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { useApp } from "../../context/AppContext";
-import { Card, Table, Badge, Button, Row, Col, Form, Pagination } from "react-bootstrap";
+import { Card, Badge, Button, Row, Col, Form } from "react-bootstrap";
 import { FaCheck, FaTimes } from "react-icons/fa";
+import DataTable from "../../components/DataTable";
 
 export default function ApprovedLoansPage() {
     const { data, currentUser, updateItem } = useApp();
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedMember, setSelectedMember] = useState("");
-    const [selectedStatus, setSelectedStatus] = useState(""); // New: Status filter
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const [selectedStatus, setSelectedStatus] = useState("");
 
     if (!currentUser) return null;
 
@@ -27,23 +26,20 @@ export default function ApprovedLoansPage() {
     const loanRequests = data.loans
         .filter((loan) => {
             const member = getMember(loan.memberId);
-
-            // show even if member has no groupId (avoids missing display)
             if (!member.groupId) return true;
-
-            // Show all requested/pending loans regardless of permissions to ensure visibility
             return loan.status !== "approved" && loan.status !== "rejected";
         })
-        .sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate));
+        .sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate))
+        .map(loan => ({
+            ...loan,
+            member: getMember(loan.memberId)
+        }));
 
     // --------------------- APPROVED & REJECTED LOANS ---------------------
     let processedLoans = data.loans
         .filter((loan) => {
             const member = getMember(loan.memberId);
-
             if (!member.groupId) return false;
-
-            // Show both approved and rejected loans
             return loan.status === "approved" || loan.status === "rejected";
         });
 
@@ -71,13 +67,12 @@ export default function ApprovedLoansPage() {
     // Sort finally
     processedLoans.sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate));
 
-    // Pagination Logic
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = processedLoans.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(processedLoans.length / itemsPerPage);
-
-    const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+    // Map with member data
+    processedLoans = processedLoans.map(loan => ({
+        ...loan,
+        member: getMember(loan.memberId),
+        productName: getProductName(loan.productId)
+    }));
 
     // Get list of members who have approved or rejected loans (for dropdown)
     const processedMemberIds = new Set(data.loans.filter(l => l.status === 'approved' || l.status === 'rejected').map(l => l.memberId));
@@ -101,33 +96,9 @@ export default function ApprovedLoansPage() {
         }
     };
 
-    // Styles matching SavingsManagement.jsx
-    const headerStyle = {
-        fontSize: '0.7rem',
-        fontWeight: '600',
-        color: '#6c757d',
-        backgroundColor: '#f8f9fa',
-        padding: '10px 12px',
-        borderBottom: '1px solid #dee2e6',
-        borderRight: '1px solid #dee2e6',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        textAlign: 'left',
-        verticalAlign: 'middle',
-        whiteSpace: 'nowrap'
-    };
-
-    const cellStyle = {
-        fontSize: '0.875rem',
-        padding: '8px 12px',
-        borderRight: '1px solid #dee2e6',
-        verticalAlign: 'middle'
-    };
-
     return (
         <div>
             <h4 className="fw-bold mb-3">Loan Management</h4>
-
 
             {/* ------------ LOAN REQUESTS TABLE ------------ */}
             <Card className="border-0 shadow-sm mb-4">
@@ -136,72 +107,65 @@ export default function ApprovedLoansPage() {
                 </Card.Header>
 
                 <Card.Body className="p-0">
-                    <div className="table-responsive" style={{ maxHeight: "340px" }}>
-                        <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
-                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f8f9fa', zIndex: 10 }}>
-                                <tr>
-                                    <th style={{ ...headerStyle, width: '15%' }}>Employee Code</th>
-                                    <th style={{ ...headerStyle, width: '15%' }}>Name</th>
-                                    <th style={{ ...headerStyle, width: '15%' }}>Loan Amount</th>
-                                    <th style={{ ...headerStyle, width: '25%' }}>Purpose</th>
-                                    <th style={{ ...headerStyle, width: '15%' }}>Date</th>
-                                    <th style={{ ...headerStyle, width: '15%', textAlign: 'center' }}>Action</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {loanRequests.length > 0 ? (
-                                    loanRequests.map((loan, index) => {
-                                        const member = getMember(loan.memberId);
-                                        const rowBg = index % 2 === 0 ? "#bbdefb" : "#ffffff";
-
-                                        return (
-                                            <tr
-                                                key={loan.id}
-                                                style={{
-                                                    backgroundColor: rowBg,
-                                                }}
-                                            >
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{member.code || "N/A"}</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg, fontWeight: '500' }}>{member.name || "Unknown"}</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg, color: '#28a745', fontWeight: '600' }}>₹{loan.amount?.toLocaleString()}</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.purpose || "-"}</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>
-                                                    {loan.appliedDate
-                                                        ? new Date(loan.appliedDate).toLocaleDateString()
-                                                        : "-"}
-                                                </td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg, textAlign: 'center' }}>
-                                                    <Button
-                                                        variant="link"
-                                                        className="text-success p-0 me-3"
-                                                        title="Approve"
-                                                        onClick={() => handleApprove(loan.id)}
-                                                    >
-                                                        <FaCheck size={18} />
-                                                    </Button>
-                                                    <Button
-                                                        variant="link"
-                                                        className="text-danger p-0"
-                                                        title="Reject"
-                                                        onClick={() => handleReject(loan.id)}
-                                                    >
-                                                        <FaTimes size={18} />
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                ) : (
-                                    <tr>
-                                        <td colSpan={6} className="text-center py-4 text-muted">
-                                            No pending loan requests found
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </Table>
-                    </div>
+                    <DataTable
+                        data={loanRequests}
+                        initialColumns={[
+                            {
+                                key: 'member',
+                                label: 'Employee Code',
+                                sortable: true,
+                                render: (member) => member.code || "N/A"
+                            },
+                            {
+                                key: 'member',
+                                label: 'Name',
+                                sortable: true,
+                                render: (member) => <span style={{ fontWeight: '500' }}>{member.name || "Unknown"}</span>
+                            },
+                            {
+                                key: 'amount',
+                                label: 'Loan Amount',
+                                sortable: true,
+                                render: (val) => <span style={{ color: '#28a745', fontWeight: '600' }}>₹{val?.toLocaleString()}</span>
+                            },
+                            {
+                                key: 'purpose',
+                                label: 'Purpose',
+                                sortable: true,
+                                render: (val) => val || "-"
+                            },
+                            {
+                                key: 'appliedDate',
+                                label: 'Date',
+                                sortable: true,
+                                render: (val) => val ? new Date(val).toLocaleDateString() : "-"
+                            }
+                        ]}
+                        actionRenderer={(row) => (
+                            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                                <Button
+                                    variant="link"
+                                    className="text-success p-0"
+                                    title="Approve"
+                                    onClick={() => handleApprove(row.id)}
+                                >
+                                    <FaCheck size={18} />
+                                </Button>
+                                <Button
+                                    variant="link"
+                                    className="text-danger p-0"
+                                    title="Reject"
+                                    onClick={() => handleReject(row.id)}
+                                >
+                                    <FaTimes size={18} />
+                                </Button>
+                            </div>
+                        )}
+                        enableFilter={true}
+                        enablePagination={true}
+                        enableExport={true}
+                        rowsPerPageOptions={[10, 25, 50]}
+                    />
                 </Card.Body>
             </Card>
 
@@ -218,10 +182,7 @@ export default function ApprovedLoansPage() {
                                     <Form.Select
                                         size="sm"
                                         value={selectedStatus}
-                                        onChange={(e) => {
-                                            setSelectedStatus(e.target.value);
-                                            setCurrentPage(1); // Reset to page 1 on filter change
-                                        }}
+                                        onChange={(e) => setSelectedStatus(e.target.value)}
                                     >
                                         <option value="">All Status</option>
                                         <option value="approved">Approved</option>
@@ -233,20 +194,14 @@ export default function ApprovedLoansPage() {
                                         type="date"
                                         size="sm"
                                         value={selectedDate}
-                                        onChange={(e) => {
-                                            setSelectedDate(e.target.value);
-                                            setCurrentPage(1); // Reset to page 1 on filter change
-                                        }}
+                                        onChange={(e) => setSelectedDate(e.target.value)}
                                     />
                                 </Col>
                                 <Col xs={6} md={4}>
                                     <Form.Select
                                         size="sm"
                                         value={selectedMember}
-                                        onChange={(e) => {
-                                            setSelectedMember(e.target.value);
-                                            setCurrentPage(1); // Reset to page 1 on filter change
-                                        }}
+                                        onChange={(e) => setSelectedMember(e.target.value)}
                                     >
                                         <option value="">All Members</option>
                                         {processedMembers.map(m => (
@@ -260,89 +215,78 @@ export default function ApprovedLoansPage() {
                 </Card.Header>
 
                 <Card.Body className="p-0">
-                    <div className="table-responsive" style={{ maxHeight: "340px" }}>
-                        <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
-                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f8f9fa', zIndex: 10 }}>
-                                <tr>
-                                    <th style={{ ...headerStyle, width: '12%' }}>Member</th>
-                                    <th style={{ ...headerStyle, width: '12%' }}>Product</th>
-                                    <th style={{ ...headerStyle, width: '10%' }}>Amount</th>
-                                    <th style={{ ...headerStyle, width: '8%' }}>Interest</th>
-                                    <th style={{ ...headerStyle, width: '8%' }}>Tenor</th>
-                                    <th style={{ ...headerStyle, width: '10%' }}>EMI</th>
-                                    <th style={{ ...headerStyle, width: '15%' }}>Purpose</th>
-                                    <th style={{ ...headerStyle, width: '10%' }}>Date</th>
-                                    <th style={{ ...headerStyle, width: '10%', textAlign: 'center' }}>Status</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {currentItems.length > 0 ? (
-                                    currentItems.map((loan, index) => {
-                                        const member = getMember(loan.memberId);
-                                        const rowBg = index % 2 === 0 ? "#bbdefb" : "#ffffff";
-
-                                        return (
-                                            <tr
-                                                key={loan.id}
-                                                style={{
-                                                    backgroundColor: rowBg,
-                                                }}
-                                            >
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg, fontWeight: '500' }}>{member.name || "Unknown"}</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{getProductName(loan.productId)}</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg, color: '#28a745', fontWeight: '600' }}>₹{loan.amount?.toLocaleString()}</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.interestRate}%</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.tenor} months</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>₹{loan.emi?.toLocaleString()}</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.purpose || "-"}</td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg }}>
-                                                    {loan.appliedDate
-                                                        ? new Date(loan.appliedDate).toLocaleDateString()
-                                                        : "-"}
-                                                </td>
-                                                <td style={{ ...cellStyle, backgroundColor: rowBg, textAlign: 'center' }}>
-                                                    {loan.status === "approved" ? (
-                                                        <Badge bg="success">Approved</Badge>
-                                                    ) : (
-                                                        <Badge bg="danger">Rejected</Badge>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                ) : (
-                                    <tr>
-                                        <td colSpan={9} className="text-center py-4 text-muted">
-                                            No loan records found
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </Table>
-                    </div >
-                    {/* Pagination Controls */}
-                    {
-                        totalPages > 1 && (
-                            <div className="d-flex justify-content-center py-3 border-top">
-                                <Pagination>
-                                    <Pagination.Prev
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                    >
-                                        Previous
-                                    </Pagination.Prev>
-                                    <Pagination.Next
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                    >
-                                        Next
-                                    </Pagination.Next>
-                                </Pagination>
-                            </div>
-                        )
-                    }
-                </Card.Body >
+                    <DataTable
+                        key={`${selectedStatus}-${selectedDate}-${selectedMember}`}
+                        data={processedLoans}
+                        initialColumns={[
+                            {
+                                key: 'member',
+                                label: 'Member',
+                                sortable: true,
+                                render: (member) => <span style={{ fontWeight: '500' }}>{member.name || "Unknown"}</span>
+                            },
+                            {
+                                key: 'productName',
+                                label: 'Product',
+                                sortable: true
+                            },
+                            {
+                                key: 'amount',
+                                label: 'Amount',
+                                sortable: true,
+                                render: (val) => <span style={{ color: '#28a745', fontWeight: '600' }}>₹{val?.toLocaleString()}</span>
+                            },
+                            {
+                                key: 'interestRate',
+                                label: 'Interest',
+                                sortable: true,
+                                render: (val) => `${val}%`
+                            },
+                            {
+                                key: 'tenor',
+                                label: 'Tenor',
+                                sortable: true,
+                                render: (val) => `${val} months`
+                            },
+                            {
+                                key: 'emi',
+                                label: 'EMI',
+                                sortable: true,
+                                render: (val) => `₹${val?.toLocaleString()}`
+                            },
+                            {
+                                key: 'purpose',
+                                label: 'Purpose',
+                                sortable: true,
+                                render: (val) => val || "-"
+                            },
+                            {
+                                key: 'appliedDate',
+                                label: 'Date',
+                                sortable: true,
+                                render: (val) => val ? new Date(val).toLocaleDateString() : "-"
+                            },
+                            {
+                                key: 'status',
+                                label: 'Status',
+                                sortable: true,
+                                render: (val) => (
+                                    <div style={{ textAlign: 'center' }}>
+                                        {val === "approved" ? (
+                                            <Badge bg="success">Approved</Badge>
+                                        ) : (
+                                            <Badge bg="danger">Rejected</Badge>
+                                        )}
+                                    </div>
+                                )
+                            }
+                        ]}
+                        enableFilter={true}
+                        enablePagination={true}
+                        enableExport={true}
+                        rowsPerPageOptions={[10, 25, 50]}
+                    />
+                </Card.Body>
             </Card>
         </div>
     );

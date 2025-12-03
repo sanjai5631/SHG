@@ -11,9 +11,10 @@ import {
     Badge,
     Pagination,
 } from "react-bootstrap";
+import DataTable from "../../components/DataTable";
+import { FaSave, FaMoneyBillWave } from "react-icons/fa";
 
 import { useApp } from "../../context/AppContext";
-import { FaSave } from "react-icons/fa";
 
 export default function LoanManagement() {
     const {
@@ -31,6 +32,7 @@ export default function LoanManagement() {
     const itemsPerPage = 10;
     const [entries, setEntries] = useState({});
     const [totalCashCalculated, setTotalCashCalculated] = useState(0);
+    const [showCashModal, setShowCashModal] = useState(false);
 
     const [formData, setFormData] = useState({
         memberId: "",
@@ -284,6 +286,21 @@ export default function LoanManagement() {
     // UI
     // ===========================
 
+    // Styles matching DataTable.jsx
+    const headerStyle = {
+        fontSize: '0.7rem',
+        fontWeight: '600',
+        color: '#6c757d',
+        backgroundColor: '#f8f9fa',
+        padding: '16px 16px', // py-3 px-3
+        borderBottom: '0',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        textAlign: 'left',
+        verticalAlign: 'middle',
+        whiteSpace: 'nowrap'
+    };
+
     return (
         <div className="fade-in">
             {/* Table */}
@@ -314,226 +331,194 @@ export default function LoanManagement() {
                     </Row>
                 </Card.Header>
                 <Card.Body className="p-0">
-                    <div style={{ maxHeight: '65vh', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
-                        <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
-                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f8f9fa', zIndex: 10 }}>
-                                <tr>
-                                    <th style={{ width: '7%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>EMP<br />CODE</th>
-                                    <th style={{ width: '10%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>NAME</th>
-                                    <th style={{ width: '10%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>OUTSTANDING</th>
-                                    <th style={{ width: '8%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PRINCIPAL</th>
-                                    <th style={{ width: '7%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>1% INT.</th>
-                                    <th style={{ width: '8%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL<br />DEMAND</th>
-                                    <th style={{ width: '10%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>COLLECTION</th>
-                                    <th style={{ width: '8%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>INT.</th>
-                                    <th style={{ width: '8%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TYPE</th>
-                                    <th style={{ width: '10%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>PERSON</th>
-                                    <th style={{ width: '8%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>TOTAL</th>
-                                    <th style={{ width: '6%', fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', padding: '14px 10px', borderBottom: '1px solid #dee2e6', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>ACTION</th>
-                                </tr>
-                            </thead>
 
-                            <tbody>
-                                {paginatedMembers.map((m, index) => {
-                                    const loan = getActiveLoan(m.id);
-                                    const repaid = getAmountRepaid(m.id);
-                                    const balance = getLoanBalance(m.id);
+                    <DataTable
+                        key={repaymentGroup}
+                        data={membersWithLoans.map(m => {
+                            const loan = getActiveLoan(m.id);
+                            const repaid = getAmountRepaid(m.id);
+                            const balance = getLoanBalance(m.id);
+                            const demandP = Math.round(loan.amount / 5);
+                            const demandI = Math.round(demandP * 0.01);
+                            const entry = entries[m.id] || {};
+                            const principal = Number(entry.collectionAmount || 0);
+                            const intr = Math.round(principal * 0.01);
+                            const total = principal + intr;
 
-                                    const demandP = Math.round(loan.amount / 5);
-                                    const demandI = Math.round(demandP * 0.01);
+                            return {
+                                ...m,
+                                loanId: loan.id, // For key
+                                balance,
+                                demandP,
+                                demandI,
+                                totalDemand: demandP + demandI,
+                                entry, // Pass entry for renderers
+                                principal,
+                                intr,
+                                total
+                            };
+                        })}
+                        initialColumns={[
+                            { key: 'employeeCode', label: 'ID', sortable: true, render: (val) => <span style={{ color: '#6c757d' }}>{val || '-'}</span> },
+                            { key: 'name', label: 'NAME', sortable: true, render: (val) => <span style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>{val}</span> },
+                            {
+                                key: 'balance', label: 'PENDING LOAN', sortable: true,
+                                render: (val) => <span style={{ color: '#dc3545', fontWeight: '600' }}>₹{val.toLocaleString()}</span>
+                            },
+                            { key: 'demandP', label: 'DEMAND PRINCIPAL', sortable: true, render: (val) => `₹${val.toLocaleString()}` },
+                            {
+                                key: 'demandInterest',
+                                label: 'DEMAND INT',
+                                sortable: true,
+                                render: (_, row) => {
+                                    const demandInt = row.entry.demandInterest !== undefined ? row.entry.demandInterest : Math.round(row.demandP * 0.01);
+                                    return `₹${demandInt.toLocaleString()}`;
+                                }
+                            },
 
-                                    const entry = entries[m.id] || {};
-                                    const principal = Number(entry.collectionAmount || 0);
-                                    const intr = Math.round(principal * 0.01);
-                                    const total = principal + intr;
-                                    const rowBg = index % 2 === 0 ? "#bbdefb" : "#ffffff";
-
-                                    return (
-                                        <tr
-                                            key={m.id}
-                                            style={{
-                                                backgroundColor: rowBg,
-                                                borderBottom: "1px solid #dee2e6"
+                            {
+                                key: 'collectionAmount', label: 'COLLECTION', sortable: false,
+                                render: (_, row) => (
+                                    <div style={{ width: '100px' }}>
+                                        <Form.Control
+                                            type="text"
+                                            size="sm"
+                                            value={row.entry.collectionAmount || ""}
+                                            onChange={(e) => handleInputChange(row.id, "collectionAmount", e.target.value)}
+                                            onKeyPress={(e) => {
+                                                if (!/[0-9]/.test(e.key)) {
+                                                    e.preventDefault();
+                                                }
                                             }}
+                                            style={{ width: '100px', minWidth: '100px', textAlign: 'right' }}
+                                        />
+                                    </div>
+                                )
+                            },
+                            {
+                                key: 'interestAmount', label: 'INTREST', sortable: false,
+                                render: (_, row) => (
+                                    <div style={{ width: '80px' }}>
+                                        <Form.Control
+                                            type="text"
+                                            size="sm"
+                                            value={row.entry.interestAmount !== undefined ? row.entry.interestAmount : ""}
+                                            onChange={(e) => handleInputChange(row.id, "interestAmount", e.target.value)}
+                                            onKeyPress={(e) => {
+                                                if (!/[0-9]/.test(e.key)) {
+                                                    e.preventDefault();
+                                                }
+                                            }}
+                                            style={{ width: '80px', minWidth: '80px', maxWidth: '80px', fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', textAlign: 'right', backgroundColor: '#fff' }}
+                                        />
+                                    </div>
+                                )
+                            },
+                            {
+                                key: 'paymentType', label: 'PAYMENT TYPE', sortable: false,
+                                render: (_, row) => (
+                                    <div style={{ width: '100px' }}>
+                                        <Form.Select
+                                            size="sm"
+                                            value={row.entry.paymentType || "cash"}
+                                            onChange={(e) => handleInputChange(row.id, "paymentType", e.target.value)}
+                                            style={{ width: '100px', minWidth: '100px', maxWidth: '100px', fontSize: '0.890rem', padding: '8px', border: 'transparent', borderRadius: '8px', backgroundColor: 'transparent' }}
                                         >
-                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#6c757d', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{m.employeeCode || '-'}</td>
-                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>{m.name}</td>
-                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#dc3545', fontWeight: '600', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
-                                                ₹{balance.toLocaleString()}
-                                            </td>
-                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{demandP.toLocaleString()}</td>
-                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', borderRight: '1px solid #dee2e6' }}>
-                                                <Form.Control
-                                                    type="number"
-                                                    size="sm"
-                                                    value={entry.demandInterest !== undefined ? entry.demandInterest : Math.round(demandP * 0.01)}
-                                                    onChange={(e) =>
-                                                        handleInputChange(
-                                                            m.id,
-                                                            "demandInterest",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    style={{ fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
-                                                />
-                                            </td>
-                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', fontWeight: '500', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
-                                                ₹{(demandP + demandI).toLocaleString()}
-                                            </td>
-
-                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', borderRight: '1px solid #dee2e6' }}>
-                                                <Form.Control
-                                                    type="number"
-                                                    size="sm"
-                                                    value={entry.collectionAmount || ""}
-                                                    onChange={(e) =>
-                                                        handleInputChange(
-                                                            m.id,
-                                                            "collectionAmount",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    style={{ minWidth: '90px', fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
-                                                />
-                                            </td>
-
-                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', borderRight: '1px solid #dee2e6' }}>
-                                                <Form.Control
-                                                    type="number"
-                                                    size="sm"
-                                                    value={entry.interestAmount !== undefined ? entry.interestAmount : ""}
-                                                    onChange={(e) =>
-                                                        handleInputChange(
-                                                            m.id,
-                                                            "interestAmount",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    style={{ fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
-                                                />
-                                            </td>
-
-                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', borderRight: '1px solid #dee2e6' }}>
-                                                <Form.Select
-                                                    size="sm"
-                                                    value={entry.paymentType || "cash"}
-                                                    onChange={(e) =>
-                                                        handleInputChange(
-                                                            m.id,
-                                                            "paymentType",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    style={{ minWidth: '80px', fontSize: '0.890rem', padding: '8px', border: 'transparent', borderRadius: '8px',  backgroundColor: 'transparent' }}
-                                                >
-                                                    <option value="cash">Cash</option>
-                                                    <option value="online">Online</option>
-                                                </Form.Select>
-                                            </td>
-
-                                            <td style={{ backgroundColor: rowBg, padding: '12px 8px', borderRight: '1px solid #dee2e6' }}>
-                                                {entry.paymentType === "online" ? (
-                                                    <Form.Select
-                                                        size="sm"
-                                                        value={entry.onlinePerson || ""}
-                                                        onChange={(e) =>
-                                                            handleInputChange(
-                                                                m.id,
-                                                                "onlinePerson",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        style={{ minWidth: '110px', fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
-                                                    >
-                                                        <option value="">Select</option>
-                                                        {data.members
-                                                            .filter((x) => x.id !== m.id)
-                                                            .map((x) => (
-                                                                <option
-                                                                    key={x.id}
-                                                                    value={x.id}
-                                                                >
-                                                                    {x.name}
-                                                                </option>
-                                                            ))}
-                                                    </Form.Select>
-                                                ) : (
-                                                    <span className="text-muted small">-</span>
-                                                )}
-                                            </td>
-
-                                            <td style={{ backgroundColor: rowBg, fontSize: '0.875rem', color: '#28a745', fontWeight: '600', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>
-                                                {principal > 0 ? `₹${total.toLocaleString()}` : "-"}
-                                            </td>
-
-                                           <td style={{ backgroundColor: rowBg, padding: '12px 8px', textAlign: 'center' }}>
-    <Button
-        size="sm"
-        variant="success"
-        disabled={!principal}
-        onClick={() => handleSave(m.id)}
-        style={{
-            backgroundColor: '#10b981',
-            border: 'none',
-            width: '50px',
-            height: '32px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '20%',   // make circle
-            padding: 0             // remove inner padding
-        }}
-    >
-        <FaSave size={14} />  {/* icon only */}
-    </Button>
-</td>
-
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
+                                            <option value="cash">Cash</option>
+                                            <option value="online">Online</option>
+                                        </Form.Select>
+                                    </div>
+                                )
+                            },
+                            {
+                                key: 'onlinePerson', label: 'ONLINE PERSON', sortable: false,
+                                render: (_, row) => row.entry.paymentType === "online" ? (
+                                    <div style={{ width: '130px' }}>
+                                        <Form.Select
+                                            size="sm"
+                                            value={row.entry.onlinePerson || ""}
+                                            onChange={(e) => handleInputChange(row.id, "onlinePerson", e.target.value)}
+                                            style={{ width: '130px', minWidth: '130px', maxWidth: '130px', fontSize: '0.875rem', padding: '8px', border: '1px solid #ced4da', borderRadius: '8px', backgroundColor: '#fff' }}
+                                        >
+                                            <option value="">Select</option>
+                                            {data.members
+                                                .filter((x) => x.id !== row.id)
+                                                .map((x) => (
+                                                    <option key={x.id} value={x.id}>{x.name}</option>
+                                                ))}
+                                        </Form.Select>
+                                    </div>
+                                ) : <span className="text-muted small">-</span>
+                            }
+                        ]}
+                        enableFilter={true}
+                        enablePagination={true}
+                        rowsPerPageOptions={[10, 25, 50, 100]}
+                        footer={
                             <tfoot style={{ position: 'sticky', bottom: 0, backgroundColor: '#f8f9fa', zIndex: 10, borderTop: '2px solid #dee2e6' }}>
                                 <tr>
                                     <td colSpan={3} style={{ fontSize: '0.875rem', fontWeight: '700', textAlign: 'right', color: '#049bffff', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>Grand Total:</td>
                                     <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalDemandPrincipal.toLocaleString()}</td>
                                     <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalDemandInterest.toLocaleString()}</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{(totalDemandPrincipal + totalDemandInterest).toLocaleString()}</td>
                                     <td style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0d6efd', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalCollectionPrincipal.toLocaleString()}</td>
                                     <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalCollectionInterest.toLocaleString()}</td>
-                                    <td style={{ fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>-</td>
-                                    <td style={{ fontSize: '0.875rem', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>-</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', color: '#28a745', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{(totalCollectionPrincipal + totalCollectionInterest).toLocaleString()}</td>
-                                    <td style={{ padding: '16px 8px' }}></td>
+                                    <td colSpan={2} style={{ padding: '12px 16px', borderRight: '1px solid #dee2e6' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px' }}>
+                                            <span style={{ fontSize: '1rem', fontWeight: '700', color: '#28a745', }}>
+                                                ₹{(totalCollectionPrincipal + totalCollectionInterest).toLocaleString()}
+                                            </span>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="success"
+                                                    onClick={() => {
+                                                        // Save all entries logic here
+                                                        alert('Saving all collections...');
+                                                    }}
+                                                    className="shadow-sm"
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        padding: '8px 16px',
+                                                        borderRadius: '8px',
+                                                        fontWeight: '600'
+                                                    }}
+                                                >
+                                                    <FaSave size={14} />
+                                                    Save
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="primary"
+                                                    onClick={() => setShowCashModal(true)}
+                                                    className="shadow-sm ms-3"
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        padding: '8px 12px',
+                                                        borderRadius: '8px'
+                                                    }}
+                                                    title="Cash Denomination"
+                                                >
+                                                    <FaMoneyBillWave size={16} />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                             </tfoot>
-                        </Table>
-                    </div>
+                        }
+                    />
                 </Card.Body>
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                    <div className="d-flex justify-content-center py-3 border-top">
-                        <Pagination>
-                            <Pagination.Prev
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                            >
-                                Previous
-                            </Pagination.Prev>
-                            <Pagination.Next
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                            >
-                                Next
-                            </Pagination.Next>
-                        </Pagination>
-                    </div>
-                )}
             </Card>
 
             {/* Loan Request Modal */}
-            <Modal
+            < Modal
                 show={showModal}
-                onHide={() => setShowModal(false)}
+                onHide={() => setShowModal(false)
+                }
                 size="lg"
                 centered
             >
@@ -669,71 +654,106 @@ export default function LoanManagement() {
                         </Button>
                     </Modal.Footer>
                 </Form>
+            </Modal >
+
+
+
+            {/* Cash Denomination Modal */}
+            <Modal
+                show={showCashModal}
+                onHide={() => setShowCashModal(false)}
+                centered
+                dialogClassName="modal-compact"
+            >
+                <style type="text/css">
+                    {`
+                        .modal-compact .modal-dialog {
+                            max-width: 340px;
+                        }
+                    `}
+                </style>
+                <Modal.Header closeButton className="border-0 pb-1 px-3 pt-2">
+                    <Modal.Title className="w-100 text-center text-uppercase fw-bold text-muted" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>
+                        Cash Denomination
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="px-2 py-1">
+                    <DataTable
+                        dense={true}
+                        data={[500, 200, 100, 50, 20, 10].map((val) => ({
+                            id: val,
+                            value: val,
+                        }))}
+                        initialColumns={[
+                            {
+                                key: 'value',
+                                label: 'CASH',
+                                sortable: false,
+                                render: (val) => <span className="fw-semibold" style={{ fontSize: '0.8rem' }}>{val}</span>
+                            },
+                            {
+                                key: 'count',
+                                label: '',
+                                sortable: false,
+                                render: (_, row) => (
+                                    <Form.Control
+                                        type="text"
+                                        size="sm"
+                                        className="text-center"
+                                        value={denominations[row.value] || ''}
+                                        onChange={(e) => handleDenominationChange(row.value, e.target.value)}
+                                        onKeyPress={(e) => {
+                                            if (!/[0-9]/.test(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                        style={{
+                                            fontSize: '0.75rem',
+                                            padding: '2px',
+                                            height: '24px',
+                                            borderRadius: '4px',
+                                            border: '1px solid #ced4da'
+                                        }}
+                                    />
+                                )
+                            },
+                            {
+                                key: 'amount',
+                                label: 'AMOUNT',
+                                sortable: false,
+                                render: (_, row) => <span style={{ fontSize: '0.8rem' }}>{(row.value * (denominations[row.value] || 0)).toLocaleString()}</span>
+                            }
+                        ]}
+                        enableFilter={false}
+                        enableExport={false}
+                        enablePagination={false}
+                        enableSort={false}
+                        footer={
+                            <tfoot style={{ backgroundColor: '#f8f9fa', borderTop: '2px solid #dee2e6' }}>
+                                <tr>
+                                    <td colSpan={2} className="text-end fw-bold py-1 px-2" style={{ fontSize: '0.8rem' }}>Total</td>
+                                    <td className="text-center fw-bold py-1 px-2" style={{ fontSize: '0.8rem' }}>
+                                        {totalCashCalculated.toLocaleString()}
+                                    </td>
+                                </tr>
+                                <tr style={{ backgroundColor: '#e7f3ff' }}>
+                                    <td colSpan={2} className="text-end fw-bold text-uppercase text-muted py-1 px-2" style={{ fontSize: '0.65rem', letterSpacing: '0.3px' }}>
+                                        System Cash Total
+                                    </td>
+                                    <td className="text-center fw-bold text-primary py-1 px-2" style={{ fontSize: '0.8rem' }}>
+                                        ₹{totalSystemCash.toLocaleString()}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        }
+                    />
+                </Modal.Body>
+                <Modal.Footer className="border-0 pt-1 pb-2 px-3 justify-content-center">
+                    <Button variant="secondary" size="sm" onClick={() => setShowCashModal(false)} style={{ borderRadius: '6px', fontSize: '0.75rem', padding: '4px 12px' }}>
+                        Close
+                    </Button>
+                </Modal.Footer>
             </Modal>
-            {/* Cash Denomination Calculator */}
-            {membersWithLoans.length > 0 && (
-                <div className="d-flex justify-content-end mt-3">
-                    <Card className="border-0 shadow-sm w-25">
-                        <Card.Body className="p-3">
-                            <h6 className="fw-bold mb-3 text-uppercase text-center" style={{ fontSize: '0.75rem', letterSpacing: '0.5px', color: '#6c757d' }}>Cash Denomination</h6>
-                            <div className="d-flex justify-content-end">
-                                <Table bordered size="sm" className="mb-0" style={{ fontSize: '0.875rem', width: 'auto' }}>
-                                    <thead style={{ backgroundColor: '#f8f9fa' }}>
-                                        <tr>
-                                            <th className="text-center py-2 fw-semibold">Cash</th>
-                                            <th className="text-center py-2 fw-semibold" style={{ width: '100px' }}></th>
-                                            <th className="text-end py-2 fw-semibold">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {[500, 200, 100, 50, 20, 10].map(val => (
-                                            <tr key={val}>
-                                                <td className="text-end align-middle py-1 px-2">{val}</td>
-                                                <td className="py-1 px-1">
-                                                    <Form.Control
-                                                        type="number"
-                                                        min="0"
-                                                        size="sm"
-                                                        className="text-center"
-                                                        style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
-                                                        value={denominations[val] || ''}
-                                                        onChange={(e) => handleDenominationChange(val, e.target.value)}
-                                                    />
-                                                </td>
-                                                <td className="text-end align-middle py-1 px-2">{(val * (denominations[val] || 0)).toLocaleString()}</td>
-                                            </tr>
-                                        ))}
-                                        <tr style={{ backgroundColor: '#f8f9fa' }}>
-                                            <td colSpan={2} className="text-end fw-bold py-2 px-2">Total</td>
-                                            <td className="text-end fw-bold py-2 px-2">{totalCashCalculated.toLocaleString()}</td>
-                                        </tr>
-                                        <tr className="border-top border-2">
-                                            <td colSpan={2} className="text-end fw-semibold py-2 px-2 text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>System Cash Total</td>
-                                            <td className="text-end fw-bold py-2 px-2 text-primary">₹{totalSystemCash.toLocaleString()}</td>
-                                        </tr>
-                                        <tr>
-                                            <td colSpan={2} className="text-end fw-semibold py-2 px-2 text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Physical Cash Total</td>
-                                            <td className={`text-end fw-bold py-2 px-2 ${totalCashCalculated === totalSystemCash ? 'text-success' : 'text-danger'}`}>
-                                                ₹{totalCashCalculated.toLocaleString()}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colSpan={2} className="text-end fw-semibold py-2 px-2 text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</td>
-                                            <td className="text-end fw-bold py-2 px-2">
-                                                {totalCashCalculated === totalSystemCash ? (
-                                                    <span className="text-success">✓ Matched</span>
-                                                ) : (
-                                                    <span className="text-danger">⚠ Diff: ₹{Math.abs(totalCashCalculated - totalSystemCash).toLocaleString()}</span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </Table>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </div>
-            )}
-        </div>
+        </div >
     );
 }
