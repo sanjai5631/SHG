@@ -215,8 +215,7 @@ const DataTable = ({
             XLSX.utils.book_append_sheet(wb, ws, 'Data');
 
             // Save file
-            XLSX.writeFile(wb, 'table-data.xlsx');
-        } catch (error) {
+            XLSX.writeFile(wb, 'table-da00000000000000000000000000000000        } catch (error) {
             console.error('Error exporting Excel:', error);
             alert('Error exporting Excel. Please ensure xlsx library is installed.');
         }

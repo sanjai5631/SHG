@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, Form, Row, Col, Button } from 'react-bootstrap';
-import { FaSearch, FaFilter, FaTimes, FaFilePdf, FaFileExcel, FaList } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaTimes, FaFilePdf, FaFileExcel, FaList, FaPrint } from 'react-icons/fa';
+import DataTable from '../../../components/DataTable';
 // Import jsPDF with autoTable plugin
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -19,6 +20,7 @@ export default function MemberwiseReport({ data }) {
     const [dateError, setDateError] = useState('');
     const [selectedGroup, setSelectedGroup] = useState('');
     const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Calculate member-wise data
     const getMemberWiseData = () => {
@@ -51,11 +53,17 @@ export default function MemberwiseReport({ data }) {
 
                 if (startDate && endDate) {
                     periodSavings = allSavings
-                        .filter(s => s.date >= startDate && s.date <= endDate)
+                        .filter(s => {
+                            const date = new Date(s.date).toISOString().split('T')[0];
+                            return date >= startDate && date <= endDate;
+                        })
                         .reduce((sum, s) => sum + s.amount, 0);
 
                     periodLoans = allLoans
-                        .filter(l => l.approvedDate >= startDate && l.approvedDate <= endDate)
+                        .filter(l => {
+                            const date = new Date(l.approvedDate).toISOString().split('T')[0];
+                            return date >= startDate && date <= endDate;
+                        })
                         .reduce((sum, l) => sum + l.amount, 0);
                 }
 
@@ -265,23 +273,91 @@ export default function MemberwiseReport({ data }) {
         XLSX.writeFile(wb, "memberwise_report.xlsx");
     };
 
+    // Prepare data for DataTables
+    const memberColumns = [
+        { key: 'name', label: 'Member Name' },
+        { key: 'employeeCode', label: 'Employee Code' },
+        { key: 'groupName', label: 'Group Name' },
+        { 
+            key: 'displaySavings', 
+            label: 'Total Savings',
+            render: (value) => <span className="text-success">₹{value.toLocaleString()}</span>,
+            sortable: true 
+        },
+        { 
+            key: 'displayLoans', 
+            label: 'Total Loans',
+            render: (value) => <span className="text-primary">₹{value.toLocaleString()}</span>,
+            sortable: true 
+        },
+        { 
+            key: 'pendingDues', 
+            label: 'Pending Dues',
+            render: (value) => <span className="text-danger fw-bold">₹{value.toLocaleString()}</span>,
+            sortable: true 
+        },
+        { 
+            key: 'lastPaymentDate', 
+            label: 'Last Payment',
+            render: (value) => value !== 'N/A' ? new Date(value).toLocaleDateString() : '-'
+        }
+    ];
+
+    const transactionColumns = [
+        { 
+            key: 'slNo', 
+            label: 'Sl. No',
+            render: (_, __, index) => index + 1
+        },
+        { 
+            key: 'date', 
+            label: 'Date',
+            render: (date) => new Date(date).toLocaleDateString()
+        },
+        { key: 'memberName', label: 'Member Name' },
+        { key: 'groupName', label: 'Group Name' },
+        { key: 'transactionNo', label: 'Transaction No' },
+        { key: 'mobileNo', label: 'Mobile No' },
+        { 
+            key: 'product', 
+            label: 'Product',
+            render: (value, row) => (
+                <span className={`badge ${row.type === 'Savings' ? 'bg-success' : row.type === 'Repayment' ? 'bg-info' : 'bg-warning'}`}>
+                    {value}
+                </span>
+            )
+        },
+        { 
+            key: 'amount', 
+            label: 'Amount',
+            render: (value) => <span className="fw-bold">₹{value.toLocaleString()}</span>,
+            sortable: true
+        },
+        { key: 'memberCode', label: 'Member Code' }
+    ];
+
     return (
         <div className="container-fluid px-3 py-3">
-            <div className="d-flex justify-content-between align-items-center mb-3">
+            {/* Header Section */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="fw-bold mb-0">Memberwise Report</h4>
-                <div className="d-flex gap-2">
-                   
-                </div>
+                
             </div>
-            
+
+            {/* Filter Section */}
             <Card className="border-0 shadow-sm mb-4">
                 <Card.Body className="p-4">
                     <Row className="g-3 align-items-end">
                         <Col md={4}>
                             <Form.Label className="small fw-bold text-muted mb-2">
-                                <FaSearch className="me-2" />Search Member
+                                <FaSearch className="me-2" /> Search Member
                             </Form.Label>
-                            <Form.Select size="sm" value={selectedMember} onChange={(e) => setSelectedMember(e.target.value)}>
+                            <Form.Select 
+                                size="sm" 
+                                value={selectedMember} 
+                                onChange={(e) => setSelectedMember(e.target.value)}
+                                className="form-select-sm"
+                            >
                                 <option value="">Select a member...</option>
                                 <option value="all">All Members</option>
                                 {data.members.map(member => (
@@ -291,238 +367,216 @@ export default function MemberwiseReport({ data }) {
                                 ))}
                             </Form.Select>
                         </Col>
+                        
                         <Col md={2}>
                             <Form.Label className="small fw-bold text-muted mb-2">
-                                <FaFilter className="me-2" />Group
+                                <FaFilter className="me-2" /> Group
                             </Form.Label>
-                            <Form.Select size="sm" value={localGroup} onChange={(e) => setLocalGroup(e.target.value)}>
+                            <Form.Select 
+                                size="sm" 
+                                value={localGroup} 
+                                onChange={(e) => setLocalGroup(e.target.value)}
+                                className="form-select-sm"
+                            >
                                 <option value="">All Groups</option>
                                 {data.shgGroups.map(g => (
                                     <option key={g.id} value={g.id}>{g.name}</option>
                                 ))}
                             </Form.Select>
                         </Col>
+                        
                         <Col md={2}>
-                            <Form.Label className="small fw-bold text-muted mb-2">Start Date</Form.Label>
-                            <Form.Control 
-                                type="date" 
-                                size="sm" 
-                                value={localMemberwiseDateRange.startDate}
-                                max={todayStr}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setLocalMemberwiseDateRange({
-                                        ...localMemberwiseDateRange,
-                                        startDate: value
-                                    });
+                            <Form.Label className="small fw-bold text-muted mb-2">
+                                From Date
+                            </Form.Label>
+                            <div className="input-group input-group-medium">
+                                <Form.Control 
+                                    type="date" 
+                                    size="sm" 
+                                    value={localMemberwiseDateRange.startDate}
+                                    max={todayStr}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setLocalMemberwiseDateRange({
+                                            ...localMemberwiseDateRange,
+                                            startDate: value
+                                        });
 
-                                    if (value && value > todayStr) {
-                                        setDateError('Start Date cannot be in the future.');
-                                    } else if (
-                                        value &&
-                                        localMemberwiseDateRange.endDate &&
-                                        localMemberwiseDateRange.endDate < value
-                                    ) {
-                                        setDateError('End Date cannot be earlier than Start Date.');
-                                    } else {
-                                        setDateError('');
-                                    }
-                                }} 
-                            />
+                                        if (value && value > todayStr) {
+                                            setDateError('Start Date cannot be in the future.');
+                                        } else if (
+                                            value &&
+                                            localMemberwiseDateRange.endDate &&
+                                            localMemberwiseDateRange.endDate < value
+                                        ) {
+                                            setDateError('End Date cannot be earlier than Start Date.');
+                                        } else {
+                                            setDateError('');
+                                        }
+                                    }}
+                                    className="form-control-sm"
+                                />
+                            </div>
                         </Col>
+                        
                         <Col md={2}>
-                            <Form.Label className="small fw-bold text-muted mb-2">End Date</Form.Label>
-                            <Form.Control 
-                                type="date" 
-                                size="sm" 
-                                value={localMemberwiseDateRange.endDate}
-                                min={
-                                    localMemberwiseDateRange.startDate
-                                        ? (
-                                            getNextDayISO(localMemberwiseDateRange.startDate) > todayStr
-                                                ? getNextDayISO(localMemberwiseDateRange.startDate)
-                                                : todayStr
-                                        )
-                                        : todayStr
-                                }
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setLocalMemberwiseDateRange({
-                                        ...localMemberwiseDateRange,
-                                        endDate: value
-                                    });
-
-                                    if (value && value < todayStr) {
-                                        setDateError('End Date cannot be earlier than today.');
-                                    } else if (
-                                        value &&
-                                        localMemberwiseDateRange.startDate &&
-                                        value < localMemberwiseDateRange.startDate
-                                    ) {
-                                        setDateError('End Date cannot be earlier than Start Date.');
-                                    } else if (
-                                        value &&
-                                        localMemberwiseDateRange.startDate &&
-                                        value === localMemberwiseDateRange.startDate
-                                    ) {
-                                        setDateError('End Date must be at least one day after Start Date.');
-                                    } else {
-                                        setDateError('');
+                            <Form.Label className="small fw-bold text-muted mb-2">
+                                To Date
+                            </Form.Label>
+                            <div className="input-group input-group-medium">
+                                <Form.Control 
+                                    type="date" 
+                                    size="sm" 
+                                    value={localMemberwiseDateRange.endDate}
+                                    min={
+                                        localMemberwiseDateRange.startDate
+                                            ? (
+                                                getNextDayISO(localMemberwiseDateRange.startDate) > todayStr
+                                                    ? getNextDayISO(localMemberwiseDateRange.startDate)
+                                                    : todayStr
+                                            )
+                                            : todayStr
                                     }
-                                }} 
-                            />
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setLocalMemberwiseDateRange({
+                                            ...localMemberwiseDateRange,
+                                            endDate: value
+                                        });
+
+                                        if (value && value < todayStr) {
+                                            setDateError('End Date cannot be earlier than today.');
+                                        } else if (
+                                            value &&
+                                            localMemberwiseDateRange.startDate &&
+                                            value < localMemberwiseDateRange.startDate
+                                        ) {
+                                            setDateError('End Date cannot be earlier than Start Date.');
+                                        } else if (
+                                            value &&
+                                            localMemberwiseDateRange.startDate &&
+                                            value === localMemberwiseDateRange.startDate
+                                        ) {
+                                            setDateError('End Date must be at least one day after Start Date.');
+                                        } else {
+                                            setDateError('');
+                                        }
+                                    }}
+                                    className="form-control-sm"
+                                />
+                            </div>
                         </Col>
-                        {dateError && (
-                            <Col xs={12}>
-                                <div className="text-danger small fw-semibold mt-1">
-                                    {dateError}
-                                </div>
-                            </Col>
-                        )}
+                        
                         <Col md={1}>
                             <Button 
                                 variant="primary" 
                                 size="sm" 
                                 className="w-100" 
-                                onClick={handleSearch} 
+                                onClick={handleSearch}
                                 disabled={!selectedMember || !!dateError}
+                                title="Search"
                             >
-                                <FaSearch />
+                                <FaSearch className="me-1" /> Search
                             </Button>
                         </Col>
+                        
                         <Col md={1}>
                             <Button 
                                 variant="outline-secondary" 
                                 size="sm" 
                                 className="w-100" 
-                                onClick={handleClear} 
+                                onClick={handleClear}
                                 title="Clear filters"
                             >
-                                <FaTimes />
+                                <FaTimes className="me-1" /> Clear
                             </Button>
                         </Col>
                     </Row>
+                    
+                    {dateError && (
+                        <div className="text-danger small fw-semibold mt-2">
+                            {dateError}
+                        </div>
+                    )}
                 </Card.Body>
             </Card>
 
-            {!memberwiseSearched ? (
-                <Card className="border-0 shadow-sm">
-                    <Card.Body className="text-center py-5">
-                        <div className="mb-3 opacity-25">
-                            <FaSearch size={60} />
-                        </div>
-                        <h5 className="text-muted mb-2">Select a member to view reports</h5>
-                        <p className="text-muted small mb-0">Choose a specific member or "All Members" from the dropdown above and click Search</p>
-                    </Card.Body>
-                </Card>
-            ) : (
-                <div className="mt-4">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h6 className="fw-bold text-muted mb-0">Report Data</h6>
-                        <div className="d-flex gap-2">
-                            <Button variant="outline-danger" size="sm" onClick={exportToPDF} title="Export PDF">
-                                <FaFilePdf className="me-1" /> PDF
-                            </Button>
-                            <Button variant="outline-success" size="sm" onClick={exportToExcel} title="Export Excel">
-                                <FaFileExcel className="me-1" /> Excel
-                            </Button>
-                        </div>
-                    </div>
-
-                    {memberData.length > 0 ? (
-                        <div className="table-responsive shadow-sm">
-                            <div className="excel-header">
-                                <FaList className="me-2" /> Member Details
+            {/* Results Section */}
+            <Card className="border-0 shadow-sm">
+                <Card.Body className="p-0">
+                    {!memberwiseSearched ? (
+                        <div className="text-center py-5">
+                            <div className="mb-3 opacity-25">
+                                <FaSearch size={60} />
                             </div>
-                            <table className="table table-hover mb-0 excel-table bg-white">
-                                <thead>
-                                    <tr>
-                                        <th>Member Name</th>
-                                        <th>Employee Code</th>
-                                        <th>Group Name</th>
-                                        <th className="text-end">Total Savings</th>
-                                        <th className="text-end">Total Loans</th>
-                                        <th className="text-end">Pending Dues</th>
-                                        <th className="text-end">Last Payment</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {memberData.map(member => (
-                                        <tr key={member.id}>
-                                            <td className="fw-medium">{member.name}</td>
-                                            <td>{member.employeeCode || '-'}</td>
-                                            <td>{member.groupName}</td>
-                                            <td className="text-end text-success">₹{member.displaySavings.toLocaleString()}</td>
-                                            <td className="text-end text-primary">₹{member.displayLoans.toLocaleString()}</td>
-                                            <td className="text-end text-danger fw-bold">₹{member.pendingDues.toLocaleString()}</td>
-                                            <td className="text-end">
-                                                {member.lastPaymentDate !== 'N/A' ? new Date(member.lastPaymentDate).toLocaleDateString() : '-'}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-
-                            {transactions.length > 0 && (
-                                <div className="mt-4">
-                                    <h6 className="fw-bold text-muted mb-3 px-3">Transaction Details</h6>
-                                    <div className="table-responsive">
-                                        <table className="table table-hover mb-0 excel-table bg-white">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sl. No</th>
-                                                    <th>Date</th>
-                                                    <th>Member Name</th>
-                                                    <th>Group Name</th>
-                                                    <th>Transaction No</th>
-                                                    <th>Mobile No</th>
-                                                    <th>Product</th>
-                                                    <th className="text-end">Amount</th>
-                                                    <th>Member Code</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {transactions.map((transaction, index) => (
-                                                    <tr key={index}>
-                                                        <td>{index + 1}</td>
-                                                        <td>{new Date(transaction.date).toLocaleDateString()}</td>
-                                                        <td className="fw-medium">{transaction.memberName}</td>
-                                                        <td>{transaction.groupName}</td>
-                                                        <td>{transaction.transactionNo}</td>
-                                                        <td>{transaction.mobileNo}</td>
-                                                        <td>
-                                                            <span className={`badge ${transaction.type === 'Savings' ? 'bg-success' :
-                                                                transaction.type === 'Repayment' ? 'bg-info' : 'bg-warning'
-                                                                }`}>
-                                                                {transaction.product}
-                                                            </span>
-                                                        </td>
-                                                        <td className="text-end fw-bold">₹{transaction.amount.toLocaleString()}</td>
-                                                        <td>{transaction.memberCode}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                            <tfoot>
-                                                <tr className="table-light fw-bold">
-                                                    <td colSpan="7" className="text-end">Total:</td>
-                                                    <td className="text-end">₹{transactions.reduce((sum, t) => sum + t.amount, 0).toLocaleString()}</td>
-                                                    <td></td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
+                            <h5 className="text-muted mb-2">Select a member to view reports</h5>
+                            <p className="text-muted small mb-0">
+                                Choose a specific member or "All Members" from the dropdown above and click Search
+                            </p>
+                        </div>
+                    ) : memberData.length > 0 ? (
+                        <div className="table-responsive">
+                            <div className="p-3 border-bottom">
+                                <h6 className="mb-0 fw-bold">Member Details</h6>
+                            </div>
+                            <div className="p-4">
+                                <div className=" justify-content-start mb-3">
+                                    <div className="d-flex gap-1">
+                                        <Button variant="outline-black" size="sm" onClick={exportToPDF} className="d-flex align-items-center">
+                                           Export To :  <FaFilePdf className="me-1" />
+                                        </Button>
+                                        <Button variant="outline-black" size="sm" onClick={exportToExcel} className="d-flex align-items-center">
+                                            <FaFileExcel className="me-1" /> 
+                                        </Button>
+                                        <Button variant="outline-black" size="sm" onClick={() => window.print()} className="d-flex align-items-center">
+                                            <FaPrint className="me-1" /> 
+                                        </Button>
                                     </div>
                                 </div>
+                                <DataTable
+                                    initialColumns={memberColumns}
+                                    data={memberData}
+                                    rowsPerPageOptions={[10, 25, 50]}
+                                    enableFilter={true}
+                                    enableExport={false}
+                                    enablePagination={true}
+                                    enableSort={true}
+                                    className="mb-0"
+                                />
+                            </div>
+                            
+                            {transactions.length > 0 && (
+                                <>
+                                    <div className="p-3 border-top border-bottom">
+                                        <h6 className="mb-0 fw-bold">Transaction Details</h6>
+                                    </div>
+                                    <div className="p-3">
+                                        <DataTable
+                                            initialColumns={transactionColumns}
+                                            data={transactions}
+                                            rowsPerPageOptions={[10, 25, 50]}
+                                            enableFilter={true}
+                                            enableExport={false}
+                                            enablePagination={true}
+                                            enableSort={true}
+                                            className="mb-0"
+                                        />
+                                        <div className="d-flex justify-content-end fw-bold mt-3">
+                                            <div className="bg-light p-2 rounded">
+                                                Total: ₹{transactions.reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
                             )}
                         </div>
                     ) : (
-                        <Card className="border-0 shadow-sm">
-                            <Card.Body className="text-center py-4">
-                                <p className="text-muted mb-0">No data found for the selected criteria</p>
-                            </Card.Body>
-                        </Card>
+                        <div className="text-center py-5">
+                            <p className="text-muted mb-0">No data found for the selected criteria</p>
+                        </div>
                     )}
-                </div>
-            )}
+                </Card.Body>
+            </Card>
         </div>
     );
 }
