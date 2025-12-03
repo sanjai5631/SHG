@@ -32,6 +32,8 @@ const DataTable = ({
     enablePagination = true,
     enableSort = true,
     actionRenderer = null,
+    footer = null,
+    dense = false
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0] || 10);
@@ -271,6 +273,8 @@ const DataTable = ({
     const startRange = totalItems > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0;
     const endRange = Math.min(currentPage * rowsPerPage, totalItems);
 
+    const paddingClass = dense ? 'py-1 px-2' : 'py-3 px-3';
+
     return (
         <div className="w-100">
             {/* --- Toolbar --- */}
@@ -343,7 +347,7 @@ const DataTable = ({
                         <thead style={{ backgroundColor: '#f8f9fa', position: 'sticky', top: 0, zIndex: 10 }}>
                             <tr>
                                 {actionRenderer && (
-                                    <th className="py-3 px-3 border-bottom-0" style={{ fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>
+                                    <th className={`${paddingClass} border-bottom-0`} style={{ fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>
                                         Actions
                                     </th>
                                 )}
@@ -351,7 +355,7 @@ const DataTable = ({
                                     <th
                                         key={col.key}
                                         onClick={() => col.sortable && handleSort(col.key)}
-                                        className={`py-3 px-3 border-bottom-0 ${col.sortable ? 'cursor-pointer user-select-none' : ''}`}
+                                        className={`${paddingClass} border-bottom-0 ${col.sortable ? 'cursor-pointer user-select-none' : ''}`}
                                         style={{
                                             fontSize: '0.7rem',
                                             fontWeight: '600',
@@ -386,12 +390,12 @@ const DataTable = ({
                                         }}
                                     >
                                         {actionRenderer && (
-                                            <td className="py-3 px-3" style={{ fontSize: '0.875rem' }}>
+                                            <td className={paddingClass} style={{ fontSize: '0.875rem' }}>
                                                 {actionRenderer(row)}
                                             </td>
                                         )}
                                         {columns.map((col) => (
-                                            <td key={`${row.id}-${rowIndex}-${col.key}`} className="py-3 px-3" style={{ fontSize: '0.875rem' }}>
+                                            <td key={`${row.id}-${rowIndex}-${col.key}`} className={paddingClass} style={{ fontSize: '0.875rem' }}>
                                                 {col.render ? col.render(row[col.key], row) : row[col.key]}
                                             </td>
                                         ))}
@@ -405,6 +409,7 @@ const DataTable = ({
                                 </tr>
                             )}
                         </tbody>
+                        {footer && footer}
                     </Table>
                 </div>
             </div>
