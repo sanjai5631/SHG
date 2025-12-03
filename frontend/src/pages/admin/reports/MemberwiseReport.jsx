@@ -54,14 +54,20 @@ export default function MemberwiseReport({ data }) {
                 if (startDate && endDate) {
                     periodSavings = allSavings
                         .filter(s => {
-                            const date = new Date(s.date).toISOString().split('T')[0];
+                            if (!s.date) return false;
+                            const d = new Date(s.date);
+                            if (isNaN(d.getTime())) return false;
+                            const date = d.toISOString().split('T')[0];
                             return date >= startDate && date <= endDate;
                         })
                         .reduce((sum, s) => sum + s.amount, 0);
 
                     periodLoans = allLoans
                         .filter(l => {
-                            const date = new Date(l.approvedDate).toISOString().split('T')[0];
+                            if (!l.approvedDate) return false;
+                            const d = new Date(l.approvedDate);
+                            if (isNaN(d.getTime())) return false;
+                            const date = d.toISOString().split('T')[0];
                             return date >= startDate && date <= endDate;
                         })
                         .reduce((sum, l) => sum + l.amount, 0);
@@ -230,11 +236,11 @@ export default function MemberwiseReport({ data }) {
 
     const exportToPDF = () => {
         const doc = new jsPDF();
-        
+
         // Add title
         doc.setFontSize(16);
         doc.text("Memberwise Report", 14, 15);
-        
+
         // Prepare table data
         const tableColumn = ["Name", "Group", "Total Savings", "Total Loans", "Pending Dues", "Last Payment"];
         const tableRows = memberData.map(m => [
@@ -243,8 +249,8 @@ export default function MemberwiseReport({ data }) {
             `Rs. ${m.displaySavings || '0'}`,
             `Rs. ${m.displayLoans || '0'}`,
             `Rs. ${m.pendingDues || '0'}`,
-            m.lastPaymentDate && m.lastPaymentDate !== 'N/A' 
-                ? new Date(m.lastPaymentDate).toLocaleDateString() 
+            m.lastPaymentDate && m.lastPaymentDate !== 'N/A'
+                ? new Date(m.lastPaymentDate).toLocaleDateString()
                 : 'N/A'
         ]);
 
@@ -278,39 +284,39 @@ export default function MemberwiseReport({ data }) {
         { key: 'name', label: 'Member Name' },
         { key: 'employeeCode', label: 'Employee Code' },
         { key: 'groupName', label: 'Group Name' },
-        { 
-            key: 'displaySavings', 
+        {
+            key: 'displaySavings',
             label: 'Total Savings',
             render: (value) => <span className="text-success">₹{value.toLocaleString()}</span>,
-            sortable: true 
+            sortable: true
         },
-        { 
-            key: 'displayLoans', 
+        {
+            key: 'displayLoans',
             label: 'Total Loans',
             render: (value) => <span className="text-primary">₹{value.toLocaleString()}</span>,
-            sortable: true 
+            sortable: true
         },
-        { 
-            key: 'pendingDues', 
+        {
+            key: 'pendingDues',
             label: 'Pending Dues',
             render: (value) => <span className="text-danger fw-bold">₹{value.toLocaleString()}</span>,
-            sortable: true 
+            sortable: true
         },
-        { 
-            key: 'lastPaymentDate', 
+        {
+            key: 'lastPaymentDate',
             label: 'Last Payment',
             render: (value) => value !== 'N/A' ? new Date(value).toLocaleDateString() : '-'
         }
     ];
 
     const transactionColumns = [
-        { 
-            key: 'slNo', 
+        {
+            key: 'slNo',
             label: 'Sl. No',
             render: (_, __, index) => index + 1
         },
-        { 
-            key: 'date', 
+        {
+            key: 'date',
             label: 'Date',
             render: (date) => new Date(date).toLocaleDateString()
         },
@@ -318,8 +324,8 @@ export default function MemberwiseReport({ data }) {
         { key: 'groupName', label: 'Group Name' },
         { key: 'transactionNo', label: 'Transaction No' },
         { key: 'mobileNo', label: 'Mobile No' },
-        { 
-            key: 'product', 
+        {
+            key: 'product',
             label: 'Product',
             render: (value, row) => (
                 <span className={`badge ${row.type === 'Savings' ? 'bg-success' : row.type === 'Repayment' ? 'bg-info' : 'bg-warning'}`}>
@@ -327,8 +333,8 @@ export default function MemberwiseReport({ data }) {
                 </span>
             )
         },
-        { 
-            key: 'amount', 
+        {
+            key: 'amount',
             label: 'Amount',
             render: (value) => <span className="fw-bold">₹{value.toLocaleString()}</span>,
             sortable: true
@@ -341,7 +347,7 @@ export default function MemberwiseReport({ data }) {
             {/* Header Section */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="fw-bold mb-0">Memberwise Report</h4>
-                
+
             </div>
 
             {/* Filter Section */}
@@ -352,9 +358,9 @@ export default function MemberwiseReport({ data }) {
                             <Form.Label className="small fw-bold text-muted mb-2">
                                 <FaSearch className="me-2" /> Search Member
                             </Form.Label>
-                            <Form.Select 
-                                size="sm" 
-                                value={selectedMember} 
+                            <Form.Select
+                                size="sm"
+                                value={selectedMember}
                                 onChange={(e) => setSelectedMember(e.target.value)}
                                 className="form-select-sm"
                             >
@@ -367,14 +373,14 @@ export default function MemberwiseReport({ data }) {
                                 ))}
                             </Form.Select>
                         </Col>
-                        
+
                         <Col md={2}>
                             <Form.Label className="small fw-bold text-muted mb-2">
                                 <FaFilter className="me-2" /> Group
                             </Form.Label>
-                            <Form.Select 
-                                size="sm" 
-                                value={localGroup} 
+                            <Form.Select
+                                size="sm"
+                                value={localGroup}
                                 onChange={(e) => setLocalGroup(e.target.value)}
                                 className="form-select-sm"
                             >
@@ -384,15 +390,15 @@ export default function MemberwiseReport({ data }) {
                                 ))}
                             </Form.Select>
                         </Col>
-                        
+
                         <Col md={2}>
                             <Form.Label className="small fw-bold text-muted mb-2">
                                 From Date
                             </Form.Label>
                             <div className="input-group input-group-medium">
-                                <Form.Control 
-                                    type="date" 
-                                    size="sm" 
+                                <Form.Control
+                                    type="date"
+                                    size="sm"
                                     value={localMemberwiseDateRange.startDate}
                                     max={todayStr}
                                     onChange={(e) => {
@@ -418,15 +424,15 @@ export default function MemberwiseReport({ data }) {
                                 />
                             </div>
                         </Col>
-                        
+
                         <Col md={2}>
                             <Form.Label className="small fw-bold text-muted mb-2">
                                 To Date
                             </Form.Label>
                             <div className="input-group input-group-medium">
-                                <Form.Control 
-                                    type="date" 
-                                    size="sm" 
+                                <Form.Control
+                                    type="date"
+                                    size="sm"
                                     value={localMemberwiseDateRange.endDate}
                                     min={
                                         localMemberwiseDateRange.startDate
@@ -466,12 +472,12 @@ export default function MemberwiseReport({ data }) {
                                 />
                             </div>
                         </Col>
-                        
+
                         <Col md={1}>
-                            <Button 
-                                variant="primary" 
-                                size="sm" 
-                                className="w-100" 
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                className="w-100"
                                 onClick={handleSearch}
                                 disabled={!selectedMember || !!dateError}
                                 title="Search"
@@ -479,12 +485,12 @@ export default function MemberwiseReport({ data }) {
                                 <FaSearch className="me-1" /> Search
                             </Button>
                         </Col>
-                        
+
                         <Col md={1}>
-                            <Button 
-                                variant="outline-secondary" 
-                                size="sm" 
-                                className="w-100" 
+                            <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                className="w-100"
                                 onClick={handleClear}
                                 title="Clear filters"
                             >
@@ -492,7 +498,7 @@ export default function MemberwiseReport({ data }) {
                             </Button>
                         </Col>
                     </Row>
-                    
+
                     {dateError && (
                         <div className="text-danger small fw-semibold mt-2">
                             {dateError}
@@ -523,13 +529,13 @@ export default function MemberwiseReport({ data }) {
                                 <div className=" justify-content-start mb-3">
                                     <div className="d-flex gap-1">
                                         <Button variant="outline-black" size="sm" onClick={exportToPDF} className="d-flex align-items-center">
-                                           Export To :  <FaFilePdf className="me-1" />
+                                            Export To :  <FaFilePdf className="me-1" />
                                         </Button>
                                         <Button variant="outline-black" size="sm" onClick={exportToExcel} className="d-flex align-items-center">
-                                            <FaFileExcel className="me-1" /> 
+                                            <FaFileExcel className="me-1" />
                                         </Button>
                                         <Button variant="outline-black" size="sm" onClick={() => window.print()} className="d-flex align-items-center">
-                                            <FaPrint className="me-1" /> 
+                                            <FaPrint className="me-1" />
                                         </Button>
                                     </div>
                                 </div>
@@ -544,7 +550,7 @@ export default function MemberwiseReport({ data }) {
                                     className="mb-0"
                                 />
                             </div>
-                            
+
                             {transactions.length > 0 && (
                                 <>
                                     <div className="p-3 border-top border-bottom">
