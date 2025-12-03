@@ -32,6 +32,7 @@ const DataTable = ({
     enablePagination = true,
     enableSort = true,
     actionRenderer = null,
+    footerRenderer = null,
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0] || 10);
@@ -405,6 +406,8 @@ const DataTable = ({
                                 </tr>
                             )}
                         </tbody>
+                        {/* Footer */}
+                        {footerRenderer && footerRenderer(paginatedData)}
                     </Table>
                 </div>
             </div>

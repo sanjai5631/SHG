@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Card, Button, Modal, Form, Badge, InputGroup, Row, Col, Alert } from 'react-bootstrap';
-import DataTable from 'react-data-table-component';
+import DataTable from '../../components/DataTable';
 import { useApp } from '../../context/AppContext';
 
 export default function SHGGroupManagement() {
@@ -128,161 +128,108 @@ export default function SHGGroupManagement() {
         [data.shgGroups, searchTerm]
     );
 
-    const getAssignedUserName = (userId) => {
-        const user = data.users.find(u => u.id === userId);
-        return user ? user.name : 'Unassigned';
-    };
-
-    const getMemberCount = (groupId) => {
-        return data.members.filter(m => m.groupId === groupId && m.status === 'active').length;
-    };
-
-    // Define columns for DataTable
-    const columns = [
+    // Define columns for custom DataTable
+    const columns = useMemo(() => [
         {
-            name: 'Group Name',
-            selector: row => row.name,
+            key: 'name',
+            label: 'Group Name',
             sortable: true,
-            cell: row => <span className="fw-medium">{row.name}</span>,
-            minWidth: '180px',
-        },
-        {
-            name: 'Code',
-            selector: row => row.code,
-            sortable: true,
-            cell: row => (
-                <Badge bg="light" text="dark" className="fw-normal border" style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}>
-                    {row.code}
-                </Badge>
-            ),
-            minWidth: '100px',
-        },
-        {
-            name: 'Members',
-            selector: row => getMemberCount(row.id),
-            sortable: true,
-            cell: row => (
-                <Badge bg="info" className="fw-normal" style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}>
-                    {getMemberCount(row.id)} members
-                </Badge>
-            ),
-            minWidth: '120px',
-        },
-        {
-            name: 'Meeting Month',
-            selector: row => row.meetingDay,
-            sortable: true,
-            cell: row => (
-                <div className="small">
-                    <span className="text-muted">Month: </span>
-                    <span className="fw-medium">{row.meetingDay}</span>
+            render: (value, row) => (
+                <div className="py-2">
+                    <div className="fw-medium">{row.name}</div>
+                    <div className="text-muted small mt-1">{row.code}</div>
                 </div>
-            ),
-            minWidth: '150px',
+            )
         },
         {
-            name: 'Group Incharge',
-            selector: row => getAssignedUserName(row.assignedTo),
+            key: 'meetingDay',
+            label: 'Meeting Month',
             sortable: true,
-            cell: row => <span className="text-muted">{getAssignedUserName(row.assignedTo)}</span>,
-            minWidth: '150px',
+            render: (value) => (
+                <Badge bg="info" className="fw-normal">
+                    {value}
+                </Badge>
+            )
         },
         {
-            name: 'Status',
-            selector: row => row.status,
+            key: 'assignedTo',
+            label: 'Group Incharge',
             sortable: true,
-            cell: row => (
+            render: (value) => {
+                const incharge = shgTeamMembers.find(m => m.id === value);
+                return (
+                    <span className="text-muted small">
+                        {incharge ? incharge.name : '-'}
+                    </span>
+                );
+            }
+        },
+        {
+            key: 'id',
+            label: 'Members',
+            sortable: true,
+            render: (value) => {
+                const memberCount = data.members.filter(m => m.groupId === value).length;
+                return (
+                    <Badge bg="secondary" className="fw-normal">
+                        {memberCount} members
+                    </Badge>
+                );
+            }
+        },
+        {
+            key: 'status',
+            label: 'Status',
+            sortable: true,
+            render: (value) => (
                 <Badge
-                    bg={row.status === 'active' ? 'success' : 'secondary'}
+                    bg={value === 'active' ? 'success' : 'secondary'}
                     className="fw-normal"
-                    style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
                 >
-                    {row.status}
+                    {value}
                 </Badge>
-            ),
-            minWidth: '100px',
-        },
-        {
-            name: 'Actions',
-            cell: row => (
-                <div className="d-flex gap-2 align-items-center">
-                    <Button
-                        variant="light"
-                        size="sm"
-                        className="text-primary border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
-                        style={{ width: '32px', height: '32px', backgroundColor: '#f0f4ff' }}
-                        onClick={() => handleOpenModal(row)}
-                        title="Edit"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
-                        </svg>
-                    </Button>
-                    <Form.Check
-                        type="switch"
-                        id={`custom-switch-${row.id}`}
-                        checked={row.status === 'active'}
-                        onChange={() => handleToggleStatus(row)}
-                        className="d-inline-block"
-                        title={row.status === 'active' ? 'Deactivate' : 'Activate'}
-                    />
-                    <Button
-                        variant="light"
-                        size="sm"
-                        className="text-danger border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
-                        style={{ width: '32px', height: '32px', backgroundColor: '#fff0f0' }}
-                        onClick={() => handleDelete(row.id)}
-                        title="Delete"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                            <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
-                        </svg>
-                    </Button>
-                </div>
-            ),
-            right: true,
-            minWidth: '150px',
-        },
-    ];
+            )
+        }
+    ], [shgTeamMembers, data.members]);
 
-    // Custom styles for DataTable
-    const customStyles = {
-        rows: {
-            style: {
-                minHeight: '48px',
-                fontSize: '0.875rem',
-                '&:nth-of-type(odd)': {
-                    backgroundColor: '#bbdefb',
-                },
-                '&:nth-of-type(even)': {
-                    backgroundColor: '#ffffff',
-                },
-            },
-        },
-        headCells: {
-            style: {
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                paddingTop: '10px',
-                paddingBottom: '10px',
-                fontWeight: '600',
-                fontSize: '0.7rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                color: '#6c757d',
-                backgroundColor: '#f8f9fa',
-            },
-        },
-        cells: {
-            style: {
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                paddingTop: '8px',
-                paddingBottom: '8px',
-            },
-        },
-    };
+    // Action renderer for custom DataTable
+    const actionRenderer = (row) => (
+        <div className="d-flex gap-2 align-items-center">
+            <Button
+                variant="light"
+                size="sm"
+                className="text-primary border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px', backgroundColor: '#f0f4ff' }}
+                onClick={() => handleOpenModal(row)}
+                title="Edit"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+                </svg>
+            </Button>
+            <Form.Check
+                type="switch"
+                id={`custom-switch-${row.id}`}
+                checked={row.status === 'active'}
+                onChange={() => handleToggleStatus(row)}
+                className="d-inline-block"
+                title={row.status === 'active' ? 'Deactivate' : 'Activate'}
+            />
+            <Button
+                variant="light"
+                size="sm"
+                className="text-danger border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px', backgroundColor: '#fff0f0' }}
+                onClick={() => handleDelete(row.id)}
+                title="Delete"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                    <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                </svg>
+            </Button>
+        </div>
+    );
 
     return (
         <div className="fade-in">
@@ -298,45 +245,15 @@ export default function SHGGroupManagement() {
             {/* Groups Table */}
             <Card className="border-0 shadow-sm">
                 <Card.Body className="p-4">
-                    {/* Search Bar - Right Aligned */}
-                    <div className="d-flex justify-content-end mb-3">
-                        <InputGroup style={{ maxWidth: '350px' }}>
-                            <Form.Control
-                                type="text"
-                                placeholder="Filter By Name"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="border-end-0"
-                            />
-                            {searchTerm && (
-                                <Button
-                                    variant="primary"
-                                    onClick={() => setSearchTerm('')}
-                                    style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-                                >
-                                    ✕
-                                </Button>
-                            )}
-                        </InputGroup>
-                    </div>
-
                     <DataTable
-                        columns={columns}
+                        initialColumns={columns}
                         data={filteredGroups}
-                        pagination
-                        paginationPerPage={10}
-                        paginationRowsPerPageOptions={[10, 20, 30, 50]}
-                        paginationResetDefaultPage={searchTerm !== ''}
-                        highlightOnHover
-                        pointerOnHover
-                        fixedHeader
-                        fixedHeaderScrollHeight="500px"
-                        customStyles={customStyles}
-                        noDataComponent={
-                            <div className="text-center text-muted py-4">
-                                No groups found
-                            </div>
-                        }
+                        actionRenderer={actionRenderer}
+                        enableFilter={true}
+                        enableExport={true}
+                        enablePagination={true}
+                        enableSort={true}
+                        rowsPerPageOptions={[10, 20, 30, 50]}
                     />
                 </Card.Body>
             </Card>

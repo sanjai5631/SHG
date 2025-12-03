@@ -11,10 +11,10 @@ export default function SupportData() {
     const [formData, setFormData] = useState({});
 
     const tabs = [
-        { id: 'savingProducts', label: 'Saving Products', icon: '💰' },
-        { id: 'loanProducts', label: 'Loan Products', icon: '💳' },
-        { id: 'meetingTypes', label: 'Meeting Types', icon: '📝' },
-        { id: 'financialYears', label: 'Financial Years', icon: '📅' },
+        { id: 'savingProducts', label: 'Saving Products' },
+        { id: 'loanProducts', label: 'Loan Products' },
+        { id: 'meetingTypes', label: 'Meeting Types' },
+        { id: 'financialYears', label: 'Financial Years' },
     ];
 
     const fields = {
@@ -168,6 +168,7 @@ export default function SupportData() {
                         data={currentData}
                         actionRenderer={actionRenderer}
                         enableFilter={true}
+                        enableExport={true}
                         enablePagination={true}
                         enableSort={true}
                         rowsPerPageOptions={[10, 20, 30, 50]}

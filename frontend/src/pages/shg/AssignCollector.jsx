@@ -1,20 +1,20 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
     Card,
     Button,
     Modal,
     Form,
     Badge,
-    InputGroup
+    InputGroup,
+    Alert
 } from "react-bootstrap";
-import DataTable from 'react-data-table-component';
+import DataTable from '../../components/DataTable';
 import { useApp } from "../../context/AppContext";
-import { FaSearch, FaEdit, FaUserTie, FaCreditCard } from "react-icons/fa";
+import { FaEdit, FaUserTie, FaCreditCard } from "react-icons/fa";
 
 export default function AssignCollector() {
     const { data, updateItem } = useApp();
     const [showModal, setShowModal] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [formData, setFormData] = useState({
         assignedTo: "",
@@ -51,102 +51,77 @@ export default function AssignCollector() {
         return member ? member.name : <span className="text-muted fst-italic">Not Set</span>;
     };
 
-    const filteredGroups = data.shgGroups.filter(g =>
-        g.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        g.code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Filter for SHG Team members (Staff) for Group Incharge
+    const shgTeamMembers = useMemo(() => {
+        const systemUsers = data.users
+            .filter(u => u.role === 'shg_team' && u.status === 'active')
+            .map(u => ({ ...u, source: 'system' }));
 
-    const columns = [
+        const memberUsers = data.members
+            .filter(m => m.roleType === 'shg_team' && m.status === 'active')
+            .map(m => ({ ...m, source: 'member' }));
+
+        return [...systemUsers, ...memberUsers];
+    }, [data.users, data.members]);
+
+    // Get members of the selected group for Online Collection Account
+    const groupMembers = useMemo(() => {
+        if (!selectedGroup) return [];
+        return data.members.filter(m => m.groupId === selectedGroup.id && m.status === 'active');
+    }, [selectedGroup, data.members]);
+
+    // Define columns for custom DataTable
+    const columns = useMemo(() => [
         {
-            name: 'GROUP DETAILS',
-            selector: row => row.name,
-            cell: row => (
+            key: 'name',
+            label: 'GROUP DETAILS',
+            sortable: true,
+            render: (value, row) => (
                 <div className="py-2">
                     <div className="fw-bold text-dark">{row.name}</div>
                     <div className="small text-muted">{row.code}</div>
                 </div>
-            ),
-            sortable: true,
-            grow: 2,
+            )
         },
-
         {
-            name: 'ASSIGNED COLLECTOR',
-            selector: row => getCollectorName(row.assignedTo),
-            cell: row => (
+            key: 'assignedTo',
+            label: 'ASSIGNED COLLECTOR',
+            sortable: true,
+            render: (value) => (
                 <div className="d-flex align-items-center gap-2">
                     <div className="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
                         <FaUserTie size={14} />
                     </div>
-                    <span className="fw-medium">{getCollectorName(row.assignedTo)}</span>
+                    <span className="fw-medium">{getCollectorName(value)}</span>
                 </div>
-            ),
-            grow: 1.5,
+            )
         },
         {
-            name: 'ONLINE COLLECTION ACCOUNT',
-            selector: row => getMemberName(row.onlineCollectionId),
-            cell: row => (
+            key: 'onlineCollectionId',
+            label: 'ONLINE COLLECTION ACCOUNT',
+            sortable: true,
+            render: (value) => (
                 <div className="d-flex align-items-center gap-2">
                     <div className="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
                         <FaCreditCard size={14} />
                     </div>
-                    <span className="fw-medium">{getMemberName(row.onlineCollectionId)}</span>
+                    <span className="fw-medium">{getMemberName(value)}</span>
                 </div>
-            ),
-            grow: 1.5,
-        },
-        {
-            name: 'ACTION',
-            cell: row => (
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => handleEdit(row)}
-                    className="d-inline-flex align-items-center gap-1"
-                >
-                    <FaEdit /> Assign
-                </Button>
-            ),
-            button: true,
-            width: '120px',
-        },
-    ];
+            )
+        }
+    ], [data.users, data.members]);
 
-    const customStyles = {
-        headCells: {
-            style: {
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                paddingTop: '10px',
-                paddingBottom: '10px',
-                fontWeight: '600',
-                fontSize: '0.7rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                color: '#6c757d',
-                backgroundColor: '#f8f9fa',
-            },
-        },
-        rows: {
-            style: {
-                minHeight: '60px', // Slightly taller for group details
-                fontSize: '0.875rem',
-                '&:nth-of-type(odd)': {
-                    backgroundColor: '#bbdefb',
-                },
-                '&:nth-of-type(even)': {
-                    backgroundColor: '#ffffff',
-                },
-            },
-        },
-        cells: {
-            style: {
-                paddingLeft: '12px',
-                paddingRight: '12px',
-            },
-        },
-    };
+    // Action renderer for custom DataTable
+    const actionRenderer = (row) => (
+        <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={() => handleEdit(row)}
+            className="d-inline-flex align-items-center gap-1"
+        >
+            <FaEdit /> Assign
+        </Button>
+    );
 
     return (
         <div className="fade-in">
@@ -154,72 +129,44 @@ export default function AssignCollector() {
                 <div>
                     <h1 className="h4 fw-bold mb-1">Assign Collector</h1>
                 </div>
-                <div style={{ width: '400px' }}>
-                    <InputGroup>
-                        <Form.Control
-                            type="text"
-                            placeholder="Filter By Name"
-                            className="border-end-0"
-                            style={{
-                                borderTopRightRadius: 0,
-                                borderBottomRightRadius: 0,
-                                fontSize: '0.95rem',
-                                padding: '0.75rem 1rem'
-                            }}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <Button
-                            variant="primary"
-                            style={{
-                                borderTopLeftRadius: 0,
-                                borderBottomLeftRadius: 0,
-                                paddingLeft: '1.5rem',
-                                paddingRight: '1.5rem'
-                            }}
-                        >
-                            <FaSearch size={18} />
-                        </Button>
-                    </InputGroup>
-                </div>
             </div>
 
             <Card className="border-0 shadow-sm">
-                <Card.Body className="p-0">
+                <Card.Body className="p-4">
                     <DataTable
-                        columns={columns}
-                        data={filteredGroups}
-                        customStyles={customStyles}
-                        pagination
-                        highlightOnHover
-                        pointerOnHover
-                        responsive
+                        initialColumns={columns}
+                        data={data.shgGroups}
+                        actionRenderer={actionRenderer}
+                        enableFilter={true}
+                        enablePagination={true}
+                        enableSort={true}
+                        rowsPerPageOptions={[10, 20, 30, 50]}
                     />
                 </Card.Body>
             </Card>
 
+            {/* Modal */}
             <Modal show={showModal} onHide={() => setShowModal(false)} centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>Assign Collector</Modal.Title>
+                    <Modal.Title>Assign Collector & Online Account</Modal.Title>
                 </Modal.Header>
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
-                        <div className="mb-4">
-                            <h6 className="fw-bold text-dark">{selectedGroup?.name}</h6>
-                            <p className="text-muted small mb-0">Code: {selectedGroup?.code} • Area: {selectedGroup?.area}</p>
-                        </div>
+                        <Alert variant="info" className="mb-3 py-2 small">
+                            <div className="fw-bold">{selectedGroup?.name} ({selectedGroup?.code})</div>
+                        </Alert>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Collector</Form.Label>
+                            <Form.Label>Assign Collector (Group Incharge)</Form.Label>
                             <Form.Select
                                 value={formData.assignedTo}
                                 onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
                                 required
                             >
                                 <option value="">Select Collector</option>
-                                {data.users.filter(u => u.status === 'active').map(user => (
-                                    <option key={user.id} value={user.id}>
-                                        {user.name} ({user.role === 'shg_team' ? 'Team' : 'Member'})
+                                {shgTeamMembers.map(member => (
+                                    <option key={`${member.source}-${member.id}`} value={member.id}>
+                                        {member.name} {member.memberCode ? `(${member.memberCode})` : member.email ? `(${member.email})` : ''}
                                     </option>
                                 ))}
                             </Form.Select>
@@ -227,28 +174,28 @@ export default function AssignCollector() {
 
                         <Form.Group className="mb-3">
                             <Form.Label>Online Collection Account</Form.Label>
-                            <Form.Text className="d-block text-muted small mb-2">
-                                Select the member account where online payments will be collected.
-                            </Form.Text>
                             <Form.Select
                                 value={formData.onlineCollectionId}
                                 onChange={(e) => setFormData({ ...formData, onlineCollectionId: e.target.value })}
                             >
-                                <option value="">Select Account Holder</option>
-                                {data.members.filter(m => m.status === 'active').map(member => (
+                                <option value="">Select Member (Optional)</option>
+                                {groupMembers.map(member => (
                                     <option key={member.id} value={member.id}>
-                                        {member.name} - {member.bankName} ({member.bankAccountNumber})
+                                        {member.name} ({member.memberCode})
                                     </option>
                                 ))}
                             </Form.Select>
+                            <Form.Text className="text-muted">
+                                Select a group member who will receive online payments.
+                            </Form.Text>
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={() => setShowModal(false)}>
                             Cancel
                         </Button>
-                        <Button type="submit" variant="success">
-                            Save
+                        <Button variant="primary" type="submit">
+                            Save Changes
                         </Button>
                     </Modal.Footer>
                 </Form>
