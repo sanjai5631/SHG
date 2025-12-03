@@ -436,13 +436,10 @@ export default function MemberwiseReport({ data }) {
                                     value={localMemberwiseDateRange.endDate}
                                     min={
                                         localMemberwiseDateRange.startDate
-                                            ? (
-                                                getNextDayISO(localMemberwiseDateRange.startDate) > todayStr
-                                                    ? getNextDayISO(localMemberwiseDateRange.startDate)
-                                                    : todayStr
-                                            )
-                                            : todayStr
+                                            ? getNextDayISO(localMemberwiseDateRange.startDate)
+                                            : ''
                                     }
+                                    max={todayStr}
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         setLocalMemberwiseDateRange({
@@ -450,26 +447,21 @@ export default function MemberwiseReport({ data }) {
                                             endDate: value
                                         });
 
-                                        if (value && value < todayStr) {
-                                            setDateError('End Date cannot be earlier than today.');
+                                        if (value && value > todayStr) {
+                                            setDateError('End Date cannot be in the future.');
                                         } else if (
                                             value &&
                                             localMemberwiseDateRange.startDate &&
-                                            value < localMemberwiseDateRange.startDate
+                                            value <= localMemberwiseDateRange.startDate
                                         ) {
-                                            setDateError('End Date cannot be earlier than Start Date.');
-                                        } else if (
-                                            value &&
-                                            localMemberwiseDateRange.startDate &&
-                                            value === localMemberwiseDateRange.startDate
-                                        ) {
-                                            setDateError('End Date must be at least one day after Start Date.');
+                                            setDateError('End Date must be after Start Date.');
                                         } else {
                                             setDateError('');
                                         }
                                     }}
                                     className="form-control-sm"
                                 />
+
                             </div>
                         </Col>
 
