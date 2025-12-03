@@ -33,6 +33,7 @@ const DataTable = ({
     enableSort = true,
     actionRenderer = null,
     footerRenderer = null,
+    dense = false,
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0] || 10);
