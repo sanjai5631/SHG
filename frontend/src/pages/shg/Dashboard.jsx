@@ -287,7 +287,7 @@ export default function Dashboard() {
                         <Col xs={12} sm={4} md={2} lg={1}>
                             <Button
                                 variant="primary"
-                                className="w-100"
+                                className="w-100 d-flex align-items-center justify-content-center"
                                 style={{ height: '38px' }}
                                 disabled={!fromDate || !toDate}
                             >

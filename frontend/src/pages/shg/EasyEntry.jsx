@@ -20,6 +20,29 @@ export default function EasyEntry() {
         ? data.members.filter(m => m.groupId === parseInt(selectedGroup) && m.status === 'active')
         : [];
 
+    // Calculate overall cash in hand
+    useEffect(() => {
+        if (data) {
+            // Total Savings Collected
+            const totalSavings = (data.savings || []).reduce((sum, s) => sum + s.amount, 0);
+
+            // Total Loan Repayments Collected
+            const totalRepayments = (data.loanRepayments || []).reduce((sum, r) => sum + r.amount, 0);
+
+            // Total Loans Disbursed
+            const totalDisbursed = (data.loans || [])
+                .filter(l => l.status === 'approved')
+                .reduce((sum, l) => sum + l.amount, 0);
+
+            const cashInHand = totalSavings + totalRepayments - totalDisbursed;
+
+            setOpeningBalance(prev => ({
+                ...prev,
+                cash: cashInHand
+            }));
+        }
+    }, [data]);
+
     // Load member's accounts when member is selected
     useEffect(() => {
         if (selectedMember) {
@@ -32,14 +55,10 @@ export default function EasyEntry() {
                 memberTransactions.push({
                     id: 'savings-' + member.id,
                     accountType: 'Savings',
-                    product: 'General Savings',
                     head: 'Savings Deposit',
                     outstanding: savingsBalance,
-                    overdue: 0,
                     demand: 0,
-                    collection: '',
-                    principal: '',
-                    interest: ''
+                    collection: ''
                 });
 
                 // Add Loan Accounts (if member has active loans)
@@ -49,24 +68,33 @@ export default function EasyEntry() {
 
                 memberLoans.forEach(loan => {
                     const loanProduct = data.loanProducts.find(p => p.id === loan.productId);
-                    const repaid = data.transactions
-                        .filter(t => t.type === 'loan_repayment' && t.loanId === loan.id)
-                        .reduce((sum, t) => sum + t.amount, 0);
+                    // Use loanRepayments instead of transactions
+                    const repaid = (data.loanRepayments || [])
+                        .filter(r => r.loanId === loan.id)
+                        .reduce((sum, r) => sum + r.amount, 0);
                     const outstanding = loan.amount - repaid;
 
                     if (outstanding > 0) {
+                        // Add Principal row
                         memberTransactions.push({
-                            id: 'loan-' + loan.id,
+                            id: 'loan-principal-' + loan.id,
                             loanId: loan.id,
                             accountType: 'Loan',
-                            product: loanProduct?.name || 'Loan',
-                            head: 'Loan Repayment',
+                            head: `${loanProduct?.name || 'Loan'} - Principal`,
                             outstanding: outstanding,
-                            overdue: 0,
                             demand: loan.emi || 0,
-                            collection: '',
-                            principal: '',
-                            interest: ''
+                            collection: ''
+                        });
+
+                        // Add Interest row
+                        memberTransactions.push({
+                            id: 'loan-interest-' + loan.id,
+                            loanId: loan.id,
+                            accountType: 'Loan',
+                            head: `${loanProduct?.name || 'Loan'} - Interest`,
+                            outstanding: 0,
+                            demand: 0,
+                            collection: ''
                         });
                     }
                 });
@@ -76,18 +104,12 @@ export default function EasyEntry() {
         } else {
             setTransactions([]);
         }
-    }, [selectedMember, data]);
+    }, [selectedMember, data, getMemberSavingsBalance]);
 
     // Calculate totals
     const calculateTotal = () => {
         return transactions.reduce((sum, t) => {
-            if (t.accountType === 'Loan') {
-                const principal = parseFloat(t.principal) || 0;
-                const interest = parseFloat(t.interest) || 0;
-                return sum + principal + interest;
-            } else {
-                return sum + (parseFloat(t.collection) || 0);
-            }
+            return sum + (parseFloat(t.collection) || 0);
         }, 0);
     };
 
@@ -100,30 +122,10 @@ export default function EasyEntry() {
         });
     }, [transactions, openingBalance]);
 
-    // Handle collection change for Savings
+    // Handle collection change
     const handleCollectionChange = (index, value) => {
         const newTransactions = [...transactions];
         newTransactions[index].collection = value;
-        setTransactions(newTransactions);
-    };
-
-    // Handle principal change for Loan
-    const handlePrincipalChange = (index, value) => {
-        const newTransactions = [...transactions];
-        newTransactions[index].principal = value;
-        // Auto-calculate 1% interest
-        if (value) {
-            newTransactions[index].interest = (parseFloat(value) * 0.01).toFixed(2);
-        } else {
-            newTransactions[index].interest = '';
-        }
-        setTransactions(newTransactions);
-    };
-
-    // Handle interest change for Loan
-    const handleInterestChange = (index, value) => {
-        const newTransactions = [...transactions];
-        newTransactions[index].interest = value;
         setTransactions(newTransactions);
     };
 
@@ -193,6 +195,8 @@ export default function EasyEntry() {
                                     size="sm"
                                     value={transactionDate}
                                     onChange={(e) => setTransactionDate(e.target.value)}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    max={new Date().toISOString().split('T')[0]}
                                 />
                             </Form.Group>
                         </Col>
@@ -213,13 +217,9 @@ export default function EasyEntry() {
                             <thead className="bg-secondary text-white small">
                                 <tr>
                                     <th>Account Type</th>
-                                    <th>Product</th>
                                     <th>Transaction Head</th>
                                     <th>Outstanding</th>
-                                    <th>Overdue</th>
                                     <th>Demand</th>
-                                    <th style={{ width: '150px' }}>Principal</th>
-                                    <th style={{ width: '100px' }}>Interest</th>
                                     <th style={{ width: '150px' }}>Collection</th>
                                 </tr>
                             </thead>
@@ -228,59 +228,37 @@ export default function EasyEntry() {
                                     transactions.map((t, index) => (
                                         <tr key={t.id}>
                                             <td className="fw-semibold">{t.accountType}</td>
-                                            <td>{t.product}</td>
                                             <td>{t.head}</td>
                                             <td className="text-end">₹{t.outstanding.toLocaleString()}</td>
-                                            <td className="text-end">{t.overdue}</td>
                                             <td className="text-end">₹{t.demand.toLocaleString()}</td>
                                             <td>
-                                                {t.accountType === 'Loan' ? (
-                                                    <Form.Control
-                                                        size="sm"
-                                                        type="number"
-                                                        value={t.principal}
-                                                        onChange={(e) => handlePrincipalChange(index, e.target.value)}
-                                                        placeholder="Principal"
-                                                    />
-                                                ) : (
-                                                    <span className="text-muted">-</span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                {t.accountType === 'Loan' ? (
-                                                    <Form.Control
-                                                        size="sm"
-                                                        type="number"
-                                                        value={t.interest}
-                                                        onChange={(e) => handleInterestChange(index, e.target.value)}
-                                                        placeholder="Interest"
-                                                    />
-                                                ) : (
-                                                    <span className="text-muted">-</span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                {t.accountType === 'Savings' ? (
-                                                    <Form.Control
-                                                        size="sm"
-                                                        type="number"
-                                                        value={t.collection}
-                                                        onChange={(e) => handleCollectionChange(index, e.target.value)}
-                                                        placeholder="Amount"
-                                                    />
-                                                ) : (
-                                                    <span className="text-success fw-bold">
-                                                        {(parseFloat(t.principal) || 0) + (parseFloat(t.interest) || 0) > 0
-                                                            ? `₹${((parseFloat(t.principal) || 0) + (parseFloat(t.interest) || 0)).toLocaleString()}`
-                                                            : '-'}
-                                                    </span>
-                                                )}
+                                                <Form.Control
+                                                    size="sm"
+                                                    type="text"
+                                                    value={t.collection}
+                                                    onChange={(e) => handleCollectionChange(index, e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        // Allow: backspace, delete, tab, escape, enter
+                                                        if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
+                                                            // Allow: Ctrl+A
+                                                            (e.keyCode === 65 && e.ctrlKey === true) ||
+                                                            // Allow: home, end, left, right
+                                                            (e.keyCode >= 35 && e.keyCode <= 39)) {
+                                                            return;
+                                                        }
+                                                        // Ensure that it is a number and stop the keypress
+                                                        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                    placeholder="Amount"
+                                                />
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="9" className="text-center text-muted py-4">
+                                        <td colSpan="5" className="text-center text-muted py-4">
                                             {selectedMember ? 'No accounts found for this member' : 'Please select a group and member'}
                                         </td>
                                     </tr>

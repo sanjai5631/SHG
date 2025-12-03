@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, Table, Form, Button, Row, Col, Alert } from 'react-bootstrap';
-import DataTable from 'react-data-table-component';
+import { Card, Form, Button, Row, Col, Alert, Badge, Modal } from 'react-bootstrap';
+import DataTable from '../../components/DataTable';
 import { useApp } from '../../context/AppContext';
+import { FaMoneyBillWave, FaCalculator, FaPencilAlt, FaToggleOn, FaTrash } from 'react-icons/fa';
 
 export default function SavingsManagement() {
     const { data, addItem, currentUser } = useApp();
@@ -11,6 +12,7 @@ export default function SavingsManagement() {
     const [selectedMonth, setSelectedMonth] = useState('December');
     const [selectedGroup, setSelectedGroup] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [showDenominationModal, setShowDenominationModal] = useState(false);
 
     const financialYears = ['2023-2024', '2024-2025', '2025-2026', '2026-2027'];
     const months = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
@@ -104,7 +106,7 @@ export default function SavingsManagement() {
                 id: m.id,
                 name: m.name,
                 memberCode: m.memberCode,
-                demand: 0,
+                demand: 1000,
                 collect: 0,
                 openingBalance: openingBalance,
                 dbTotalAmount: dbTotalSavings, // Store DB total for calculations
@@ -268,12 +270,243 @@ export default function SavingsManagement() {
         }
     };
 
-    // Filter members based on search
-    const [searchTerm, setSearchTerm] = useState('');
+    // Define columns for custom DataTable
+    const columns = useMemo(() => [
+        {
+            key: 'name',
+            label: 'NAME',
+            sortable: true,
+            render: (value, row) => (
+                <div className="py-2">
+                    <div className="fw-medium">{row.name}</div>
+                    <div className="text-muted small">{row.memberCode}</div>
+                </div>
+            )
+        },
+        {
+            key: 'outstanding',
+            label: 'OUTSTANDING',
+            render: (value, row) => (
+                <div className="text-end fw-bold text-danger">
+                    {(row.totalAmount || 0).toLocaleString('en-IN')}
+                </div>
+            )
+        },
+        {
+            key: 'demand',
+            label: 'DEMAND',
+            render: (value, row) => (
+                <Form.Control
+                    type="text"
+                    size="sm"
+                    value={row.demand || 0}
+                    readOnly
+                    className="text-end border fw-medium bg-light"
+                    style={{
+                        borderColor: '#dee2e6',
+                        minWidth: '80px',
+                        padding: '0.375rem 0.5rem'
+                    }}
+                />
+            )
+        },
+        {
+            key: 'collect',
+            label: 'ACT.COLLECT',
+            render: (value, row) => (
+                <Form.Control
+                    type="text"
+                    size="sm"
+                    value={row.collect || ''}
+                    onChange={(e) => handleDataChange(row.id, 'collect', e.target.value)}
+                    onKeyDown={(e) => {
+                        // Allow: backspace, delete, tab, escape, enter
+                        if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
+                            // Allow: Ctrl+A
+                            (e.keyCode === 65 && e.ctrlKey === true) ||
+                            // Allow: home, end, left, right
+                            (e.keyCode >= 35 && e.keyCode <= 39)) {
+                            return;
+                        }
+                        // Ensure that it is a number and stop the keypress
+                        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                            e.preventDefault();
+                        }
+                    }}
+                    className="text-end border fw-medium"
+                    style={{
+                        backgroundColor: '#fff',
+                        borderColor: '#dee2e6',
+                        minWidth: '80px',
+                        padding: '0.375rem 0.5rem'
+                    }}
+                />
+            )
+        },
+        {
+            key: 'totalAmount',
+            label: 'TOTAL',
+            render: (value) => <div className="text-end fw-bold">{value?.toLocaleString('en-IN')}</div>
+        },
+        {
+            key: 'withdrawal',
+            label: 'WITHDRAWAL',
+            render: (value, row) => (
+                <Form.Control
+                    type="text"
+                    size="sm"
+                    value={row.withdrawal || ''}
+                    onChange={(e) => handleDataChange(row.id, 'withdrawal', e.target.value)}
+                    onKeyDown={(e) => {
+                        // Allow: backspace, delete, tab, escape, enter
+                        if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
+                            // Allow: Ctrl+A
+                            (e.keyCode === 65 && e.ctrlKey === true) ||
+                            // Allow: home, end, left, right
+                            (e.keyCode >= 35 && e.keyCode <= 39)) {
+                            return;
+                        }
+                        // Ensure that it is a number and stop the keypress
+                        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                            e.preventDefault();
+                        }
+                    }}
+                    className="text-end border fw-medium"
+                    style={{
+                        backgroundColor: '#fff',
+                        borderColor: '#dee2e6',
+                        minWidth: '80px',
+                        padding: '0.375rem 0.5rem'
+                    }}
+                />
+            )
+        },
+        {
+            key: 'paymentMode',
+            label: 'PAYMENT MODE',
+            render: (value, row) => (
+                <Form.Select
+                    size="sm"
+                    value={row.paymentMode}
+                    onChange={(e) => handlePaymentModeChange(row.id, e.target.value)}
+                    style={{ minWidth: '100px' }}
+                >
+                    <option value="cash">Cash</option>
+                    <option value="online">Online</option>
+                </Form.Select>
+            )
+        },
+        {
+            key: 'selectedPerson',
+            label: 'SELECT PERSON',
+            render: (value, row) => (
+                row.paymentMode === 'online' && (
+                    <Form.Select
+                        size="sm"
+                        value={row.selectedPerson}
+                        onChange={(e) => handlePersonChange(row.id, e.target.value)}
+                        style={{ minWidth: '120px' }}
+                    >
+                        <option value="">Select Person</option>
+                        {activeMembers.map(m => (
+                            <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                    </Form.Select>
+                )
+            )
+        }
+    ], [activeMembers, currentGroup]);
 
-    const filteredMembers = membersData.filter(member =>
-        member.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const handleToggleStatus = (row) => {
+        // Add your toggle status logic here
+        console.log('Toggle status for member:', row);
+    };
+
+    const handleDelete = (row) => {
+        if (window.confirm(`Are you sure you want to delete ${row.name}?`)) {
+            // Add your delete logic here
+            console.log('Delete member:', row);
+        }
+    };
+
+    const actionRenderer = (row) => (
+        <div className="d-flex gap-2 align-items-center">
+            <Button
+                variant="light"
+                size="sm"
+                className="text-primary border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px', backgroundColor: '#f0f4ff' }}
+                onClick={() => {
+                    // Add your edit logic here
+                    console.log('Edit member:', row);
+                }}
+                title="Edit"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+                </svg>
+            </Button>
+            <Button
+                variant="light"
+                size="sm"
+                className="text-success border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px', backgroundColor: '#f0fff4' }}
+                onClick={() => setShowDenominationModal(true)}
+                title="Cash Denomination"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+                    <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z" />
+                </svg>
+            </Button>
+            <Button
+                variant="light"
+                size="sm"
+                className="text-danger border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px', backgroundColor: '#fff0f0' }}
+                onClick={() => handleDelete(row)}
+                title="Delete"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                    <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                </svg>
+            </Button>
+        </div>
     );
+
+    const footerRenderer = (currentData) => {
+        const totalOutstanding = currentData.reduce((sum, row) => sum + (parseFloat(row.totalAmount) || 0), 0);
+        const totalDemand = currentData.reduce((sum, row) => sum + (parseFloat(row.demand) || 0), 0);
+        const totalCollect = currentData.reduce((sum, row) => sum + (parseFloat(row.collect) || 0), 0);
+        const totalAmount = currentData.reduce((sum, row) => sum + (parseFloat(row.totalAmount) || 0), 0);
+        const totalWithdrawal = currentData.reduce((sum, row) => sum + (parseFloat(row.withdrawal) || 0), 0);
+
+        return (
+            <tfoot style={{ backgroundColor: '#f8f9fa', fontWeight: 'bold' }}>
+                <tr>
+                    <td className="py-3 px-3"></td>
+                    <td className="py-3 px-3 fw-bold">Total:</td>
+                    <td className="py-3 px-3 text-end text-danger">
+                        {totalOutstanding.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3 px-3 text-end text-success">
+                        {totalDemand.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3 px-3 text-end text-success">
+                        {totalCollect.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3 px-3 text-end text-primary fw-bold">
+                        {totalAmount.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3 px-3 text-end text-warning">
+                        {totalWithdrawal.toLocaleString('en-IN')}
+                    </td>
+                    <td colSpan={2}></td>
+                </tr>
+            </tfoot>
+        );
+    };
 
     return (
         <div className="fade-in">
@@ -281,7 +514,6 @@ export default function SavingsManagement() {
                 <div>
                     <h1 className="h4 fw-bold mb-0">Savings Management</h1>
                 </div>
-                {/* Optional: Add button here if needed in future, currently empty to match layout */}
             </div>
 
             {successMessage && (
@@ -348,289 +580,99 @@ export default function SavingsManagement() {
                 </Card.Header>
                 <Card.Body className="p-4">
                     <DataTable
-                        columns={[
-                            {
-                                name: 'SNO',
-                                selector: (row, index) => index + 1,
-                                cell: (row, index) => <div className="text-center">{index + 1}</div>,
-                                width: '60px',
-                            },
-                            {
-                                name: 'NAME',
-                                selector: row => row.name,
-                                cell: row => (
-                                    <div className="py-2">
-                                        <div className="fw-medium">{row.name}</div>
-                                        <div className="text-muted small">{row.memberCode}</div>
-                                    </div>
-                                ),
-                                width: '175px',
-                            },
-                            {
-                                name: 'DEMAND',
-                                cell: row => (
-                                    <Form.Control
-                                        type="number"
-                                        min="0"
-                                        size="sm"
-                                        value={row.demand || ''}
-                                        onChange={(e) => handleDataChange(row.id, 'demand', e.target.value)}
-                                        className="text-end border fw-medium"
-                                        style={{
-                                            backgroundColor: '#fff',
-                                            borderColor: '#dee2e6',
-                                            minWidth: '80px',
-                                            padding: '0.375rem 0.5rem'
-                                        }}
-                                    />
-                                ),
-                                width: '110px',
-                            },
-                            {
-                                name: 'ACT.COLLECT',
-                                cell: row => (
-                                    <Form.Control
-                                        type="number"
-                                        min="0"
-                                        size="sm"
-                                        value={row.collect || ''}
-                                        onChange={(e) => handleDataChange(row.id, 'collect', e.target.value)}
-                                        className="text-end border fw-medium"
-                                        style={{
-                                            backgroundColor: '#fff',
-                                            borderColor: '#dee2e6',
-                                            minWidth: '90px',
-                                            padding: '0.375rem 0.5rem'
-                                        }}
-                                    />
-                                ),
-                                width: '120px',
-                            },
-                            {
-                                name: 'TOTAL AMOUNT',
-                                selector: row => row.totalAmount,
-                                cell: row => <div className="text-end"><span className="fw-medium text-dark">₹{row.totalAmount.toLocaleString()}</span></div>,
-                                width: '105px',
-                            },
-                            {
-                                name: 'SHARE AMOUNT',
-                                selector: row => row.shareAmount,
-                                cell: row => <div className="text-end"><span className="text-muted">{row.shareAmount.toLocaleString()}</span></div>,
-                                width: '95px',
-                            },
-                            {
-                                name: '2025 CLOSING',
-                                selector: row => row.closing2025,
-                                cell: row => <div className="text-end"><span className="text-muted">₹{row.closing2025.toLocaleString()}</span></div>,
-                                width: '105px',
-                            },
-                            {
-                                name: 'WITHDRAWAL',
-                                cell: row => (
-                                    <Form.Control
-                                        type="number"
-                                        min="0"
-                                        size="sm"
-                                        value={row.withdrawal || ''}
-                                        onChange={(e) => handleDataChange(row.id, 'withdrawal', e.target.value)}
-                                        className="text-end border fw-medium"
-                                        style={{
-                                            backgroundColor: '#fff',
-                                            borderColor: '#dee2e6',
-                                            minWidth: '90px',
-                                            padding: '0.375rem 0.5rem'
-                                        }}
-                                    />
-                                ),
-                                width: '115px',
-                            },
-                            {
-                                name: '2026 OPENING',
-                                selector: row => calculateOpening2026(row),
-                                cell: row => <div className="text-end"><span className="fw-medium text-dark">₹{calculateOpening2026(row).toLocaleString()}</span></div>,
-                                width: '130px',
-                            },
-                            {
-                                name: 'PAYMENT MODE',
-                                cell: row => (
-                                    <Form.Select
-                                        size="sm"
-                                        value={row.paymentMode}
-                                        onChange={(e) => handlePaymentModeChange(row.id, e.target.value)}
-                                        className="border-0 bg-transparent text-muted"
-                                        style={{ fontSize: '0.8rem' }}
-                                    >
-                                        <option value="cash">Cash</option>
-                                        <option value="online">Online</option>
-                                    </Form.Select>
-                                ),
-                                width: '120px',
-                            },
-                            {
-                                name: 'SELECT PERSON',
-                                cell: row => (
-                                    row.paymentMode === 'online' ? (
-                                        <Form.Select
-                                            size="sm"
-                                            value={row.selectedPerson}
-                                            onChange={(e) => handlePersonChange(row.id, e.target.value)}
-                                            className={`border ${!row.selectedPerson && row.collect > 0 ? 'text-danger fw-bold' : 'text-dark'}`}
-                                            style={{ fontSize: '0.8rem', backgroundColor: '#fff', borderColor: '#dee2e6' }}
-                                        >
-                                            <option value="">Select Person...</option>
-                                            {activeMembers.map(m => (
-                                                <option key={m.id} value={m.id}>{m.name}</option>
-                                            ))}
-                                        </Form.Select>
-                                    ) : (
-                                        <div className="text-center text-muted small w-100">-</div>
-                                    )
-                                ),
-                                width: '200px',
-                            },
-                        ]}
+                        initialColumns={columns}
                         data={membersData}
-                        highlightOnHover
-                        pointerOnHover
-                        dense
-                        fixedHeader
-                        fixedHeaderScrollHeight="600px"
-                        customStyles={{
-                            responsiveWrapper: {
-                                style: {
-                                    overflowX: 'visible',
-                                },
-                            },
-                            rows: {
-                                style: {
-                                    minHeight: '48px',
-                                    fontSize: '0.875rem',
-                                    '&:nth-of-type(odd)': {
-                                        backgroundColor: '#bbdefb',
-                                    },
-                                    '&:nth-of-type(even)': {
-                                        backgroundColor: '#ffffff',
-                                    },
-                                },
-                            },
-                            headCells: {
-                                style: {
-                                    paddingLeft: '12px',
-                                    paddingRight: '12px',
-                                    paddingTop: '10px',
-                                    paddingBottom: '10px',
-                                    fontWeight: '600',
-                                    fontSize: '0.7rem',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                    color: '#6c757d',
-                                    backgroundColor: '#f8f9fa',
-                                },
-                            },
-                            cells: {
-                                style: {
-                                    paddingLeft: '12px',
-                                    paddingRight: '12px',
-                                    paddingTop: '8px',
-                                    paddingBottom: '8px',
-                                },
-                            },
-                        }}
-                        noDataComponent={
-                            <div className="text-center text-muted py-4">
-                                {selectedGroup ? 'No members found in this group' : 'Please select a group to view members'}
-                            </div>
-                        }
+                        enableFilter={true}
+                        enablePagination={true}
+                        enableSort={false}
+                        rowsPerPageOptions={[10, 20, 50, 100]}
+                        footerRenderer={footerRenderer}
+                        actionRenderer={actionRenderer}
                     />
-
-                    {/* Totals Footer */}
-                    {membersData.length > 0 && (
-                        <div className="bg-light border-top p-3 mt-3 rounded">
-                            <div className="d-flex fw-bold text-dark small text-uppercase align-items-center" style={{ fontSize: '1rem' }}>
-                                <div style={{ width: '55px', textAlign: 'center' }}></div>
-                                <div style={{ width: '170px', paddingLeft: '12px' }}>TOTAL</div>
-                                <div style={{ width: '110px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + (m.demand || 0), 0).toLocaleString()}</div>
-                                <div style={{ width: '120px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + (m.collect || 0), 0).toLocaleString()}</div>
-                                <div style={{ width: '105px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + m.totalAmount, 0).toLocaleString()}</div>
-                                <div style={{ width: '95px', textAlign: 'right', paddingRight: '12px' }}>{membersData.reduce((sum, m) => sum + m.shareAmount, 0).toLocaleString()}</div>
-                                <div style={{ width: '105px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + m.closing2025, 0).toLocaleString()}</div>
-                                <div style={{ width: '110px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + (m.withdrawal || 0), 0).toLocaleString()}</div>
-                                <div style={{ width: '130px', textAlign: 'right', paddingRight: '12px' }}>₹{membersData.reduce((sum, m) => sum + calculateOpening2026(m), 0).toLocaleString()}</div>
-                                <div style={{ width: '120px', textAlign: 'center' }}></div>
-                                <div style={{ width: '190px', textAlign: 'center', paddingRight: '12px' }}>
-                                    <Button variant="success" onClick={handleSave} className="fw-medium" size="sm">
-                                        Save
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </Card.Body>
+                <Card.Footer className="bg-white py-3">
+                    <div className="d-flex justify-content-end gap-2">
+                        <Button
+                            variant="success"
+                            onClick={handleSave}
+                            disabled={membersData.length === 0}
+                            className="px-4"
+                        >
+                            Save
+                        </Button>
+                    </div>
+                </Card.Footer>
             </Card>
-            {/* Cash Denomination Calculator */}
-            {membersData.length > 0 && (
-                <div className="d-flex justify-content-end mt-3">
-                    <Card className="border-0 shadow-sm w-25">
-                        <Card.Body className="p-3">
-                            <h6 className="fw-bold mb-3 text-uppercase text-center" style={{ fontSize: '0.75rem', letterSpacing: '0.5px', color: '#6c757d' }}>Cash Denomination</h6>
-                            <div className="d-flex justify-content-end">
-                                <Table bordered size="sm" className="mb-0" style={{ fontSize: '0.875rem', width: 'auto' }}>
-                                    <thead style={{ backgroundColor: '#f8f9fa' }}>
-                                        <tr>
-                                            <th className="text-center py-2 fw-semibold">Cash</th>
-                                            <th className="text-center py-2 fw-semibold" style={{ width: '100px' }}></th>
-                                            <th className="text-end py-2 fw-semibold">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {[500, 200, 100, 50, 20, 10].map(val => (
-                                            <tr key={val}>
-                                                <td className="text-end align-middle py-1 px-2">{val}</td>
-                                                <td className="py-1 px-1">
-                                                    <Form.Control
-                                                        type="number"
-                                                        min="0"
-                                                        size="sm"
-                                                        className="text-center"
-                                                        style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
-                                                        value={denominations[val] || ''}
-                                                        onChange={(e) => handleDenominationChange(val, e.target.value)}
-                                                    />
-                                                </td>
-                                                <td className="text-end align-middle py-1 px-2">{(val * (denominations[val] || 0)).toLocaleString()}</td>
-                                            </tr>
-                                        ))}
-                                        <tr style={{ backgroundColor: '#ff00ff' }}>
-                                            <td colSpan={2} className="text-end fw-bold py-2 px-2">Total</td>
-                                            <td className="text-end fw-bold py-2 px-2">{totalCashCalculated.toLocaleString()}</td>
-                                        </tr>
-                                        <tr className="border-top border-2">
-                                            <td colSpan={2} className="text-end fw-semibold py-2 px-2 text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>System Cash Total</td>
-                                            <td className="text-end fw-bold py-2 px-2 text-primary">₹{totalSystemCash.toLocaleString()}</td>
-                                        </tr>
-                                        <tr>
-                                            <td colSpan={2} className="text-end fw-semibold py-2 px-2 text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Physical Cash Total</td>
-                                            <td className={`text-end fw-bold py-2 px-2 ${totalCashCalculated === totalSystemCash ? 'text-success' : 'text-danger'}`}>
-                                                ₹{totalCashCalculated.toLocaleString()}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colSpan={2} className="text-end fw-semibold py-2 px-2 text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</td>
-                                            <td className="text-end fw-bold py-2 px-2">
-                                                {totalCashCalculated === totalSystemCash ? (
-                                                    <span className="text-success">✓ Matched</span>
-                                                ) : (
-                                                    <span className="text-danger">⚠ Diff: ₹{Math.abs(totalCashCalculated - totalSystemCash).toLocaleString()}</span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </Table>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </div>
-            )}
+
+            {/* Cash Denomination Modal */}
+            <Modal
+                show={showDenominationModal}
+                onHide={() => setShowDenominationModal(false)}
+                centered
+                backdrop="static"
+                keyboard={false}
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title className="h6 fw-bold">Cash Denomination Calculator</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="table-responsive">
+                        <table className="table table-sm table-borderless mb-0">
+                            <tbody>
+                                {Object.keys(denominations).sort((a, b) => b - a).map(denom => (
+                                    <tr key={denom}>
+                                        <td className="align-middle fw-medium">₹{denom}</td>
+                                        <td className="align-middle text-center">x</td>
+                                        <td>
+                                            <Form.Control
+                                                type="number"
+                                                size="sm"
+                                                value={denominations[denom] || ''}
+                                                onChange={(e) => handleDenominationChange(denom, e.target.value)}
+                                                className="text-center"
+                                                style={{ width: '80px' }}
+                                            />
+                                        </td>
+                                        <td className="align-middle text-end fw-bold">
+                                            ₹{(parseInt(denom) * denominations[denom]).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ))}
+                                <tr className="border-top">
+                                    <td colSpan="3" className="pt-2 fw-bold">Physical Cash Total</td>
+                                    <td className="pt-2 text-end fw-bold text-primary">
+                                        ₹{totalCashCalculated.toLocaleString()}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colSpan="3" className="fw-bold">System Cash Total</td>
+                                    <td className="text-end fw-bold text-success">
+                                        ₹{totalSystemCash.toLocaleString()}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colSpan="4">
+                                        {totalCashCalculated === totalSystemCash ? (
+                                            <Alert variant="success" className="mb-0 py-2 small text-center fw-bold">
+                                                ✓ Tally Matched
+                                            </Alert>
+                                        ) : (
+                                            <Alert variant="danger" className="mb-0 py-2 small text-center fw-bold">
+                                                ⚠ Mismatch: ₹{(totalCashCalculated - totalSystemCash).toLocaleString()}
+                                            </Alert>
+                                        )}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDenominationModal(false)}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }

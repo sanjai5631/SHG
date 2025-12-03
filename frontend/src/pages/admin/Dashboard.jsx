@@ -256,7 +256,7 @@ export default function Dashboard() {
                     <h6 className="fw-semibold mb-3 text-uppercase" style={{ fontSize: '0.875rem' }}>DATE RANGE</h6>
 
                     {/* Date Range Inputs */}
-                      <Row className="g-3 mb-3">
+                    <Row className="g-3 mb-3">
                         <Col xs={12} sm={4} md={3} lg={2}>
                             <input
                                 type="date"
@@ -284,11 +284,11 @@ export default function Dashboard() {
                                 onChange={(e) => setToDate(e.target.value)}
                             />
                         </Col>
-                        
+
                         <Col xs={12} sm={4} md={2} lg={1}>
                             <Button
                                 variant="primary"
-                                className="w-100"
+                                className="w-100 d-flex align-items-center justify-content-center"
                                 style={{ height: '38px' }}
                                 disabled={!fromDate || !toDate}
                             >
