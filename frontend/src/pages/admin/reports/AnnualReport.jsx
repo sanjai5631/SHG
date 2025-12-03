@@ -4,6 +4,9 @@ import { FaSearch, FaFileExcel, FaFilePdf, FaCalendarAlt, FaFileAlt } from 'reac
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+ 
+
+
 
 export default function AnnualReport({ data }) {
     const [isLoading, setIsLoading] = useState(false);
@@ -290,7 +293,7 @@ export default function AnnualReport({ data }) {
     return (
         <div className="fade-in">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1 className="fw-bold mb-0">Annual Report</h1>
+                <h4 className="fw-bold mb-0">Annual Report</h4 >
                 <div className="d-flex gap-2">
                    
                 </div>

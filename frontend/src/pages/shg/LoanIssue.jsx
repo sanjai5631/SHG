@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useApp } from "../../context/AppContext";
-import { Card, Form, Button, Toast, ToastContainer, Row, Col, Modal, Table, Badge } from "react-bootstrap";
+import { Card, Form, Button, Toast, ToastContainer, Row, Col, Modal, Badge } from "react-bootstrap";
+import DataTable from "../../components/DataTable";
 
 export default function LoanIssue() {
     const { data, addItem } = useApp();
@@ -132,29 +133,6 @@ export default function LoanIssue() {
     };
     const getProductName = (id) => data.loanProducts.find(p => p.id === id)?.name || "Unknown";
 
-    // Styles matching SavingsManagement.jsx
-    const headerStyle = {
-        fontSize: '0.7rem',
-        fontWeight: '600',
-        color: '#6c757d',
-        backgroundColor: '#f8f9fa',
-        padding: '10px 12px',
-        borderBottom: '1px solid #dee2e6',
-        borderRight: '1px solid #dee2e6',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        textAlign: 'left',
-        verticalAlign: 'middle',
-        whiteSpace: 'nowrap'
-    };
-
-    const cellStyle = {
-        fontSize: '0.875rem',
-        padding: '8px 12px',
-        borderRight: '1px solid #dee2e6',
-        verticalAlign: 'middle'
-    };
-
     return (
         <div className="fade-in">
             {/* TITLE */}
@@ -233,55 +211,85 @@ export default function LoanIssue() {
                         <h5 className="fw-semibold mb-0">Issued Loans List</h5>
                     </Card.Header>
                     <Card.Body className="p-0">
-                        <div style={{ maxHeight: '65vh', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
-                            <Table hover className="mb-0" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0, border: "1px solid #dee2e6" }}>
-                                <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f8f9fa', zIndex: 10 }}>
-                                    <tr>
-                                        <th style={{ ...headerStyle, width: '8%' }}>LOAN ID</th>
-                                        <th style={{ ...headerStyle, width: '12%' }}>GROUP</th>
-                                        <th style={{ ...headerStyle, width: '12%' }}>MEMBER</th>
-                                        <th style={{ ...headerStyle, width: '12%' }}>PRODUCT</th>
-                                        <th style={{ ...headerStyle, width: '10%' }}>AMOUNT</th>
-                                        <th style={{ ...headerStyle, width: '8%' }}>INT. %</th>
-                                        <th style={{ ...headerStyle, width: '8%' }}>TENOR</th>
-                                        <th style={{ ...headerStyle, width: '10%' }}>EMI</th>
-                                        <th style={{ ...headerStyle, width: '10%' }}>DATE</th>
-                                        <th style={{ ...headerStyle, width: '10%', textAlign: 'center' }}>STATUS</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {displayedLoans.length > 0 ? (
-                                        displayedLoans.map((loan, index) => {
-                                            const rowBg = index % 2 === 0 ? "#bbdefb" : "#ffffff";
-                                            return (
-                                                <tr key={loan.id} style={{ backgroundColor: rowBg }}>
-                                                    <td style={{ ...cellStyle, backgroundColor: rowBg }}>#{loan.id}</td>
-                                                    <td style={{ ...cellStyle, backgroundColor: rowBg, fontWeight: '500' }}>{getGroupName(loan.memberId)}</td>
-                                                    <td style={{ ...cellStyle, backgroundColor: rowBg, fontWeight: '500' }}>{getMemberName(loan.memberId)}</td>
-                                                    <td style={{ ...cellStyle, backgroundColor: rowBg }}>{getProductName(loan.productId)}</td>
-                                                    <td style={{ ...cellStyle, backgroundColor: rowBg, color: '#28a745', fontWeight: '600' }}>₹{loan.amount.toLocaleString()}</td>
-                                                    <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.interestRate}%</td>
-                                                    <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.tenor} M</td>
-                                                    <td style={{ ...cellStyle, backgroundColor: rowBg }}>₹{loan.emi}</td>
-                                                    <td style={{ ...cellStyle, backgroundColor: rowBg }}>{loan.issuedDate || loan.approvedDate || "-"}</td>
-                                                    <td style={{ ...cellStyle, backgroundColor: rowBg, textAlign: 'center' }}>
-                                                        <Badge bg={loan.status === 'approved' ? 'success' : loan.status === 'pending' ? 'warning' : 'secondary'}>
-                                                            {loan.status}
-                                                        </Badge>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="10" className="text-center py-4 text-muted">
-                                                No loans found.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </Table>
-                        </div>
+                        <DataTable
+                            data={displayedLoans.map(loan => ({
+                                ...loan,
+                                groupName: getGroupName(loan.memberId),
+                                memberName: getMemberName(loan.memberId),
+                                productName: getProductName(loan.productId)
+                            }))}
+                            initialColumns={[
+                                {
+                                    key: 'id',
+                                    label: 'LOAN ID',
+                                    sortable: true,
+                                    render: (val) => `#${val}`
+                                },
+                                {
+                                    key: 'groupName',
+                                    label: 'GROUP',
+                                    sortable: true,
+                                    render: (val) => <span style={{ fontWeight: '500' }}>{val}</span>
+                                },
+                                {
+                                    key: 'memberName',
+                                    label: 'MEMBER',
+                                    sortable: true,
+                                    render: (val) => <span style={{ fontWeight: '500' }}>{val}</span>
+                                },
+                                {
+                                    key: 'productName',
+                                    label: 'PRODUCT',
+                                    sortable: true
+                                },
+                                {
+                                    key: 'amount',
+                                    label: 'AMOUNT',
+                                    sortable: true,
+                                    render: (val) => <span style={{ color: '#28a745', fontWeight: '600' }}>₹{val.toLocaleString()}</span>
+                                },
+                                {
+                                    key: 'interestRate',
+                                    label: 'INT. %',
+                                    sortable: true,
+                                    render: (val) => `${val}%`
+                                },
+                                {
+                                    key: 'tenor',
+                                    label: 'TENOR',
+                                    sortable: true,
+                                    render: (val) => `${val} M`
+                                },
+                                {
+                                    key: 'emi',
+                                    label: 'EMI',
+                                    sortable: true,
+                                    render: (val) => `₹${val}`
+                                },
+                                {
+                                    key: 'issuedDate',
+                                    label: 'DATE',
+                                    sortable: true,
+                                    render: (val, row) => val || row.approvedDate || "-"
+                                },
+                                {
+                                    key: 'status',
+                                    label: 'STATUS',
+                                    sortable: true,
+                                    render: (val) => (
+                                        <div style={{ textAlign: 'center' }}>
+                                            <Badge bg={val === 'approved' ? 'success' : val === 'pending' ? 'warning' : 'secondary'}>
+                                                {val}
+                                            </Badge>
+                                        </div>
+                                    )
+                                }
+                            ]}
+                            enableFilter={true}
+                            enablePagination={true}
+                            enableExport={true}
+                            rowsPerPageOptions={[10, 25, 50]}
+                        />
                     </Card.Body>
                 </Card>
             )}
