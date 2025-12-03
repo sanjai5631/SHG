@@ -168,10 +168,11 @@ export default function SHGLayout() {
                                     Loan
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
-                                    <Dropdown.Item as={Link} to="/shg/loan-reschedule" onClick={() => setExpanded(false)}>Repayment Schedule</Dropdown.Item>
-                                     <Dropdown.Item as={Link} to="/shg/loanapproval" onClick={() => setExpanded(false)}>Loan Approval</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/shg/loan-request" onClick={() => setExpanded(false)}>Loan Request</Dropdown.Item>
+                                     <Dropdown.Item as={Link} to="/shg/loanapproval" onClick={() => setExpanded(false)}>Loan Approval</Dropdown.Item>
+                                    
                                     <Dropdown.Item as={Link} to="/shg/loan-issue" onClick={() => setExpanded(false)}>Loan Issue</Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/shg/loan-reschedule" onClick={() => setExpanded(false)}>Repayment Schedule</Dropdown.Item>
                                 </Dropdown.Menu>
                             </Dropdown>
 
@@ -203,7 +204,7 @@ export default function SHGLayout() {
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
                                     <Dropdown.Item as={Link} to="/shg/memberwise-report" onClick={() => setExpanded(false)}>Memberwise Report</Dropdown.Item>
-                                    <Dropdown.Item as={Link} to="/shg/daywise-report" onClick={() => setExpanded(false)}>Overall Report</Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/shg/overall-report" onClick={() => setExpanded(false)}>Overall Report</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/shg/monthly-report" onClick={() => setExpanded(false)}>Monthly Report</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/shg/annual-report" onClick={() => setExpanded(false)}>Annual Report</Dropdown.Item>
                                 </Dropdown.Menu>

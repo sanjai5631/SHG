@@ -282,6 +282,65 @@ export default function LoanManagement() {
         return sum + Number(entry.interestAmount || 0);
     }, 0);
 
+    const footerRenderer = (currentData) => {
+        return (
+            <tfoot style={{ position: 'sticky', bottom: 0, backgroundColor: '#f8f9fa', zIndex: 10, borderTop: '2px solid #dee2e6' }}>
+                <tr>
+                    <td colSpan={3} style={{ fontSize: '0.875rem', fontWeight: '700', textAlign: 'right', color: '#049bffff', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>Grand Total:</td>
+                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalDemandPrincipal.toLocaleString()}</td>
+                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalDemandInterest.toLocaleString()}</td>
+                    <td style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0d6efd', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalCollectionPrincipal.toLocaleString()}</td>
+                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalCollectionInterest.toLocaleString()}</td>
+                    <td colSpan={2} style={{ padding: '12px 16px', borderRight: '1px solid #dee2e6' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px' }}>
+                            <span style={{ fontSize: '1rem', fontWeight: '700', color: '#28a745', }}>
+                                ₹{(totalCollectionPrincipal + totalCollectionInterest).toLocaleString()}
+                            </span>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <Button
+                                    size="sm"
+                                    variant="success"
+                                    onClick={() => {
+                                        // Save all entries logic here
+                                        alert('Saving all collections...');
+                                    }}
+                                    className="shadow-sm"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    <FaSave size={14} />
+                                    Save
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="primary"
+                                    onClick={() => setShowCashModal(true)}
+                                    className="shadow-sm ms-3"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: '8px 12px',
+                                        borderRadius: '8px'
+                                    }}
+                                    title="Cash Denomination"
+                                >
+                                    <FaMoneyBillWave size={16} />
+                                </Button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
+        );
+    };
+
     // ===========================
     // UI
     // ===========================
@@ -304,32 +363,28 @@ export default function LoanManagement() {
     return (
         <div className="fade-in">
             {/* Table */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <h3 className="fw-bold mb-4 text-dark">Loan Repayment Collection</h3>
+                <Form.Group className="mb-0" style={{ width: 'auto', minWidth: '180px' }}>
+                    <Form.Select
+                        size="sm"
+                        value={repaymentGroup}
+                        onChange={(e) => {
+                            setRepaymentGroup(e.target.value);
+                            setCurrentPage(1); // Reset to page 1 on filter change
+                        }}
+                        style={{ fontSize: '0.875rem', borderRadius: '6px' }}
+                    >
+                        <option value="">All Groups</option>
+                        {myGroups.map(g => (
+                            <option key={g.id} value={g.id}>{g.name}</option>
+                        ))}
+                    </Form.Select>
+                </Form.Group>
+            </div>
+
+            {/* Table */}
             <Card className="border-1 shadow-sm">
-                <Card.Header className="bg-white">
-                    <Row className="align-items-center">
-                        <Col md={8}>
-                            <h5 className="fw-semibold mb-0">Loan Repayment Collection</h5>
-                        </Col>
-                        <Col md={4} className="text-end">
-                            <Form.Group className="mb-0" style={{ display: 'inline-block', width: 'auto', minWidth: '180px' }}>
-                                <Form.Select
-                                    size="sm"
-                                    value={repaymentGroup}
-                                    onChange={(e) => {
-                                        setRepaymentGroup(e.target.value);
-                                        setCurrentPage(1); // Reset to page 1 on filter change
-                                    }}
-                                    style={{ fontSize: '0.875rem' }}
-                                >
-                                    <option value="">All Groups</option>
-                                    {myGroups.map(g => (
-                                        <option key={g.id} value={g.id}>{g.name}</option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                    </Row>
-                </Card.Header>
                 <Card.Body className="p-0">
 
                     <DataTable
@@ -454,62 +509,7 @@ export default function LoanManagement() {
                         enableFilter={true}
                         enablePagination={true}
                         rowsPerPageOptions={[10, 25, 50, 100]}
-                        footer={
-                            <tfoot style={{ position: 'sticky', bottom: 0, backgroundColor: '#f8f9fa', zIndex: 10, borderTop: '2px solid #dee2e6' }}>
-                                <tr>
-                                    <td colSpan={3} style={{ fontSize: '0.875rem', fontWeight: '700', textAlign: 'right', color: '#049bffff', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>Grand Total:</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalDemandPrincipal.toLocaleString()}</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalDemandInterest.toLocaleString()}</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', color: '#0d6efd', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalCollectionPrincipal.toLocaleString()}</td>
-                                    <td style={{ fontSize: '0.875rem', fontWeight: '700', padding: '16px 8px', borderRight: '1px solid #dee2e6' }}>₹{totalCollectionInterest.toLocaleString()}</td>
-                                    <td colSpan={2} style={{ padding: '12px 16px', borderRight: '1px solid #dee2e6' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px' }}>
-                                            <span style={{ fontSize: '1rem', fontWeight: '700', color: '#28a745', }}>
-                                                ₹{(totalCollectionPrincipal + totalCollectionInterest).toLocaleString()}
-                                            </span>
-                                            <div style={{ display: 'flex', gap: '8px' }}>
-                                                <Button
-                                                    size="sm"
-                                                    variant="success"
-                                                    onClick={() => {
-                                                        // Save all entries logic here
-                                                        alert('Saving all collections...');
-                                                    }}
-                                                    className="shadow-sm"
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '6px',
-                                                        padding: '8px 16px',
-                                                        borderRadius: '8px',
-                                                        fontWeight: '600'
-                                                    }}
-                                                >
-                                                    <FaSave size={14} />
-                                                    Save
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="primary"
-                                                    onClick={() => setShowCashModal(true)}
-                                                    className="shadow-sm ms-3"
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        padding: '8px 12px',
-                                                        borderRadius: '8px'
-                                                    }}
-                                                    title="Cash Denomination"
-                                                >
-                                                    <FaMoneyBillWave size={16} />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        }
+                        footerRenderer={footerRenderer}
                     />
                 </Card.Body>
             </Card>
