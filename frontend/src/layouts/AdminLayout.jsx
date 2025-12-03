@@ -107,6 +107,33 @@ export default function AdminLayout() {
                                 Dashboard
                             </Nav.Link>
 
+                            {/* SHG Groups */}
+                            <Nav.Link
+                                as={Link}
+                                to="/admin/shg-groups"
+                                onClick={() => setExpanded(false)}
+                                className="px-4 py-3 text-uppercase fw-bold small text-white"
+                                style={{
+                                    fontSize: '0.8rem',
+                                    letterSpacing: '1px',
+                                    borderRadius: 0,
+                                    borderBottom: isActive('/admin/shg-groups') ? '3px solid white' : '3px solid transparent',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isActive('/admin/shg-groups')) {
+                                        e.currentTarget.style.color = '#f0c040';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!isActive('/admin/shg-groups')) {
+                                        e.currentTarget.style.color = 'white';
+                                    }
+                                }}
+                            >
+                                SHG Groups
+                            </Nav.Link>
+
                             {/* User Management */}
                             <Nav.Link
                                 as={Link}
@@ -159,33 +186,6 @@ export default function AdminLayout() {
                                 }}
                             >
                                 Support Data
-                            </Nav.Link>
-
-                            {/* SHG Groups */}
-                            <Nav.Link
-                                as={Link}
-                                to="/admin/shg-groups"
-                                onClick={() => setExpanded(false)}
-                                className="px-4 py-3 text-uppercase fw-bold small text-white"
-                                style={{
-                                    fontSize: '0.8rem',
-                                    letterSpacing: '1px',
-                                    borderRadius: 0,
-                                    borderBottom: isActive('/admin/shg-groups') ? '3px solid white' : '3px solid transparent',
-                                    transition: 'all 0.2s ease'
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!isActive('/admin/shg-groups')) {
-                                        e.currentTarget.style.color = '#f0c040';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!isActive('/admin/shg-groups')) {
-                                        e.currentTarget.style.color = 'white';
-                                    }
-                                }}
-                            >
-                                SHG Groups
                             </Nav.Link>
 
                             {/* Reports Dropdown */}
