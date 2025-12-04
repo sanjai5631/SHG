@@ -1,22 +1,38 @@
 import { useState, useMemo } from 'react';
-import { Card, Tabs, Tab, Button, Modal, Form, Badge } from 'react-bootstrap';
+import { Card, Button, Modal, Form, Row, Col } from 'react-bootstrap';
 import DataTable from '../../components/DataTable';
 import { useApp } from '../../context/AppContext';
+import { FaPrint, FaFileExcel, FaEdit, FaTrash, FaPlus, FaMinus } from 'react-icons/fa';
 
 export default function SupportData() {
     const { data, addItem, updateItem } = useApp();
-    const [activeTab, setActiveTab] = useState('savingProducts');
+    const [activeItem, setActiveItem] = useState('savingProducts');
+    const [expandedNodes, setExpandedNodes] = useState(['supportData', 'general']);
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [formData, setFormData] = useState({});
 
-    const tabs = [
-        { id: 'savingProducts', label: 'Saving Products' },
-        { id: 'loanProducts', label: 'Loan Products' },
-        { id: 'meetingTypes', label: 'Meeting Types' },
-        { id: 'financialYears', label: 'Financial Years' },
+    // Tree Structure
+    const treeData = [
+        {
+            id: 'supportData',
+            label: 'Support Data',
+            children: [
+                {
+                    id: 'general',
+                    label: 'General',
+                    children: [
+                        { id: 'savingProducts', label: 'Saving Settings' },
+                        { id: 'loanProducts', label: 'Loan Settings' },
+                        { id: 'meetingTypes', label: 'Meeting Types' },
+                        { id: 'financialYears', label: 'Financial Years' },
+                    ]
+                }
+            ]
+        }
     ];
 
+    // Field Configurations
     const fields = {
         savingProducts: [
             { name: 'name', label: 'Product Name', type: 'text', required: true },
@@ -38,7 +54,21 @@ export default function SupportData() {
             { name: 'code', label: 'Code', type: 'text', required: true },
             { name: 'startDate', label: 'Start Date', type: 'date', required: true },
             { name: 'endDate', label: 'End Date', type: 'date', required: true },
+        ],
+        default: [
+            { name: 'name', label: 'Name', type: 'text', required: true },
+            { name: 'code', label: 'Code', type: 'text', required: false },
         ]
+    };
+
+    const getFields = (key) => fields[key] || fields.default;
+
+    const toggleNode = (nodeId) => {
+        if (expandedNodes.includes(nodeId)) {
+            setExpandedNodes(expandedNodes.filter(id => id !== nodeId));
+        } else {
+            setExpandedNodes([...expandedNodes, nodeId]);
+        }
     };
 
     const handleOpenModal = (item = null) => {
@@ -48,7 +78,7 @@ export default function SupportData() {
         } else {
             setEditingItem(null);
             const initialData = { status: 'active' };
-            fields[activeTab].forEach(field => {
+            getFields(activeItem).forEach(field => {
                 initialData[field.name] = '';
             });
             setFormData(initialData);
@@ -58,137 +88,182 @@ export default function SupportData() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
         if (editingItem) {
-            updateItem(activeTab, editingItem.id, formData);
+            updateItem(activeItem, editingItem.id, formData);
         } else {
-            addItem(activeTab, formData);
+            addItem(activeItem, formData);
         }
-
         setShowModal(false);
         setEditingItem(null);
     };
 
+    // Get current data
+    const currentData = data[activeItem] || [];
+
     const handleToggleStatus = (item) => {
-        updateItem(activeTab, item.id, {
+        updateItem(activeItem, item.id, {
             status: item.status === 'active' ? 'inactive' : 'active'
         });
     };
 
-    const currentData = data[activeTab] || [];
-
-    // Define columns for custom DataTable
     const columns = useMemo(() => [
-        ...fields[activeTab].map(field => ({
+        {
+            key: 'actions',
+            label: 'ACTIONS',
+            sortable: false,
+            render: (_, row) => (
+                <div className="d-flex gap-2 align-items-center">
+                    <Button
+                        variant="light"
+                        size="sm"
+                        className="text-primary border-0 p-1"
+                        onClick={() => handleOpenModal(row)}
+                        title="Edit"
+                    >
+                        <FaEdit size={14} />
+                    </Button>
+                    <Form.Check
+                        type="switch"
+                        id={`switch-${activeItem}-${row.id}`}
+                        checked={row.status === 'active'}
+                        onChange={() => handleToggleStatus(row)}
+                        className="d-inline-block"
+                    />
+                </div>
+            )
+        },
+        ...getFields(activeItem).map(field => ({
             key: field.name,
-            label: field.label,
+            label: field.label.toUpperCase(),
             sortable: true,
             render: (value) => {
-                if (field.type === 'number' && field.name.includes('Rate')) {
-                    return `${value}%`;
-                } else if (field.type === 'number' && field.name.includes('Amount')) {
-                    return `₹${value.toLocaleString()}`;
-                }
+                if (field.type === 'number' && field.name.includes('Rate')) return `${value}%`;
+                if (field.type === 'number' && field.name.includes('Amount')) return `₹${value.toLocaleString()}`;
                 return value;
             }
         })),
         {
             key: 'status',
-            label: 'Status',
+            label: 'STATUS',
             sortable: true,
             render: (status) => (
-                <Badge
-                    bg={status === 'active' ? 'success' : 'secondary'}
-                    className="fw-normal"
-                    style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
+                <span
+                    className="badge text-white px-3 py-1"
+                    style={{
+                        backgroundColor: status === 'active' ? '#28a745' : '#6c757d',
+                        fontSize: '0.75rem',
+                        fontWeight: '500',
+                        borderRadius: '12px'
+                    }}
                 >
-                    {status}
-                </Badge>
+                    {status === 'active' ? 'Active' : 'Inactive'}
+                </span>
             )
         }
-    ], [activeTab]);
+    ], [activeItem]);
 
-    // Action renderer for custom DataTable
-    const actionRenderer = (row) => (
-        <div className="d-flex gap-2 align-items-center">
-            <Button
-                variant="light"
-                size="sm"
-                className="text-primary border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
-                style={{ width: '32px', height: '32px', backgroundColor: '#f0f4ff' }}
-                onClick={() => handleOpenModal(row)}
-                title="Edit"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
-                </svg>
-            </Button>
-            <Form.Check
-                type="switch"
-                id={`custom-switch-${row.id}-${activeTab}`}
-                checked={row.status === 'active'}
-                onChange={() => handleToggleStatus(row)}
-                className="d-inline-block"
-                title={row.status === 'active' ? 'Deactivate' : 'Activate'}
-            />
-        </div>
-    );
+    const renderTree = (nodes, level = 0) => {
+        return nodes.map(node => {
+            const isExpanded = expandedNodes.includes(node.id);
+            const isSelected = activeItem === node.id;
+            const hasChildren = node.children && node.children.length > 0;
+
+            return (
+                <div key={node.id} style={{ marginLeft: level * 12 }}>
+                    <div
+                        className={`d-flex align-items-center py-1 px-2 mb-1 cursor-pointer ${isSelected ? 'fw-bold text-dark' : 'text-dark'}`}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => hasChildren ? toggleNode(node.id) : setActiveItem(node.id)}
+                    >
+                        {hasChildren && (
+                            <span className="me-2 text-muted" style={{ fontSize: '0.8rem' }}>
+                                {isExpanded ? <FaMinus size={10} /> : <FaPlus size={10} />}
+                            </span>
+                        )}
+                        {!hasChildren && <span className="me-3"></span>}
+                        <span style={{ fontSize: '0.9rem', textDecoration: isSelected ? 'underline' : 'none' }}>{node.label}</span>
+                    </div>
+                    {hasChildren && isExpanded && (
+                        <div className="border-start ms-2 ps-1" style={{ borderColor: '#dee2e6' }}>
+                            {renderTree(node.children, level + 1)}
+                        </div>
+                    )}
+                </div>
+            );
+        });
+    };
+
+    const activeLabel = treeData[0].children[0].children.find(c => c.id === activeItem)?.label ||
+        treeData[0].children[0].label === activeItem ? 'General' :
+        'Support Data';
 
     return (
         <div className="fade-in">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 className="h4 fw-bold mb-1">Support Data Management</h1>
-                </div>
-                <Button variant="primary" onClick={() => handleOpenModal()}>
-                    ➕ Add New
-                </Button>
+            {/* Header */}
+            <div className="mb-4">
+                <h1 className="h4 fw-bold mb-0">Support Data</h1>
             </div>
 
-            <Card className="border-0 shadow-sm">
-                <Card.Header className="bg-white border-bottom-0 pt-2 px-2">
-                    <Tabs
-                        activeKey={activeTab}
-                        onSelect={(k) => setActiveTab(k)}
-                        className="mb-0"
-                        variant="tabs"
-                    >
-                        {tabs.map(tab => (
-                            <Tab
-                                key={tab.id}
-                                eventKey={tab.id}
-                                title={<span>{tab.icon} {tab.label}</span>}
+            <Card className="border-0 shadow-sm" style={{ minHeight: '600px' }}>
+                <Card.Body className="p-0">
+                    <Row className="g-0 h-100">
+                        {/* Sidebar Tree View */}
+                        <Col md={3} className="border-end bg-white p-3" style={{ minHeight: '600px' }}>
+
+                            <div className="tree-view">
+                                {renderTree(treeData)}
+                            </div>
+                        </Col>
+
+                        {/* Content Area */}
+                        <Col md={9} className="p-4 bg-white">
+                            <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                                <h5 className="fw-bold mb-0">
+                                    {treeData[0].children[0].children.find(c => c.id === activeItem)?.label || 'Support Data'} Details
+                                </h5>
+                                <Button
+                                    variant="warning"
+                                    className="text-white fw-medium px-4"
+                                    onClick={() => handleOpenModal()}
+                                    style={{ backgroundColor: '#f0ad4e', borderColor: '#eea236' }}
+                                >
+                                    Add Data
+                                </Button>
+                            </div>
+
+                            <DataTable
+                                key={activeItem}
+                                initialColumns={columns}
+                                data={currentData}
+                                enableFilter={true}
+                                enableExport={true}
+                                enablePagination={true}
+                                enableSort={true}
+                                rowsPerPageOptions={[10, 25, 50, 100]}
+                                headerStyle={{
+                                    backgroundColor: '#f8f9fa',
+                                    color: '#6c757d',
+                                    fontWeight: '600',
+                                    fontSize: '0.7rem'
+                                }}
                             />
-                        ))}
-                    </Tabs>
-                </Card.Header>
-                <Card.Body className="p-4">
-                    <DataTable
-                        initialColumns={columns}
-                        data={currentData}
-                        actionRenderer={actionRenderer}
-                        enableFilter={true}
-                        enableExport={true}
-                        enablePagination={true}
-                        enableSort={true}
-                        rowsPerPageOptions={[10, 20, 30, 50]}
-                    />
+                        </Col>
+                    </Row>
                 </Card.Body>
             </Card>
 
             {/* Modal */}
             <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>
-                        {editingItem ? 'Edit' : 'Add New'} {tabs.find(t => t.id === activeTab)?.label}
+                <Modal.Header closeButton className="border-0 pb-2">
+                    <Modal.Title className="fw-bold fs-5">
+                        {editingItem ? 'Edit' : 'Add '} {treeData[0].children[0].children.find(c => c.id === activeItem)?.label || activeLabel}
                     </Modal.Title>
                 </Modal.Header>
-
                 <Form onSubmit={handleSubmit}>
-                    <Modal.Body>
-                        {fields[activeTab].map(field => (
+                    <Modal.Body className="px-3 py-3">
+                        {getFields(activeItem).map(field => (
                             <Form.Group key={field.name} className="mb-3">
-                                <Form.Label>
+                                <Form.Label className="fw-medium text-dark mb-2">
                                     {field.label} {field.required && <span className="text-danger">*</span>}
                                 </Form.Label>
                                 <Form.Control
@@ -203,28 +278,59 @@ export default function SupportData() {
                                     required={field.required}
                                     step={field.type === 'number' ? '0.01' : undefined}
                                     placeholder={`Enter ${field.label.toLowerCase()}`}
+                                    className="py-2"
+                                    style={{
+                                        borderRadius: '8px',
+                                        border: '1px solid #dee2e6',
+                                        fontSize: '0.95rem'
+                                    }}
                                 />
                             </Form.Group>
                         ))}
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Status *</Form.Label>
+                            <Form.Label className="fw-medium text-dark mb-2">
+                                Status <span className="text-danger">*</span>
+                            </Form.Label>
                             <Form.Select
                                 value={formData.status || 'active'}
                                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                className="py-2"
+                                style={{
+                                    borderRadius: '8px',
+                                    border: '1px solid #dee2e6',
+                                    fontSize: '0.95rem'
+                                }}
                             >
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                             </Form.Select>
                         </Form.Group>
                     </Modal.Body>
-
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>
+                    <Modal.Footer className="border-0 px-3 pb-3 pt-2">
+                        <Button
+                            variant="light"
+                            onClick={() => setShowModal(false)}
+                            className="px-4 py-2"
+                            style={{
+                                borderRadius: '8px',
+                                border: '1px solid #dee2e6',
+                                fontWeight: '500'
+                            }}
+                        >
                             Cancel
                         </Button>
-                        <Button variant="success" type="submit">
-                            {editingItem ? 'Update' : 'Save'}
+                        <Button
+                            type="submit"
+                            className="px-4 py-2 text-white"
+                            style={{
+                                backgroundColor: '#28a745',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: '500'
+                            }}
+                        >
+                            Save
                         </Button>
                     </Modal.Footer>
                 </Form>
