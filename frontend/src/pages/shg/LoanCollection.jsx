@@ -663,96 +663,72 @@ export default function LoanManagement() {
                 show={showCashModal}
                 onHide={() => setShowCashModal(false)}
                 centered
-                dialogClassName="modal-compact"
+                dialogClassName="modal-360w"
             >
                 <style type="text/css">
                     {`
-                        .modal-compact .modal-dialog {
-                            max-width: 340px;
+                        .modal-360w {
+                            max-width: 360px;
                         }
                     `}
                 </style>
-                <Modal.Header closeButton className="border-0 pb-1 px-3 pt-2">
-                    <Modal.Title className="w-100 text-center text-uppercase fw-bold text-muted" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>
-                        Cash Denomination
-                    </Modal.Title>
+                <Modal.Header closeButton className="bg-white border-bottom py-2 px-3">
+                    <Modal.Title className="fw-bold fs-6">Cash Denomination</Modal.Title>
                 </Modal.Header>
-                <Modal.Body className="px-2 py-1">
-                    <DataTable
-                        dense={true}
-                        data={[500, 200, 100, 50, 20, 10].map((val) => ({
-                            id: val,
-                            value: val,
-                        }))}
-                        initialColumns={[
-                            {
-                                key: 'value',
-                                label: 'CASH',
-                                sortable: false,
-                                render: (val) => <span className="fw-semibold" style={{ fontSize: '0.8rem' }}>{val}</span>
-                            },
-                            {
-                                key: 'count',
-                                label: '',
-                                sortable: false,
-                                render: (_, row) => (
-                                    <Form.Control
-                                        type="text"
-                                        size="sm"
-                                        className="text-center"
-                                        value={denominations[row.value] || ''}
-                                        onChange={(e) => handleDenominationChange(row.value, e.target.value)}
-                                        onKeyPress={(e) => {
-                                            if (!/[0-9]/.test(e.key)) {
-                                                e.preventDefault();
-                                            }
-                                        }}
-                                        style={{
-                                            fontSize: '0.75rem',
-                                            padding: '2px',
-                                            height: '24px',
-                                            borderRadius: '4px',
-                                            border: '1px solid #ced4da'
-                                        }}
-                                    />
-                                )
-                            },
-                            {
-                                key: 'amount',
-                                label: 'AMOUNT',
-                                sortable: false,
-                                render: (_, row) => <span style={{ fontSize: '0.8rem' }}>{(row.value * (denominations[row.value] || 0)).toLocaleString()}</span>
-                            }
-                        ]}
-                        enableFilter={false}
-                        enableExport={false}
-                        enablePagination={false}
-                        enableSort={false}
-                        footer={
-                            <tfoot style={{ backgroundColor: '#f8f9fa', borderTop: '2px solid #dee2e6' }}>
-                                <tr>
-                                    <td colSpan={2} className="text-end fw-bold py-1 px-2" style={{ fontSize: '0.8rem' }}>Total</td>
-                                    <td className="text-center fw-bold py-1 px-2" style={{ fontSize: '0.8rem' }}>
-                                        {totalCashCalculated.toLocaleString()}
+                <Modal.Body className="p-0">
+                    <Table className="mb-0 align-middle" size="sm" hover>
+                        <thead className="bg-light">
+                            <tr>
+                                <th className="ps-3 py-2" style={{ width: '30%', fontSize: '0.8rem' }}>Denomination</th>
+                                <th className="text-center py-2" style={{ width: '30%', fontSize: '0.8rem' }}>Count</th>
+                                <th className="text-end pe-3 py-2" style={{ width: '40%', fontSize: '0.8rem' }}>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[500, 200, 100, 50, 20, 10].map((val) => (
+                                <tr key={val}>
+                                    <td className="ps-3 fw-medium" style={{ fontSize: '0.85rem' }}>₹{val}</td>
+                                    <td className="text-center py-1">
+                                        <Form.Control
+                                            type="number"
+                                            size="sm"
+                                            value={denominations[val] || ''}
+                                            onChange={(e) => handleDenominationChange(val, e.target.value)}
+                                            className="text-center mx-auto p-0"
+                                            style={{ width: '60px', fontSize: '0.85rem', height: '24px' }}
+                                        />
+                                    </td>
+                                    <td className="text-end pe-3 fw-medium" style={{ fontSize: '0.85rem' }}>
+                                        ₹{(val * (denominations[val] || 0)).toLocaleString()}
                                     </td>
                                 </tr>
-                                <tr style={{ backgroundColor: '#e7f3ff' }}>
-                                    <td colSpan={2} className="text-end fw-bold text-uppercase text-muted py-1 px-2" style={{ fontSize: '0.65rem', letterSpacing: '0.3px' }}>
-                                        System Cash Total
-                                    </td>
-                                    <td className="text-center fw-bold text-primary py-1 px-2" style={{ fontSize: '0.8rem' }}>
-                                        ₹{totalSystemCash.toLocaleString()}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        }
-                    />
+                            ))}
+                        </tbody>
+                        <tfoot className="bg-light">
+                            <tr>
+                                <td className="ps-3 fw-bold" style={{ fontSize: '0.85rem' }}>Total</td>
+                                <td className="text-center fw-bold" style={{ fontSize: '0.85rem' }}>
+                                    {Object.values(denominations).reduce((a, b) => a + b, 0)}
+                                </td>
+                                <td className="text-end pe-3 fw-bold text-primary" style={{ fontSize: '0.85rem' }}>
+                                    ₹{totalCashCalculated.toLocaleString()}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="2" className="ps-3 fw-bold text-muted" style={{ fontSize: '0.8rem' }}>System Cash</td>
+                                <td className="text-end pe-3 fw-bold text-muted" style={{ fontSize: '0.8rem' }}>
+                                    ₹{totalSystemCash.toLocaleString()}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="2" className="ps-3 fw-bold" style={{ fontSize: '0.85rem' }}>Difference</td>
+                                <td className={`text-end pe-3 fw-bold ${totalCashCalculated - totalSystemCash === 0 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.85rem' }}>
+                                    ₹{(totalCashCalculated - totalSystemCash).toLocaleString()}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </Table>
                 </Modal.Body>
-                <Modal.Footer className="border-0 pt-1 pb-2 px-3 justify-content-center">
-                    <Button variant="secondary" size="sm" onClick={() => setShowCashModal(false)} style={{ borderRadius: '6px', fontSize: '0.75rem', padding: '4px 12px' }}>
-                        Close
-                    </Button>
-                </Modal.Footer>
             </Modal>
         </div >
     );
