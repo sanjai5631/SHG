@@ -6,3 +6,9 @@
 /.vs/micro
 /.vs/slnx.sqlite
 /.vs
+/API/BoscoSHG/.vs
+/API/BoscoSHG/BoscoSHG/obj
+/API/BoscoSHG/BoscoSHG.Application/obj
+/API/BoscoSHG/BoscoSHG.Domain/obj
+/API/BoscoSHG/BoscoSHG.Infrastructure/obj
+/API/BoscoSHG/BoscoSHG.Service/obj
