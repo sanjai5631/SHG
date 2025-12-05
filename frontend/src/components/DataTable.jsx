@@ -34,6 +34,7 @@ const DataTable = ({
     actionRenderer = null,
     footerRenderer = null,
     dense = false,
+    headerStyle = {},
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0] || 10);
@@ -118,6 +119,9 @@ const DataTable = ({
 
     // 5. Export Handlers
     const handlePrint = () => {
+        // Filter out actions column for export
+        const exportColumns = columns.filter(col => col.key !== 'actions');
+
         const printWindow = window.open('', '_blank');
         const tableHtml = `
             <!DOCTYPE html>
@@ -129,7 +133,7 @@ const DataTable = ({
                     table { width: 100%; border-collapse: collapse; }
                     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
                     th { background-color: #f8f9fa; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; }
-                    tr:nth-child(even) { background-color: #bbdefb; }
+                    tr:nth-child(even) { background-color: #ffffff; }
                     tr:nth-child(odd) { background-color: #ffffff; }
                     @media print {
                         button { display: none; }
@@ -141,15 +145,13 @@ const DataTable = ({
                 <table>
                     <thead>
                         <tr>
-                            ${actionRenderer ? '<th>Actions</th>' : ''}
-                            ${columns.map(col => `<th>${col.label}</th>`).join('')}
+                            ${exportColumns.map(col => `<th>${col.label}</th>`).join('')}
                         </tr>
                     </thead>
                     <tbody>
                         ${sortedAndFilteredData.map(row => `
                             <tr>
-                                ${actionRenderer ? '<td>-</td>' : ''}
-                                ${columns.map(col => `<td>${row[col.key] || '-'}</td>`).join('')}
+                                ${exportColumns.map(col => `<td>${row[col.key] || '-'}</td>`).join('')}
                             </tr>
                         `).join('')}
                     </tbody>
@@ -175,10 +177,13 @@ const DataTable = ({
             doc.setFontSize(16);
             doc.text('Table Data', 14, 15);
 
+            // Filter out actions column for export
+            const exportColumns = columns.filter(col => col.key !== 'actions');
+
             // Prepare table data
-            const headers = columns.map(col => col.label);
+            const headers = exportColumns.map(col => col.label);
             const rows = sortedAndFilteredData.map(row =>
-                columns.map(col => String(row[col.key] || '-'))
+                exportColumns.map(col => String(row[col.key] || '-'))
             );
 
             // Add table using autoTable
@@ -201,10 +206,13 @@ const DataTable = ({
         try {
             const XLSX = await import('xlsx');
 
+            // Filter out actions column for export
+            const exportColumns = columns.filter(col => col.key !== 'actions');
+
             // Prepare data for Excel
-            const headers = columns.map(col => col.label);
+            const headers = exportColumns.map(col => col.label);
             const rows = sortedAndFilteredData.map(row =>
-                columns.map(col => row[col.key] || '-')
+                exportColumns.map(col => row[col.key] || '-')
             );
 
             // Create worksheet
@@ -344,10 +352,10 @@ const DataTable = ({
             <div className="border rounded shadow-sm bg-white" style={{ maxHeight: '700px', overflow: 'hidden' }}>
                 <div style={{ maxHeight: '600px', overflowY: 'auto', position: 'relative' }}>
                     <Table hover className="mb-0 align-middle">
-                        <thead style={{ backgroundColor: '#f8f9fa', position: 'sticky', top: 0, zIndex: 10 }}>
+                        <thead style={{ ...{ backgroundColor: '#f8f9fa', position: 'sticky', top: 0, zIndex: 10 }, ...headerStyle }}>
                             <tr>
                                 {actionRenderer && (
-                                    <th className={`${paddingClass} border-bottom-0`} style={{ fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }}>
+                                    <th className={`${paddingClass} border-bottom-0`} style={{ ...{ fontSize: '0.7rem', fontWeight: '600', color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.5px', backgroundColor: '#f8f9fa' }, ...headerStyle }}>
                                         Actions
                                     </th>
                                 )}
@@ -357,13 +365,16 @@ const DataTable = ({
                                         onClick={() => col.sortable && handleSort(col.key)}
                                         className={`${paddingClass} border-bottom-0 ${col.sortable ? 'cursor-pointer user-select-none' : ''}`}
                                         style={{
-                                            fontSize: '0.7rem',
-                                            fontWeight: '600',
-                                            color: '#6c757d',
-                                            cursor: col.sortable ? 'pointer' : 'default',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.5px',
-                                            backgroundColor: '#f8f9fa'
+                                            ...{
+                                                fontSize: '0.7rem',
+                                                fontWeight: '600',
+                                                color: '#6c757d',
+                                                cursor: col.sortable ? 'pointer' : 'default',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px',
+                                                backgroundColor: '#f8f9fa'
+                                            },
+                                            ...headerStyle
                                         }}
                                     >
                                         <div className="d-flex align-items-center">
@@ -386,7 +397,7 @@ const DataTable = ({
                                     <tr
                                         key={`${row.id}-${rowIndex}`}
                                         style={{
-                                            backgroundColor: rowIndex % 2 === 0 ? '#bbdefb' : '#ffffff'
+                                            backgroundColor: '#ffffff'
                                         }}
                                     >
                                         {actionRenderer && (
