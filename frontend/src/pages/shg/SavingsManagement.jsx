@@ -41,7 +41,7 @@ export default function SavingsManagement() {
 
     const totalSystemCash = membersData
         .filter(m => m.paymentMode === 'cash')
-        .reduce((sum, m) => sum + (m.collect || 0), 0);
+        .reduce((sum, m) => sum + (m.total || 0), 0);
 
     // Get all active members for person dropdown
     const activeMembers = useMemo(() =>
@@ -107,13 +107,13 @@ export default function SavingsManagement() {
                 name: m.name,
                 memberCode: m.memberCode,
                 demand: 1000,
-                collect: 0,
-                openingBalance: openingBalance,
-                dbTotalAmount: dbTotalSavings, // Store DB total for calculations
-                totalAmount: totalAmount,
-                shareAmount: shareAmount,
-                closing2025: closing2025,
-                withdrawal: 0,
+                d500: 0,
+                d200: 0,
+                d100: 0,
+                d50: 0,
+                d20: 0,
+                d10: 0,
+                others: 0,
                 paymentMode: 'cash',
                 selectedPerson: ''
             };
@@ -144,7 +144,15 @@ export default function SavingsManagement() {
         if (value === '') {
             setMembersData(prev => prev.map(m => {
                 if (m.id === id) {
-                    return { ...m, [field]: 0 };
+                    const updated = { ...m, [field]: 0 };
+                    // Only recalculate total if a denomination field was changed, not if total itself was cleared
+                    if (field !== 'total') {
+                        updated.total = (updated.d500 * 500) + (updated.d200 * 200) +
+                            (updated.d100 * 100) + (updated.d50 * 50) +
+                            (updated.d20 * 20) + (updated.d10 * 10) +
+                            (updated.others || 0);
+                    }
+                    return updated;
                 }
                 return m;
             }));
@@ -160,13 +168,17 @@ export default function SavingsManagement() {
             if (m.id === id) {
                 const updatedMember = { ...m, [field]: numValue || 0 };
 
-                // Recalculate totals based on DB total + new collection
-                const newTotal = updatedMember.dbTotalAmount + updatedMember.collect;
-                updatedMember.totalAmount = newTotal;
-                updatedMember.shareAmount = Math.round(newTotal * 0.0725);
-
-                // Closing balance = Total + Share
-                updatedMember.closing2025 = newTotal + updatedMember.shareAmount;
+                // Only calculate total from denominations if a denomination field was changed
+                // If 'total' field itself is being edited, don't recalculate
+                if (field !== 'total') {
+                    updatedMember.total = (updatedMember.d500 * 500) +
+                        (updatedMember.d200 * 200) +
+                        (updatedMember.d100 * 100) +
+                        (updatedMember.d50 * 50) +
+                        (updatedMember.d20 * 20) +
+                        (updatedMember.d10 * 10) +
+                        (updatedMember.others || 0);
+                }
 
                 return updatedMember;
             }
@@ -220,7 +232,7 @@ export default function SavingsManagement() {
 
         // Validate online payments have a person selected
         membersData.forEach(member => {
-            if (member.collect > 0 && member.paymentMode === 'online' && !member.selectedPerson) {
+            if (member.total > 0 && member.paymentMode === 'online' && !member.selectedPerson) {
                 errors.push(`${member.name}: Please select a person for online payment`);
             }
         });
@@ -232,31 +244,26 @@ export default function SavingsManagement() {
 
         // Save each member's savings
         membersData.forEach(member => {
-            if (member.collect > 0) {
+            if (member.total > 0) {
                 addItem('savings', {
                     memberId: member.id,
                     productId: 1,
-                    amount: member.collect,
+                    amount: member.total,
                     date: new Date().toISOString().split('T')[0],
                     collectedBy: currentUser?.id || 1,
                     month: selectedMonth,
                     financialYear: selectedFY,
                     paymentMode: member.paymentMode,
-                    paidBy: member.paymentMode === 'online' ? parseInt(member.selectedPerson) : null
-                });
-                savedCount++;
-            }
-
-            if (member.withdrawal > 0) {
-                addItem('savings', {
-                    memberId: member.id,
-                    productId: 1,
-                    amount: -member.withdrawal,
-                    date: new Date().toISOString().split('T')[0],
-                    collectedBy: currentUser?.id || 1,
-                    month: selectedMonth,
-                    financialYear: selectedFY,
-                    type: 'withdrawal'
+                    paidBy: member.paymentMode === 'online' ? parseInt(member.selectedPerson) : null,
+                    denominations: {
+                        d500: member.d500,
+                        d200: member.d200,
+                        d100: member.d100,
+                        d50: member.d50,
+                        d20: member.d20,
+                        d10: member.d10,
+                        others: member.others
+                    }
                 });
                 savedCount++;
             }
@@ -268,6 +275,45 @@ export default function SavingsManagement() {
         } else {
             alert('No collections to save.');
         }
+    };
+
+    // Helper function to create denomination input
+    const createDenominationInput = (row, field, width = '55px') => {
+        const isOnline = row.paymentMode === 'online';
+        return (
+            <Form.Control
+                type="text"
+                size="sm"
+                value={row[field] || ''}
+                onChange={(e) => handleDataChange(row.id, field, e.target.value)}
+                disabled={isOnline}
+                onKeyDown={(e) => {
+                    // Allow: backspace, delete, tab, escape, enter
+                    if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
+                        // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                        (e.keyCode === 65 && e.ctrlKey === true) ||
+                        (e.keyCode === 67 && e.ctrlKey === true) ||
+                        (e.keyCode === 86 && e.ctrlKey === true) ||
+                        (e.keyCode === 88 && e.ctrlKey === true) ||
+                        // Allow: home, end, left, right
+                        (e.keyCode >= 35 && e.keyCode <= 39)) {
+                        return;
+                    }
+                    // Ensure that it is a number and stop the keypress
+                    if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                        e.preventDefault();
+                    }
+                }}
+                className="text-center border fw-medium"
+                style={{
+                    backgroundColor: isOnline ? '#f8f9fa' : '#fff',
+                    borderColor: '#dee2e6',
+                    width: width,
+                    padding: '0.375rem 0.15rem',
+                    cursor: isOnline ? 'not-allowed' : 'text'
+                }}
+            />
+        );
     };
 
     // Define columns for custom DataTable
@@ -284,15 +330,6 @@ export default function SavingsManagement() {
             )
         },
         {
-            key: 'outstanding',
-            label: 'OUTSTANDING',
-            render: (value, row) => (
-                <div className="text-end fw-bold text-danger">
-                    {(row.totalAmount || 0).toLocaleString('en-IN')}
-                </div>
-            )
-        },
-        {
             key: 'demand',
             label: 'DEMAND',
             render: (value, row) => (
@@ -304,26 +341,30 @@ export default function SavingsManagement() {
                     className="text-end border fw-medium bg-light"
                     style={{
                         borderColor: '#dee2e6',
-                        minWidth: '80px',
-                        padding: '0.375rem 0.5rem'
+                        width: '65px',
+                        padding: '0.375rem 0.25rem'
                     }}
                 />
             )
         },
         {
-            key: 'collect',
-            label: 'ACT.COLLECT',
+            key: 'collectedAmount',
+            label: 'COLLECTED AMOUNT',
             render: (value, row) => (
                 <Form.Control
                     type="text"
                     size="sm"
-                    value={row.collect || ''}
-                    onChange={(e) => handleDataChange(row.id, 'collect', e.target.value)}
+                    value={row.total || ''}
+                    onChange={(e) => handleDataChange(row.id, 'total', e.target.value)}
+                    maxLength={6}
                     onKeyDown={(e) => {
                         // Allow: backspace, delete, tab, escape, enter
                         if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
-                            // Allow: Ctrl+A
+                            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
                             (e.keyCode === 65 && e.ctrlKey === true) ||
+                            (e.keyCode === 67 && e.ctrlKey === true) ||
+                            (e.keyCode === 86 && e.ctrlKey === true) ||
+                            (e.keyCode === 88 && e.ctrlKey === true) ||
                             // Allow: home, end, left, right
                             (e.keyCode >= 35 && e.keyCode <= 39)) {
                             return;
@@ -337,49 +378,46 @@ export default function SavingsManagement() {
                     style={{
                         backgroundColor: '#fff',
                         borderColor: '#dee2e6',
-                        minWidth: '80px',
-                        padding: '0.375rem 0.5rem'
+                        width: '85px',
+                        padding: '0.375rem 0.25rem'
                     }}
                 />
             )
         },
         {
-            key: 'totalAmount',
-            label: 'TOTAL',
-            render: (value) => <div className="text-end fw-bold">{value?.toLocaleString('en-IN')}</div>
+            key: 'd500',
+            label: '500',
+            render: (value, row) => createDenominationInput(row, 'd500')
         },
         {
-            key: 'withdrawal',
-            label: 'WITHDRAWAL',
-            render: (value, row) => (
-                <Form.Control
-                    type="text"
-                    size="sm"
-                    value={row.withdrawal || ''}
-                    onChange={(e) => handleDataChange(row.id, 'withdrawal', e.target.value)}
-                    onKeyDown={(e) => {
-                        // Allow: backspace, delete, tab, escape, enter
-                        if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
-                            // Allow: Ctrl+A
-                            (e.keyCode === 65 && e.ctrlKey === true) ||
-                            // Allow: home, end, left, right
-                            (e.keyCode >= 35 && e.keyCode <= 39)) {
-                            return;
-                        }
-                        // Ensure that it is a number and stop the keypress
-                        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
-                            e.preventDefault();
-                        }
-                    }}
-                    className="text-end border fw-medium"
-                    style={{
-                        backgroundColor: '#fff',
-                        borderColor: '#dee2e6',
-                        minWidth: '80px',
-                        padding: '0.375rem 0.5rem'
-                    }}
-                />
-            )
+            key: 'd200',
+            label: '200',
+            render: (value, row) => createDenominationInput(row, 'd200')
+        },
+        {
+            key: 'd100',
+            label: '100',
+            render: (value, row) => createDenominationInput(row, 'd100')
+        },
+        {
+            key: 'd50',
+            label: '50',
+            render: (value, row) => createDenominationInput(row, 'd50')
+        },
+        {
+            key: 'd20',
+            label: '20',
+            render: (value, row) => createDenominationInput(row, 'd20')
+        },
+        {
+            key: 'd10',
+            label: '10',
+            render: (value, row) => createDenominationInput(row, 'd10')
+        },
+        {
+            key: 'others',
+            label: 'OTHERS',
+            render: (value, row) => createDenominationInput(row, 'others')
         },
         {
             key: 'paymentMode',
@@ -389,7 +427,12 @@ export default function SavingsManagement() {
                     size="sm"
                     value={row.paymentMode}
                     onChange={(e) => handlePaymentModeChange(row.id, e.target.value)}
-                    style={{ minWidth: '100px' }}
+                    style={{
+                        width: '80px',
+                        fontSize: '0.75rem',
+                        padding: '0.25rem 0.5rem',
+                        borderColor: '#dee2e6'
+                    }}
                 >
                     <option value="cash">Cash</option>
                     <option value="online">Online</option>
@@ -398,16 +441,21 @@ export default function SavingsManagement() {
         },
         {
             key: 'selectedPerson',
-            label: 'SELECT PERSON',
+            label: 'ASSIGN PERSON',
             render: (value, row) => (
                 row.paymentMode === 'online' && (
                     <Form.Select
                         size="sm"
                         value={row.selectedPerson}
                         onChange={(e) => handlePersonChange(row.id, e.target.value)}
-                        style={{ minWidth: '120px' }}
+                        style={{
+                            width: '95px',
+                            fontSize: '0.75rem',
+                            padding: '0.25rem 0.5rem',
+                            borderColor: '#dee2e6'
+                        }}
                     >
-                        <option value="">Select Person</option>
+                        <option value="">Select</option>
                         {activeMembers.map(m => (
                             <option key={m.id} value={m.id}>{m.name}</option>
                         ))}
@@ -449,19 +497,6 @@ export default function SavingsManagement() {
             <Button
                 variant="light"
                 size="sm"
-                className="text-success border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
-                style={{ width: '32px', height: '32px', backgroundColor: '#f0fff4' }}
-                onClick={() => setShowDenominationModal(true)}
-                title="Cash Denomination"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
-                    <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z" />
-                </svg>
-            </Button>
-            <Button
-                variant="light"
-                size="sm"
                 className="text-danger border-0 rounded-circle p-2 d-flex align-items-center justify-content-center"
                 style={{ width: '32px', height: '32px', backgroundColor: '#fff0f0' }}
                 onClick={() => handleDelete(row)}
@@ -476,33 +511,70 @@ export default function SavingsManagement() {
     );
 
     const footerRenderer = (currentData) => {
-        const totalOutstanding = currentData.reduce((sum, row) => sum + (parseFloat(row.totalAmount) || 0), 0);
         const totalDemand = currentData.reduce((sum, row) => sum + (parseFloat(row.demand) || 0), 0);
-        const totalCollect = currentData.reduce((sum, row) => sum + (parseFloat(row.collect) || 0), 0);
-        const totalAmount = currentData.reduce((sum, row) => sum + (parseFloat(row.totalAmount) || 0), 0);
-        const totalWithdrawal = currentData.reduce((sum, row) => sum + (parseFloat(row.withdrawal) || 0), 0);
+        const totalCollection = currentData.reduce((sum, row) => sum + (parseFloat(row.total) || 0), 0);
+        const total500 = currentData.reduce((sum, row) => sum + (parseFloat(row.d500) || 0), 0);
+        const total200 = currentData.reduce((sum, row) => sum + (parseFloat(row.d200) || 0), 0);
+        const total100 = currentData.reduce((sum, row) => sum + (parseFloat(row.d100) || 0), 0);
+        const total50 = currentData.reduce((sum, row) => sum + (parseFloat(row.d50) || 0), 0);
+        const total20 = currentData.reduce((sum, row) => sum + (parseFloat(row.d20) || 0), 0);
+        const total10 = currentData.reduce((sum, row) => sum + (parseFloat(row.d10) || 0), 0);
+        const totalOthers = currentData.reduce((sum, row) => sum + (parseFloat(row.others) || 0), 0);
+        const grandTotal = currentData.reduce((sum, row) => sum + (parseFloat(row.total) || 0), 0);
+
+        // Calculate total from denominations
+        const denominationTotal = (total500 * 500) + (total200 * 200) + (total100 * 100) +
+            (total50 * 50) + (total20 * 20) + (total10 * 10) + totalOthers;
 
         return (
-            <tfoot style={{ backgroundColor: '#f8f9fa', fontWeight: 'bold' }}>
+            <tfoot style={{
+                backgroundColor: '#f8f9fa',
+                fontWeight: 'bold',
+                position: 'sticky',
+                bottom: 0,
+                zIndex: 10
+            }}>
                 <tr>
                     <td className="py-3 px-3"></td>
                     <td className="py-3 px-3 fw-bold">Total:</td>
-                    <td className="py-3 px-3 text-end text-danger">
-                        {totalOutstanding.toLocaleString('en-IN')}
-                    </td>
                     <td className="py-3 px-3 text-end text-success">
-                        {totalDemand.toLocaleString('en-IN')}
+                        ₹{totalDemand.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-3 px-3 text-end text-success">
-                        {totalCollect.toLocaleString('en-IN')}
+                    <td className="py-3 px-3 text-start fw-bold" style={{ color: '#198754' }}>
+                        ₹{totalCollection.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-3 px-3 text-end text-primary fw-bold">
-                        {totalAmount.toLocaleString('en-IN')}
+                    <td className="py-3 px-3 text-center">
+                        <div>{total500}</div>
+                        <small className="text-muted">₹{(total500 * 500).toLocaleString('en-IN')}</small>
                     </td>
-                    <td className="py-3 px-3 text-end text-warning">
-                        {totalWithdrawal.toLocaleString('en-IN')}
+                    <td className="py-3 px-3 text-center">
+                        <div>{total200}</div>
+                        <small className="text-muted">₹{(total200 * 200).toLocaleString('en-IN')}</small>
                     </td>
-                    <td colSpan={2}></td>
+                    <td className="py-3 px-3 text-center">
+                        <div>{total100}</div>
+                        <small className="text-muted">₹{(total100 * 100).toLocaleString('en-IN')}</small>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                        <div>{total50}</div>
+                        <small className="text-muted">₹{(total50 * 50).toLocaleString('en-IN')}</small>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                        <div>{total20}</div>
+                        <small className="text-muted">₹{(total20 * 20).toLocaleString('en-IN')}</small>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                        <div>{total10}</div>
+                        <small className="text-muted">₹{(total10 * 10).toLocaleString('en-IN')}</small>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                        <div>{totalOthers}</div>
+                        <small className="text-muted">₹{totalOthers.toLocaleString('en-IN')}</small>
+                    </td>
+                    <td className="py-3 px-3"></td>
+                    <td className="py-3 px-3 text-end fw-bold" style={{ color: '#198754' }}>
+                        ₹{denominationTotal.toLocaleString('en-IN')}
+                    </td>
                 </tr>
             </tfoot>
         );
